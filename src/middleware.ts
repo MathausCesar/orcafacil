@@ -60,7 +60,17 @@ export async function updateSession(request: NextRequest) {
 }
 
 export async function middleware(request: NextRequest) {
-    return await updateSession(request)
+    try {
+        return await updateSession(request)
+    } catch (e) {
+        console.error('MIDDLEWARE ERROR:', e)
+        // Return next response to avoid blocking the request completely on error
+        return NextResponse.next({
+            request: {
+                headers: request.headers,
+            },
+        })
+    }
 }
 
 export const config = {

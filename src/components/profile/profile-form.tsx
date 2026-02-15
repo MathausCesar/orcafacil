@@ -51,10 +51,14 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
         formData.append('layoutStyle', layoutStyle)
 
         try {
-            await updateProfile(formData)
-            toast.success('Perfil atualizado!')
+            const result = await updateProfile(formData)
+            if (result && result.error) {
+                toast.error('Erro ao atualizar perfil.')
+            } else {
+                toast.success('Perfil atualizado com sucesso!')
+            }
         } catch (e) {
-            toast.error('Erro ao atualizar.')
+            toast.error('Erro inesperado ao atualizar.')
         } finally {
             setLoading(false)
         }

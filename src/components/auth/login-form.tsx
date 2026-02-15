@@ -8,14 +8,43 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Mail } from 'lucide-react'
+import { toast } from 'sonner'
 
 export function LoginForm() {
     const [loading, setLoading] = useState(false)
+    const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+    const [emailSent, setEmailSent] = useState('')
 
     const handleSubmit = async (formData: FormData, action: typeof login | typeof signup) => {
         setLoading(true)
         try {
-            await action(formData)
+            const result = await action(formData) as any
+
+            if (action === signup) {
+                if (result?.success) {
+                    setEmailSent(formData.get('email') as string)
+                    setShowSuccessDialog(true)
+                } else if (result?.error) {
+                    toast.error(result.error)
+                }
+            } else {
+                // Login action handles redirect internally
+                if (result?.error) {
+                    toast.error('Credenciais inválidas.')
+                }
+            }
+        } catch (error) {
+            toast.error('Ocorreu um erro inesperado.')
         } finally {
             setLoading(false)
         }
@@ -99,6 +128,33 @@ export function LoginForm() {
                     </Card>
                 </TabsContent>
             </Tabs>
+
+            <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+                <AlertDialogContent className="sm:max-w-md">
+                    <AlertDialogHeader className="items-center text-center">
+                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                            <Mail className="h-8 w-8 text-primary" />
+                        </div>
+                        <AlertDialogTitle className="text-xl">Verifique seu email</AlertDialogTitle>
+                        <AlertDialogDescription className="text-center pt-2">
+                            Enviamos um link de confirmação para <span className="font-semibold text-foreground">{emailSent}</span>.
+                            <br /><br />
+                            Por favor, verifique sua caixa de entrada (e spam) para ativar sua conta.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="sm:justify-center">
+                        <AlertDialogAction onClick={() => {
+                            setShowSuccessDialog(false)
+                            // Optional: switch to login tab programmatically if needed, 
+                            // but usually user stays on page. 
+                            // Could use Tabs value state to switch.
+                            window.location.reload() // Refresh to clear form/state is safest for now
+                        }} className="w-full sm:w-auto">
+                            Entendi, vou verificar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

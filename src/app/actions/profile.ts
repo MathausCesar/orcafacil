@@ -42,3 +42,18 @@ export async function updateProfile(formData: FormData) {
     revalidatePath('/') // Update header name
     return { success: true }
 }
+
+export async function checkOnboardingStatus() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return false
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarded_at')
+        .eq('id', user.id)
+        .single()
+
+    return !!profile?.onboarded_at
+}

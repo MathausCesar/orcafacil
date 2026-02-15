@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ServicesCatalog } from '@/components/profile/services-catalog'
 import { ProfileForm } from '@/components/profile/profile-form'
+import { LogoutButton } from '@/components/auth/logout-button'
 
 export default async function ProfilePage() {
     const supabase = await createClient()
@@ -53,6 +54,10 @@ export default async function ProfilePage() {
                     <ServicesCatalog initialServices={services || []} userId={user.id} />
                 </CardContent>
             </Card>
-        </div>
+
+            <div className="mt-8">
+                <LogoutButton />
+            </div>
+        </div >
     )
 }

@@ -4,7 +4,7 @@ import { DashboardHeader } from '@/components/dashboard/header'
 import { QuoteStatusBadge } from '@/components/quotes/quote-status-badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Plus, FileText, TrendingUp, ArrowUpRight } from 'lucide-react'
+import { Plus, FileText, ArrowUpRight, Wallet } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -33,13 +33,20 @@ export default async function Dashboard() {
     .from('quotes')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
+    .eq('status', 'approved')
+
+  const { count: pendingCount } = await supabase
+    .from('quotes')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .eq('status', 'pending')
 
   const { data: recentQuotes } = await supabase
     .from('quotes')
     .select('*, quote_items(description)')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
-    .limit(3)
+    .limit(5)
 
   const { data: allQuotes } = await supabase
     .from('quotes')
@@ -50,100 +57,128 @@ export default async function Dashboard() {
   const totalRevenue = allQuotes?.reduce((acc, q) => acc + (q.total || 0), 0) || 0
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 p-4 md:p-8 max-w-7xl mx-auto">
       <DashboardHeader
         title={profile.business_name}
         profileImage={profile.logo_url}
+        className="bg-white/50 backdrop-blur-sm p-4 rounded-2xl border border-zinc-100 shadow-sm"
       />
 
-      {/* Quick Actions / Status */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Card className="bg-gradient-to-br from-primary to-emerald-600 text-white border-none shadow-lg shadow-primary/20 overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-6 translate-x-6" />
-          <CardContent className="p-4 flex flex-col justify-between h-32 relative z-10">
-            <div className="p-2 bg-white/20 w-fit rounded-lg backdrop-blur-sm">
-              <TrendingUp className="h-5 w-5" />
+      {/* Main Action - Elegant Gradient */}
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 to-emerald-500 shadow-xl shadow-emerald-900/10 transition-all hover:shadow-emerald-900/20">
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-8 md:p-10 gap-6">
+          <div className="text-white space-y-2 text-center md:text-left">
+            <h2 className="text-3xl font-bold tracking-tight">Criar Novo Orçamento</h2>
+            <p className="text-emerald-100 font-medium">Gere propostas profissionais em segundos.</p>
+          </div>
+          <Link href="/new">
+            <Button size="lg" className="h-14 px-8 text-lg rounded-xl bg-white text-emerald-700 hover:bg-emerald-50 shadow-lg border-2 border-transparent transition-all hover:scale-105 active:scale-95 font-semibold">
+              <Plus className="mr-2 h-6 w-6" /> Começar Agora
+            </Button>
+          </Link>
+        </div>
+      </section>
+
+      {/* Stats Grid - Soft & Airy */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Revenue Card - Clean White */}
+        <Card className="col-span-1 md:col-span-2 border-none shadow-md bg-white rounded-2xl overflow-hidden relative group">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Wallet className="h-32 w-32 -rotate-12" />
+          </div>
+          <CardContent className="p-8 flex flex-col justify-between h-48">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-emerald-50 rounded-xl">
+                <Wallet className="h-6 w-6 text-emerald-600" />
+              </div>
+              <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Receita Aprovada</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-white/80">Receita Total</p>
-              <h3 className="text-xl font-bold">
+              <h3 className="text-5xl font-bold tracking-tighter text-zinc-900">
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalRevenue)}
               </h3>
+              <p className="text-sm text-muted-foreground mt-2 font-medium">Total acumulado em caixa</p>
             </div>
           </CardContent>
         </Card>
 
-        <Link href="/quotes">
-          <Card className="bg-card shadow-sm border-primary/10 h-full hover:border-primary/30 hover:shadow-md transition-all cursor-pointer group">
-            <CardContent className="p-4 flex flex-col justify-between h-32">
-              <div className="flex items-center justify-between">
-                <div className="p-2 bg-primary/10 w-fit rounded-lg">
-                  <FileText className="h-5 w-5 text-primary" />
-                </div>
-                <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+        {/* Quotes Count - Minimalist */}
+        <Card className="border-none shadow-md bg-white rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
+          <CardContent className="p-8 flex flex-col justify-between h-48">
+            <div className="flex justify-between items-start">
+              <div className="p-3 bg-blue-50 rounded-xl">
+                <FileText className="h-6 w-6 text-blue-600" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Orçamentos</p>
-                <h3 className="text-2xl font-bold text-foreground">{quotesCount || 0}</h3>
+              <div className="text-right">
+                <p className="text-xs font-bold uppercase text-muted-foreground mb-1">Aprovados</p>
+                <h3 className="text-4xl font-bold text-zinc-900">{quotesCount || 0}</h3>
               </div>
-            </CardContent>
-          </Card>
-        </Link>
+            </div>
+            <div className="mt-auto pt-6 border-t border-zinc-50 flex justify-between items-center">
+              <span className="text-sm font-medium text-muted-foreground">Em análise</span>
+              <span className="font-bold text-xl text-zinc-700 bg-zinc-100 px-3 py-1 rounded-lg">{pendingCount || 0}</span>
+            </div>
+          </CardContent>
+        </Card>
       </section>
 
-      {/* Main Action */}
-      <section>
-        <Link href="/new">
-          <Button size="lg" className="w-full h-14 text-lg shadow-xl shadow-primary/25 rounded-xl bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/90 hover:to-emerald-600/90 transition-all">
-            <Plus className="mr-2 h-6 w-6" /> Novo Orçamento
-          </Button>
-        </Link>
-      </section>
-
-      {/* Recent Activity */}
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold">Recentes</h2>
+      {/* Recent Activity List - Clean Table Style */}
+      <section className="space-y-6">
+        <div className="flex items-center justify-between px-2">
+          <h2 className="text-xl font-bold tracking-tight text-zinc-800">Últimos Orçamentos</h2>
           <Link href="/quotes">
-            <Button variant="link" size="sm" className="text-primary hover:text-primary/80">Ver todos</Button>
+            <Button variant="ghost" className="text-emerald-600 font-medium hover:text-emerald-700 hover:bg-emerald-50">
+              Ver todos <ArrowUpRight className="ml-1 h-4 w-4" />
+            </Button>
           </Link>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           {recentQuotes?.length === 0 ? (
-            <Card className="border-dashed border-primary/20 shadow-none bg-primary/5">
-              <CardContent className="p-8 text-center text-muted-foreground">
-                <FileText className="h-10 w-10 mx-auto mb-3 text-primary/30" />
-                <p className="text-sm">Nenhum orçamento criado ainda.</p>
-                <p className="text-xs mt-1 text-primary/60">Comece criando seu primeiro orçamento!</p>
+            <Card className="border-dashed border-2 border-zinc-200 bg-zinc-50/50 rounded-2xl shadow-none">
+              <CardContent className="p-12 text-center text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                <p className="text-lg font-medium">Nada por aqui ainda.</p>
+                <p className="text-sm">Seus orçamentos recentes aparecerão nesta lista.</p>
               </CardContent>
             </Card>
           ) : (
             recentQuotes?.map((quote) => (
-              <Link key={quote.id} href={`/quotes/${quote.id}`}>
-                <div className="bg-card p-3.5 rounded-xl shadow-sm border border-primary/10 flex justify-between items-start hover:border-primary/25 hover:shadow-md transition-all cursor-pointer group">
-                  <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <FileText className="h-4 w-4 text-primary" />
+              <Link key={quote.id} href={`/quotes/${quote.id}`} className="block group">
+                <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:shadow-md hover:border-emerald-100/50 hover:bg-emerald-50/10">
+
+                  <div className="flex items-center gap-5">
+                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-zinc-100 to-zinc-200 flex items-center justify-center font-bold text-lg text-zinc-600 shadow-inner">
+                      {quote.client_name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="font-medium text-sm">{quote.client_name}</p>
-                      {quote.quote_items && quote.quote_items.length > 0 && (
-                        <p className="text-xs text-muted-foreground font-medium flex items-center gap-1 mt-0.5">
-                          {quote.quote_items[0].description}
-                          {quote.quote_items.length > 1 && <span className="opacity-70 text-[10px]">(+{quote.quote_items.length - 1})</span>}
-                        </p>
-                      )}
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {format(new Date(quote.created_at), "d MMM", { locale: ptBR })}
+                      <h4 className="font-bold text-lg text-zinc-900 group-hover:text-emerald-700 transition-colors">{quote.client_name}</h4>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        {format(new Date(quote.created_at), "d 'de' MMMM, yyyy", { locale: ptBR })}
                       </p>
                     </div>
                   </div>
-                  <span className="font-bold text-sm text-primary block text-right">
-                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(quote.total)}
-                  </span>
-                  <div className="flex justify-end mt-1">
-                    <QuoteStatusBadge status={quote.status} />
+
+                  <div className="flex items-center justify-between md:justify-end gap-8 w-full md:w-auto">
+                    {quote.quote_items && quote.quote_items.length > 0 && (
+                      <div className="hidden md:block text-right">
+                        <p className="font-medium text-sm text-zinc-700">{quote.quote_items[0].description}</p>
+                        {quote.quote_items.length > 1 && (
+                          <p className="text-xs text-muted-foreground">+{quote.quote_items.length - 1} item(s)</p>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="text-right min-w-[120px]">
+                      <span className="block font-bold text-lg text-zinc-900">
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(quote.total)}
+                      </span>
+                    </div>
+
+                    <div className="min-w-[100px] flex justify-end">
+                      <QuoteStatusBadge status={quote.status} />
+                    </div>
                   </div>
                 </div>
               </Link>

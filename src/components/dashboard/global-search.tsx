@@ -17,10 +17,18 @@ import { searchQuotes } from "@/app/actions/search"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
+interface SearchResult {
+    id: string
+    client_name: string
+    total: number
+    status: string
+    created_at: string
+}
+
 export function GlobalSearch() {
     const [open, setOpen] = React.useState(false)
     const [query, setQuery] = React.useState("")
-    const [data, setData] = React.useState<any[]>([])
+    const [data, setData] = React.useState<SearchResult[]>([])
     const [loading, setLoading] = React.useState(false)
     const router = useRouter()
 

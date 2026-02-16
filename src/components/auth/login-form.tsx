@@ -6,8 +6,6 @@ import { login, signup } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -17,11 +15,13 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Mail } from 'lucide-react'
+import { Mail, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 export function LoginForm() {
     const [loading, setLoading] = useState(false)
+    const [mode, setMode] = useState<'login' | 'register'>('login')
     const [showSuccessDialog, setShowSuccessDialog] = useState(false)
     const [emailSent, setEmailSent] = useState('')
 
@@ -38,12 +38,11 @@ export function LoginForm() {
                     toast.error(result.error)
                 }
             } else {
-                // Login action handles redirect internally
                 if (result?.error) {
                     toast.error('Credenciais inválidas.')
                 }
             }
-        } catch (error) {
+        } catch {
             toast.error('Ocorreu um erro inesperado.')
         } finally {
             setLoading(false)
@@ -51,106 +50,156 @@ export function LoginForm() {
     }
 
     return (
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[380px]">
-            <div className="flex flex-col space-y-2 text-center">
-                <div className="mx-auto mb-4 relative h-24 w-24">
-                    <Image
-                        src="/logo/logo1.png"
-                        alt="OrçaFácil Logo"
-                        fill
-                        className="object-contain"
-                        priority
-                    />
+        <div className="flex min-h-[85vh] w-full max-w-[1100px] overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-black/5">
+            {/* Left Column: Abstract Visual */}
+            <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-zinc-900 p-12 text-white lg:flex">
+                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop')] bg-cover bg-center opacity-40 mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/90 via-zinc-900/90 to-black/90"></div>
+
+                <div className="relative z-10 flex items-center gap-3">
+                    <div className="relative h-10 w-10 overflow-hidden rounded-xl bg-white/10 backdrop-blur-md ring-1 ring-white/20 p-1.5">
+                        <Image
+                            src="/logo/logo1.png"
+                            alt="OrçaFácil Logo"
+                            fill
+                            className="object-contain"
+                            priority
+                        />
+                    </div>
+                    <span className="text-xl font-semibold tracking-wide text-white/90">OrçaFácil</span>
                 </div>
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                    OrçaFácil
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                    Entre ou crie sua conta para começar
-                </p>
+
+                <div className="relative z-10 space-y-6">
+                    <h1 className="text-4xl font-bold leading-tight tracking-tight text-white">
+                        A simplicidade que <br />
+                        <span className="text-emerald-400">seu negócio merece.</span>
+                    </h1>
+                    <p className="max-w-md text-lg text-zinc-400 font-light">
+                        Orçamentos profissionais, gestão de clientes e controle financeiro. Tudo em um só lugar.
+                    </p>
+                </div>
+
+                <div className="relative z-10 grid grid-cols-2 gap-4 text-sm text-zinc-400/80">
+                    <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                        <span>Gestão Simplificada</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                        <span>Orçamentos PDF</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                        <span>Relatórios Financeiros</span>
+                    </div>
+                </div>
             </div>
 
-            <Tabs defaultValue="login" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-primary/10">
-                    <TabsTrigger value="login" className="data-[state=active]:bg-primary data-[state=active]:text-white">Entrar</TabsTrigger>
-                    <TabsTrigger value="register" className="data-[state=active]:bg-primary data-[state=active]:text-white">Criar Conta</TabsTrigger>
-                </TabsList>
+            {/* Right Column: Form */}
+            <div className="flex w-full flex-col justify-center bg-white p-8 lg:w-1/2 lg:p-16">
+                <div className="mx-auto w-full max-w-[380px] space-y-8">
+                    {/* Mobile Logo */}
+                    <div className="lg:hidden text-center mb-8">
+                        <div className="relative mx-auto mb-4 h-14 w-14 rounded-xl bg-zinc-50 p-2 ring-1 ring-zinc-100">
+                            <Image
+                                src="/logo/logo1.png"
+                                alt="OrçaFácil Logo"
+                                fill
+                                className="object-contain"
+                            />
+                        </div>
+                        <h2 className="text-2xl font-bold tracking-tight">OrçaFácil</h2>
+                    </div>
 
-                <TabsContent value="login">
-                    <Card className="border-primary/10 shadow-lg">
-                        <CardHeader>
-                            <CardTitle>Login</CardTitle>
-                            <CardDescription>
-                                Acesse seus orçamentos salvos.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <form action={(formData) => handleSubmit(formData, login)}>
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input id="email" name="email" type="email" placeholder="seu@email.com" required className="focus-visible:ring-primary" />
-                                </div>
-                                <div className="space-y-2 mt-4">
-                                    <Label htmlFor="password">Senha</Label>
-                                    <Input id="password" name="password" type="password" required className="focus-visible:ring-primary" />
-                                </div>
-                                <Button className="w-full mt-6 bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/90 hover:to-emerald-600/90 shadow-lg shadow-primary/20" type="submit" disabled={loading}>
-                                    {loading ? 'Entrando...' : 'Entrar'}
-                                </Button>
-                            </form>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
+                    <div className="flex rounded-xl bg-zinc-100/80 p-1">
+                        <button
+                            onClick={() => setMode('login')}
+                            className={cn(
+                                "flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200",
+                                mode === 'login' ? "bg-white text-foreground shadow-sm ring-1 ring-black/5" : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            Entrar
+                        </button>
+                        <button
+                            onClick={() => setMode('register')}
+                            className={cn(
+                                "flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200",
+                                mode === 'register' ? "bg-white text-foreground shadow-sm ring-1 ring-black/5" : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            Criar Conta
+                        </button>
+                    </div>
 
-                <TabsContent value="register">
-                    <Card className="border-primary/10 shadow-lg">
-                        <CardHeader>
-                            <CardTitle>Cadastro</CardTitle>
-                            <CardDescription>
-                                Crie sua conta profissional grátis.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <form action={(formData) => handleSubmit(formData, signup)}>
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input id="email" name="email" type="email" placeholder="seu@email.com" required className="focus-visible:ring-primary" />
-                                </div>
-                                <div className="space-y-2 mt-4">
-                                    <Label htmlFor="password">Senha</Label>
-                                    <Input id="password" name="password" type="password" minLength={6} required className="focus-visible:ring-primary" />
-                                </div>
-                                <Button className="w-full mt-6 bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/90 hover:to-emerald-600/90 shadow-lg shadow-primary/20" type="submit" disabled={loading}>
-                                    {loading ? 'Criando conta...' : 'Criar Conta'}
-                                </Button>
-                            </form>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-            </Tabs>
+                    <div className="space-y-6">
+                        <div className="space-y-1.5 text-center lg:text-left">
+                            <h3 className="text-2xl font-semibold tracking-tight text-foreground">
+                                {mode === 'login' ? 'Bem-vindo de volta' : 'Comece agora'}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                                {mode === 'login'
+                                    ? 'Acesse sua conta para gerenciar orçamentos.'
+                                    : 'Crie sua conta gratuita em segundos.'}
+                            </p>
+                        </div>
+
+                        <form action={(formData) => handleSubmit(formData, mode === 'login' ? login : signup)} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-xs font-medium text-foreground/80">Email</Label>
+                                <Input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    placeholder="seu@email.com"
+                                    required
+                                    className="h-11 rounded-lg border-zinc-200 bg-zinc-50/50 px-4 transition-all focus:border-primary/50 focus:bg-white focus:ring-4 focus:ring-primary/10"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="password" className="text-xs font-medium text-foreground/80">Senha</Label>
+                                <Input
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    minLength={6}
+                                    required
+                                    className="h-11 rounded-lg border-zinc-200 bg-zinc-50/50 px-4 transition-all focus:border-primary/50 focus:bg-white focus:ring-4 focus:ring-primary/10"
+                                />
+                            </div>
+                            <Button
+                                className="group h-11 w-full rounded-lg bg-gradient-to-r from-primary to-emerald-600 text-white shadow-lg shadow-emerald-500/20 transition-all hover:shadow-emerald-500/30 hover:scale-[1.01] active:scale-[0.98]"
+                                type="submit"
+                                disabled={loading}
+                            >
+                                <span className="mr-2 font-medium">{loading ? 'Processando...' : (mode === 'login' ? 'Acessar Painel' : 'Criar Conta Grátis')}</span>
+                                {!loading && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />}
+                            </Button>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
             <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-                <AlertDialogContent className="sm:max-w-md">
-                    <AlertDialogHeader className="items-center text-center">
-                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                            <Mail className="h-8 w-8 text-primary" />
+                <AlertDialogContent className="max-w-md rounded-2xl border-none p-0 shadow-2xl overflow-hidden">
+                    <div className="bg-gradient-to-br from-emerald-50 to-white p-8 text-center">
+                        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 ring-4 ring-white">
+                            <Mail className="h-8 w-8 text-emerald-600" />
                         </div>
-                        <AlertDialogTitle className="text-xl">Verifique seu email</AlertDialogTitle>
-                        <AlertDialogDescription className="text-center pt-2">
-                            Enviamos um link de confirmação para <span className="font-semibold text-foreground">{emailSent}</span>.
-                            <br /><br />
-                            Por favor, verifique sua caixa de entrada (e spam) para ativar sua conta.
+                        <AlertDialogTitle className="text-xl font-semibold text-zinc-900">Verifique seu email</AlertDialogTitle>
+                        <AlertDialogDescription className="text-center pt-2 text-zinc-500">
+                            Enviamos um link de confirmação para <span className="font-medium text-zinc-900">{emailSent}</span>.
                         </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter className="sm:justify-center">
-                        <AlertDialogAction onClick={() => {
-                            setShowSuccessDialog(false)
-                            // Optional: switch to login tab programmatically if needed, 
-                            // but usually user stays on page. 
-                            // Could use Tabs value state to switch.
-                            window.location.reload() // Refresh to clear form/state is safest for now
-                        }} className="w-full sm:w-auto">
-                            Entendi, vou verificar
+                    </div>
+                    <AlertDialogFooter className="bg-zinc-50 p-6 sm:justify-center border-t border-zinc-100">
+                        <AlertDialogAction
+                            onClick={() => {
+                                setShowSuccessDialog(false)
+                                window.location.reload()
+                            }}
+                            className="w-full rounded-xl bg-zinc-900 font-medium hover:bg-zinc-800 sm:w-auto px-8"
+                        >
+                            Verificar agora
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

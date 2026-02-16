@@ -1,7 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
+import { revalidatePath } from "next/cache"
 
 export type OnboardingCategory = {
     id: string
@@ -34,13 +34,34 @@ export async function getOnboardingCategories(): Promise<OnboardingCategory[]> {
     return data
 }
 
+import { z } from "zod"
+
+const OnboardingSchema = z.object({
+    categoryId: z.string().min(1),
+    specialties: z.array(z.string()),
+    pricingTier: z.enum(["autonomous", "standard", "premium"]),
+})
+
 export async function applyOnboardingKit(
-    userId: string,
     categoryId: string,
     specialties: string[],
     pricingTier: PricingTier
 ) {
     const supabase = await createClient()
+
+    // Securely get user ID from session
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+        return { success: false, error: "Unauthorized" }
+    }
+    const userId = user.id
+
+    // Validate Input
+    const result = OnboardingSchema.safeParse({ categoryId, specialties, pricingTier })
+    if (!result.success) {
+        return { success: false, error: "Invalid input data" }
+    }
+
     const multiplier = PRICING_MULTIPLIERS[pricingTier] || 1.0
 
     try {
@@ -114,6 +135,9 @@ export async function applyOnboardingKit(
             .eq("id", userId)
 
         if (profileError) throw profileError
+
+        revalidatePath('/', 'layout')
+        revalidatePath('/dashboard')
 
         return { success: true }
 

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useState, useEffect } from 'react'
+import { createService, deleteService } from '@/app/actions/services'
+import { EditServiceDialog } from './edit-service-dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -22,7 +23,13 @@ interface ServicesCatalogProps {
 }
 
 export function ServicesCatalog({ initialServices, userId }: ServicesCatalogProps) {
-    const [services, setServices] = useState<Service[]>(initialServices)
+    const [services, setServices] = useState<Service[]>(initialServices || [])
+
+    // Sync state with props when revalidated
+    useEffect(() => {
+        setServices(initialServices || [])
+    }, [initialServices])
+
     const [description, setDescription] = useState('')
     const [price, setPrice] = useState('')
     const [saving, setSaving] = useState(false)
@@ -33,32 +40,30 @@ export function ServicesCatalog({ initialServices, userId }: ServicesCatalogProp
             toast.error('Informe a descrição do serviço/produto.')
             return
         }
-        const priceVal = parseFloat(price.replace(',', '.')) || 0
-        if (priceVal <= 0) {
+        const priceVal = price.replace(',', '.')
+        if (!priceVal || isNaN(parseFloat(priceVal))) {
             toast.warning('Informe um valor válido.')
             return
         }
 
         setSaving(true)
         try {
-            const supabase = createClient()
-            const { data, error } = await supabase
-                .from('services')
-                .insert({
-                    user_id: userId,
-                    description: description.trim(),
-                    default_price: priceVal
-                })
-                .select()
-                .single()
+            const formData = new FormData()
+            formData.append('description', description)
+            formData.append('price', price)
 
-            if (error) throw error
+            console.log('Adding service:', { description, price }) // Debug
 
-            setServices([data, ...services])
-            setDescription('')
-            setPrice('')
-            toast.success('Serviço salvo!')
-            router.refresh()
+            const result = await createService(formData)
+
+            if (result.error) {
+                toast.error(result.error)
+            } else {
+                toast.success('Serviço salvo!')
+                setDescription('')
+                setPrice('')
+                router.refresh()
+            }
         } catch (error) {
             console.error('Error adding service:', error)
             toast.error('Erro ao salvar serviço.')
@@ -69,16 +74,13 @@ export function ServicesCatalog({ initialServices, userId }: ServicesCatalogProp
 
     const handleDelete = async (id: string) => {
         try {
-            const supabase = createClient()
-            const { error } = await supabase
-                .from('services')
-                .delete()
-                .eq('id', id)
-
-            if (error) throw error
-
-            setServices(services.filter(s => s.id !== id))
-            toast.success('Serviço removido.')
+            const result = await deleteService(id)
+            if (result.error) {
+                toast.error(result.error)
+            } else {
+                toast.success('Serviço removido.')
+                router.refresh()
+            }
         } catch (error) {
             toast.error('Erro ao remover.')
         }
@@ -147,14 +149,17 @@ export function ServicesCatalog({ initialServices, userId }: ServicesCatalogProp
                                 <p className="font-medium text-sm text-foreground truncate">{service.description}</p>
                                 <p className="text-xs text-primary font-semibold">{formatBRL(service.default_price)}</p>
                             </div>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={() => handleDelete(service.id)}
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <div className="flex items-center gap-1">
+                                <EditServiceDialog service={service} />
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50"
+                                    onClick={() => handleDelete(service.id)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                     ))}
                 </div>

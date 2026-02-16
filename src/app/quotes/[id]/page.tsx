@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Share2, ArrowLeft, Printer } from 'lucide-react'
+import { Share2, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
@@ -11,6 +11,20 @@ import { PrintButton } from '@/components/quotes/print-button'
 import { cn } from '@/lib/utils'
 import { QuoteStatusActions } from '@/components/quotes/quote-status-actions'
 import { QuoteOwnerActions } from '@/components/quotes/quote-owner-actions'
+import { Metadata } from 'next'
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+    const { id } = await params
+
+    return {
+        title: `Orçamento #${id.substring(0, 8)} - OrçaFácil`,
+        description: 'Visualize seu orçamento no OrçaFácil.',
+        robots: {
+            index: false,
+            follow: false,
+        },
+    }
+}
 
 export default async function QuotePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -169,7 +183,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     )}
                                     {quote.notes && (
                                         <div className="italic bg-yellow-50 p-3 rounded border border-yellow-100 text-yellow-800 text-xs">
-                                            "{quote.notes}"
+                                            &quot;{quote.notes}&quot;
                                         </div>
                                     )}
                                     <div className="text-center pt-8 text-xs text-slate-300">Orçamento gerado via OrçaFácil</div>

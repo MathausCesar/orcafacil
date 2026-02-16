@@ -1,0 +1,114 @@
+
+> temp-app@0.1.0 lint
+> eslint
+
+
+C:\Users\Matha\aplicativos\orcafacil\src\app\(dashboard)\quotes\page.tsx
+  10:10  warning  'Badge' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Matha\aplicativos\orcafacil\src\app\actions\onboarding.ts
+  5:10  warning  'redirect' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Matha\aplicativos\orcafacil\src\app\actions\profile.ts
+  21:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Matha\aplicativos\orcafacil\src\app\actions\quotes.ts
+   27:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   51:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   96:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  131:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Matha\aplicativos\orcafacil\src\app\quotes\[id]\edit\page.tsx
+  44:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Matha\aplicativos\orcafacil\src\app\quotes\[id]\page.tsx
+    2:20  warning  'redirect' is defined but never used                             @typescript-eslint/no-unused-vars
+    5:29  warning  'Printer' is defined but never used                              @typescript-eslint/no-unused-vars
+   11:10  warning  'cn' is defined but never used                                   @typescript-eslint/no-unused-vars
+  138:71  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  172:45  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  172:59  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  237:67  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  306:67  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+C:\Users\Matha\aplicativos\orcafacil\src\components\auth\login-form.tsx
+  31:54  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:18  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+C:\Users\Matha\aplicativos\orcafacil\src\components\clients\client-autocomplete.tsx
+  10:10  warning  'useDebounce' is defined but never used   @typescript-eslint/no-unused-vars
+  14:24  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:52  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  43:35  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  50:34  warning  'result' is defined but never used        @typescript-eslint/no-unused-vars
+  50:42  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Matha\aplicativos\orcafacil\src\components\clients\create-client-dialog.tsx
+  10:10  warning  'Plus' is defined but never used          @typescript-eslint/no-unused-vars
+  16:26  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:18  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+
+C:\Users\Matha\aplicativos\orcafacil\src\components\dashboard\global-search.tsx
+  23:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Matha\aplicativos\orcafacil\src\components\dashboard\header.tsx
+  1:10  warning  'Button' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Matha\aplicativos\orcafacil\src\components\notifications\notification-bell.tsx
+   4:37  warning  'Trash2' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  14:10  warning  'Badge' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  15:10  warning  'ScrollArea' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  35:37  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  39:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Matha\aplicativos\orcafacil\src\components\notifications\notification-bell.tsx:39:9
+  37 |
+  38 |     useEffect(() => {
+> 39 |         fetchNotifications()
+     |         ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  40 |         // Simple polling every 60s to check for inactivity or new stuff
+  41 |         const interval = setInterval(fetchNotifications, 60000)
+  42 |         return () => clearInterval(interval)  react-hooks/set-state-in-effect
+
+C:\Users\Matha\aplicativos\orcafacil\src\components\onboarding\wizard-step-1.tsx
+   8:10  warning  'Button' is defined but never used        @typescript-eslint/no-unused-vars
+  11:29  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Matha\aplicativos\orcafacil\src\components\onboarding\wizard-step-3.tsx
+  69:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Matha\aplicativos\orcafacil\src\components\profile\layout-selector.tsx
+  3:10  warning  'useState' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Matha\aplicativos\orcafacil\src\components\profile\profile-form.tsx
+  16:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  60:18  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+
+C:\Users\Matha\aplicativos\orcafacil\src\components\profile\services-catalog.tsx
+  82:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Matha\aplicativos\orcafacil\src\components\quotes\quote-form.tsx
+   42:11  warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   66:74  error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  105:18  warning  'e' is defined but never used                @typescript-eslint/no-unused-vars
+
+C:\Users\Matha\aplicativos\orcafacil\src\components\quotes\quote-owner-actions.tsx
+  36:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Matha\aplicativos\orcafacil\src\components\quotes\quote-status-actions.tsx
+   8:10  warning  'cn' is defined but never used       @typescript-eslint/no-unused-vars
+  16:62  warning  'isOwner' is defined but never used  @typescript-eslint/no-unused-vars
+  26:18  warning  'error' is defined but never used    @typescript-eslint/no-unused-vars
+
+C:\Users\Matha\aplicativos\orcafacil\src\lib\supabase\server.ts
+  18:30  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  27:30  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 50 problems (24 errors, 26 warnings)
+

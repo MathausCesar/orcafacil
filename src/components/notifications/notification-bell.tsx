@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bell, Check, ExternalLink, Trash2 } from 'lucide-react'
+import { Bell, Check, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
     Popover,
@@ -11,8 +11,6 @@ import {
 import { getNotifications, markAsRead, markAllAsRead } from '@/app/actions/notifications'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface Notification {
     id: string
@@ -29,15 +27,16 @@ export function NotificationBell() {
     const [open, setOpen] = useState(false)
     const [hasUnread, setHasUnread] = useState(false)
 
-    const fetchNotifications = async () => {
-        const data = await getNotifications()
-        setNotifications(data as Notification[])
-        setHasUnread(data?.some((n: any) => !n.read) || false)
-    }
-
     useEffect(() => {
+        const fetchNotifications = async () => {
+            const data = await getNotifications()
+            if (data) {
+                setNotifications(data as Notification[])
+                setHasUnread(data.some((n: any) => !n.read))
+            }
+        }
+
         fetchNotifications()
-        // Simple polling every 60s to check for inactivity or new stuff
         const interval = setInterval(fetchNotifications, 60000)
         return () => clearInterval(interval)
     }, [])
@@ -98,7 +97,7 @@ export function NotificationBell() {
                                         <div className="flex gap-2 mt-2">
                                             {notification.link && (
                                                 <Link href={notification.link} onClick={() => { setOpen(false); handleMarkRead(notification.id) }}>
-                                                    <Button variant="outline" size="xs" className="h-6 text-[10px] gap-1">
+                                                    <Button variant="outline" size="icon" className="h-6 w-auto px-2 text-[10px] gap-1">
                                                         Ver <ExternalLink className="h-3 w-3" />
                                                     </Button>
                                                 </Link>
@@ -106,8 +105,8 @@ export function NotificationBell() {
                                             {!notification.read && (
                                                 <Button
                                                     variant="ghost"
-                                                    size="xs"
-                                                    className="h-6 text-[10px] gap-1 text-muted-foreground hover:text-foreground"
+                                                    size="icon"
+                                                    className="h-6 w-auto px-2 text-[10px] gap-1 text-muted-foreground hover:text-foreground"
                                                     onClick={() => handleMarkRead(notification.id)}
                                                 >
                                                     <Check className="h-3 w-3" /> Lido
@@ -131,7 +130,7 @@ export function NotificationBell() {
 function formatTimeAgo(dateString: string) {
     const date = new Date(dateString)
     const now = new Date()
-    const diff = (now.getTime() - date.getTime()) / 1000 // seconds
+    const diff = (now.getTime() - date.getTime()) / 1000
 
     if (diff < 60) return 'agora'
     if (diff < 3600) return `${Math.floor(diff / 60)}m`

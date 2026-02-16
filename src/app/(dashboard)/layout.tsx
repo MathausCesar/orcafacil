@@ -1,12 +1,20 @@
 import { redirect } from 'next/navigation'
 import { checkOnboardingStatus } from '@/app/actions/profile'
 import { BottomNav } from '@/components/layout/bottom-nav'
+import { createClient } from '@/lib/supabase/server'
 
 export default async function DashboardLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        redirect('/login')
+    }
+
     const isOnboarded = await checkOnboardingStatus()
 
     if (!isOnboarded) {

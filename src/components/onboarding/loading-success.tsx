@@ -41,7 +41,6 @@ export function LoadingSuccess() {
             setStatus(`Configurando preços para ${data.category?.name}...`);
 
             const res = await applyOnboardingKit(
-                user.id,
                 data.category!.id,
                 data.specialties,
                 data.pricingTier!

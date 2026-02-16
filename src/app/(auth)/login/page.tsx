@@ -1,4 +1,13 @@
+import { Metadata } from 'next'
 import { LoginForm } from '@/components/auth/login-form'
+
+export const metadata: Metadata = {
+    title: 'Login',
+    description: 'Acesse sua conta no OrçaFácil e gerencie seus orçamentos.',
+    alternates: {
+        canonical: '/login',
+    },
+}
 
 export default function LoginPage() {
     return (

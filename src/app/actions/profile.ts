@@ -49,11 +49,17 @@ export async function checkOnboardingStatus() {
 
     if (!user) return false
 
-    const { data: profile } = await supabase
+    console.log('Checking onboarding status for user:', user.id)
+    const { data: profile, error } = await supabase
         .from('profiles')
         .select('onboarded_at')
         .eq('id', user.id)
         .single()
 
+    if (error) {
+        console.error('Error checking profile:', error)
+    }
+
+    console.log('Profile onboarding status:', profile?.onboarded_at)
     return !!profile?.onboarded_at
 }

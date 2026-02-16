@@ -16,7 +16,7 @@ export function DashboardHeader({ title, profileImage, className }: HeaderProps)
                 <Avatar className="h-12 w-12 border border-zinc-200 shadow-sm transition-all hover:scale-105">
                     <AvatarImage src={profileImage || ''} className="object-cover" />
                     <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
-                        {title.substring(0, 2).toUpperCase()}
+                        {(title || 'SU')?.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                 </Avatar>
                 <div>

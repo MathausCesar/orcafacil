@@ -52,8 +52,8 @@ export function LoadingSuccess() {
                 setComplete(true);
 
                 setTimeout(() => {
-                    router.push("/");
-                    router.refresh();
+                    // Force a hard navigation to ensure fresh server state
+                    window.location.href = "/";
                 }, 1500);
             } else {
                 console.error("Onboarding error:", res.error);

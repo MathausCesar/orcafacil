@@ -128,16 +128,29 @@ export async function applyOnboardingKit(
             if (insertError) throw insertError
         }
 
-        // 5. Mark user as onboarded
-        const { error: profileError } = await supabase
-            .from("profiles")
-            .update({ onboarded_at: new Date().toISOString() })
-            .eq("id", userId)
+        // 5. Mark user as onboarded (upsert to handle missing profiles)
+        console.log('Marking user as onboarded:', userId)
 
-        if (profileError) throw profileError
+        // First, ensure profile exists (fallback in case trigger didn't fire)
+        const { error: upsertError } = await supabase
+            .from("profiles")
+            .upsert({
+                id: userId,
+                onboarded_at: new Date().toISOString()
+            }, {
+                onConflict: 'id'
+            })
+
+        if (upsertError) {
+            console.error('Failed to upsert profile:', upsertError)
+            throw upsertError
+        }
+
+        console.log('Successfully applied onboarding kit and updated profile.')
 
         revalidatePath('/', 'layout')
         revalidatePath('/dashboard')
+        revalidatePath('/onboarding')
 
         return { success: true }
 

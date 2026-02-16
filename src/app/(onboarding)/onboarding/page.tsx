@@ -1,56 +1,33 @@
-"use client";
-
-import { useOnboarding } from "@/components/onboarding/onboarding-context";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { OnboardingProvider } from "@/components/onboarding/onboarding-context";
 import { WizardStep1 } from "@/components/onboarding/wizard-step-1";
 import { WizardStep2 } from "@/components/onboarding/wizard-step-2";
 import { WizardStep3 } from "@/components/onboarding/wizard-step-3";
 import { LoadingSuccess } from "@/components/onboarding/loading-success";
-import { AnimatePresence, motion } from "framer-motion";
+import { WizardContentClient } from "@/components/onboarding/wizard-content-client";
 
-function WizardContent() {
-    const { step } = useOnboarding();
+export default async function OnboardingPage() {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    return (
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-2xl">
-                {/* Progress Dots */}
-                {step < 4 && (
-                    <div className="flex justify-center space-x-2 mb-12">
-                        {[1, 2, 3].map((s) => (
-                            <div
-                                key={s}
-                                className={`h-2 rounded-full transition-all duration-300 ${s === step ? "w-8 bg-primary" : s < step ? "w-2 bg-primary/50" : "w-2 bg-muted"
-                                    }`}
-                            />
-                        ))}
-                    </div>
-                )}
+    if (!user) {
+        redirect('/login');
+    }
 
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={step}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        {step === 1 && <WizardStep1 />}
-                        {step === 2 && <WizardStep2 />}
-                        {step === 3 && <WizardStep3 />}
-                        {step === 4 && <LoadingSuccess />}
-                    </motion.div>
-                </AnimatePresence>
-            </div>
-        </div>
-    );
-}
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarded_at')
+        .eq('id', user.id)
+        .single();
 
-import { OnboardingProvider } from "@/components/onboarding/onboarding-context";
+    if (profile?.onboarded_at) {
+        redirect('/');
+    }
 
-export default function OnboardingPage() {
     return (
         <OnboardingProvider>
-            <WizardContent />
+            <WizardContentClient />
         </OnboardingProvider>
     );
 }

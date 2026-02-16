@@ -22,6 +22,7 @@ export function CreateClientDialog({ trigger, onSuccess }: CreateClientDialogPro
     const router = useRouter()
 
     const handleSubmit = async (formData: FormData) => {
+        if (loading) return // Prevent double submission
         setLoading(true)
         try {
             const result = await createClientAction(formData)
@@ -31,7 +32,7 @@ export function CreateClientDialog({ trigger, onSuccess }: CreateClientDialogPro
                 toast.success('Cliente cadastrado com sucesso!')
                 setOpen(false)
                 router.refresh()
-                if (onSuccess) onSuccess(result) // Pass new client data if available (need to update action to return data)
+                if (onSuccess) onSuccess(result)
             }
         } catch (e) {
             toast.error('Erro ao cadastrar cliente')

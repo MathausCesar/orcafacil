@@ -24,7 +24,7 @@ export default async function Dashboard() {
     .eq('id', user.id)
     .single()
 
-  if (!profile?.business_name) {
+  if (!profile?.onboarded_at) {
     redirect('/onboarding')
   }
 
@@ -59,7 +59,7 @@ export default async function Dashboard() {
   return (
     <div className="space-y-8 p-4 md:p-8 max-w-7xl mx-auto">
       <DashboardHeader
-        title={profile.business_name}
+        title={profile.business_name || 'Seu Negócio'}
         profileImage={profile.logo_url}
         className="bg-white/50 backdrop-blur-sm p-4 rounded-2xl border border-zinc-100 shadow-sm"
       />

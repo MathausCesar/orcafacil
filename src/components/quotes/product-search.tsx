@@ -54,14 +54,16 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
 
     const handleDescriptionChange = (value: string) => {
         setDescription(value)
-        if (value.trim().length >= 2) {
+        if (value.trim().length > 0) {
             const filtered = savedServices.filter(s =>
                 s.description.toLowerCase().includes(value.toLowerCase())
             )
             setSuggestions(filtered)
             setShowSuggestions(filtered.length > 0)
         } else {
-            setShowSuggestions(false)
+            // Show all services when input is empty
+            setSuggestions(savedServices)
+            setShowSuggestions(savedServices.length > 0)
         }
     }
 
@@ -112,7 +114,11 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
                         value={description}
                         onChange={(e) => handleDescriptionChange(e.target.value)}
                         onFocus={() => {
-                            if (description.trim().length >= 2 && suggestions.length > 0) {
+                            // Show all services on focus if input is empty
+                            if (description.trim().length === 0 && savedServices.length > 0) {
+                                setSuggestions(savedServices)
+                                setShowSuggestions(true)
+                            } else if (suggestions.length > 0) {
                                 setShowSuggestions(true)
                             }
                         }}

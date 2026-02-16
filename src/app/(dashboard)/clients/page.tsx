@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { CreateClientDialog } from '@/components/clients/create-client-dialog'
+import { EditClientDialog } from '@/components/clients/edit-client-dialog'
+import { DeleteClientButton } from '@/components/clients/delete-client-button'
 
 export default async function ClientsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
     const { q } = await searchParams
@@ -77,6 +79,12 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
+                                    <EditClientDialog client={client} trigger={
+                                        <Button size="sm" variant="ghost" className="h-8 text-xs hover:bg-zinc-100">
+                                            Editar
+                                        </Button>
+                                    } />
+                                    <DeleteClientButton clientId={client.id} clientName={client.name} />
                                     <Link href={`/new?clientId=${client.id}&clientName=${encodeURIComponent(client.name)}`}>
                                         <Button size="sm" variant="ghost" className="h-8 text-xs text-primary hover:bg-primary/10 hover:text-primary">
                                             Orçar

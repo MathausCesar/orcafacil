@@ -57,77 +57,84 @@ INSERT INTO public.template_categories (id, name, icon, slug) VALUES
 ON CONFLICT (id) DO UPDATE 
 SET slug = EXCLUDED.slug;
 
--- 2. Services (Based on Research)
+-- 2. Services (Curated & Non-Duplicate)
 
 -- Automotivo
--- Automotivo (Padrão de Mercado)
 INSERT INTO public.template_services (category_id, name, default_price, unit, specialty_tags) VALUES
-('auto', 'Troca de Óleo e Filtro (Mão de Obra)', 60.00, 'unidade', ARRAY['mecanica_geral']),
-('auto', 'Alinhamento e Balanceamento', 120.00, 'unidade', ARRAY['mecanica_geral', 'pneus']),
-('auto', 'Troca de Pastilhas de Freio (Dianteiro)', 100.00, 'unidade', ARRAY['mecanica_geral', 'freios']),
-('auto', 'Diagnóstico com Scanner', 80.00, 'unidade', ARRAY['eletrica', 'injecao']),
-('auto', 'Limpeza de Bicos Injetores', 150.00, 'unidade', ARRAY['mecanica_geral', 'injecao']),
-('auto', 'Troca de Embreagem', 350.00, 'unidade', ARRAY['mecanica_geral']),
-('auto', 'Revisão de Freios Completa', 180.00, 'unidade', ARRAY['freios']),
-('auto', 'Carga de Gás Ar Condicionado', 200.00, 'unidade', ARRAY['ar_condicionado']),
-('auto', 'Instalação de Som/Multimídia', 150.00, 'unidade', ARRAY['eletrica', 'som']),
-('auto', 'Polimento Comercial', 250.00, 'unidade', ARRAY['estetica', 'funilaria']),
-('auto', 'Lavagem Completa', 60.00, 'unidade', ARRAY['estetica']);
+('auto', 'Troca de Óleo e Filtro', 80.00, 'unidade', ARRAY['mecanica_geral']),
+('auto', 'Alinhamento e Balanceamento', 120.00, 'unidade', ARRAY['pneus']),
+('auto', 'Troca de Pastilhas de Freio', 150.00, 'unidade', ARRAY['freios']),
+('auto', 'Diagnóstico Eletrônico', 100.00, 'unidade', ARRAY['eletrica']),
+('auto', 'Limpeza de Bicos Injetores', 180.00, 'unidade', ARRAY['injecao']),
+('auto', 'Troca de Embreagem Completa', 450.00, 'unidade', ARRAY['mecanica_geral']),
+('auto', 'Carga de Gás do Ar Condicionado', 250.00, 'unidade', ARRAY['ar_condicionado']),
+('auto', 'Instalação de Som Automotivo', 200.00, 'unidade', ARRAY['som']),
+('auto', 'Polimento Automotivo', 300.00, 'unidade', ARRAY['estetica']),
+('auto', 'Lavagem Completa + Enceramento', 80.00, 'unidade', ARRAY['estetica'])
+ON CONFLICT DO NOTHING;
 
--- Construção & Reformas (Padrão de Mercado)
+-- Construção & Reformas
 INSERT INTO public.template_services (category_id, name, default_price, unit, specialty_tags) VALUES
-('construction', 'Assentamento de Piso Cerâmico', 50.00, 'm2', ARRAY['pedreiro', 'acabamento']),
-('construction', 'Assentamento de Porcelanato', 80.00, 'm2', ARRAY['pedreiro', 'acabamento']),
+('construction', 'Assentamento de Piso Cerâmico', 50.00, 'm2', ARRAY['acabamento']),
 ('construction', 'Reboco de Parede', 45.00, 'm2', ARRAY['pedreiro']),
-('construction', 'Contrapiso', 35.00, 'm2', ARRAY['pedreiro']),
-('construction', 'Pintura Látex (Parede/Teto)', 35.00, 'm2', ARRAY['pintor']),
-('construction', 'Instalação de Porta/Janela', 150.00, 'unidade', ARRAY['pedreiro', 'acabamento']),
-('construction', 'Ponto Elétrico (Instalação)', 50.00, 'pontos', ARRAY['eletricista']),
-('construction', 'Ponto Hidráulico (Instalação)', 60.00, 'pontos', ARRAY['encanador']),
-('construction', 'Diária de Pedreiro Profissional', 350.00, 'dia', ARRAY['pedreiro']),
-('construction', 'Diária de Ajudante', 150.00, 'dia', ARRAY['pedreiro']);
+('construction', 'Pintura Látex (Parede)', 35.00, 'm2', ARRAY['pintor']),
+('construction', 'Instalação de Porta', 180.00, 'unidade', ARRAY['acabamento']),
+('construction', 'Ponto Elétrico Adicional', 60.00, 'ponto', ARRAY['eletricista']),
+('construction', 'Ponto Hidráulico Adicional', 70.00, 'ponto', ARRAY['encanador']),
+('construction', 'Diária de Pedreiro', 350.00, 'dia', ARRAY['pedreiro']),
+('construction', 'Diária de Ajudante', 150.00, 'dia', ARRAY['pedreiro']),
+('construction', 'Instalação de Janela', 200.00, 'unidade', ARRAY['acabamento']),
+('construction', 'Impermeabilização de Laje', 80.00, 'm2', ARRAY['pedreiro'])
+ON CONFLICT DO NOTHING;
 
--- Tecnologia & Climatização (Padrão de Mercado)
+-- Tecnologia & Climatização
 INSERT INTO public.template_services (category_id, name, default_price, unit, specialty_tags) VALUES
-('tech', 'Instalação Ar Split (9000/12000 BTUs)', 550.00, 'unidade', ARRAY['ar_condicionado']),
-('tech', 'Limpeza/Higienização Ar Split', 200.00, 'unidade', ARRAY['ar_condicionado']),
-('tech', 'Formatação de Computador/Notebook', 150.00, 'unidade', ARRAY['ti']),
-('tech', 'Visita Técnica (Diagnóstico)', 120.00, 'visita', ARRAY['ti', 'eletricista', 'ar_condicionado']),
-('tech', 'Troca de Tela Notebook (Mão de Obra)', 180.00, 'unidade', ARRAY['ti']),
-('tech', 'Configuração de Roteador/Wi-Fi', 100.00, 'unidade', ARRAY['ti']),
-('tech', 'Instalação de Tomada/Interruptor', 35.00, 'unidade', ARRAY['eletricista']),
-('tech', 'Instalação de Chuveiro Elétrico', 80.00, 'unidade', ARRAY['eletricista']);
+('tech', 'Instalação de Ar Condicionado Split', 600.00, 'unidade', ARRAY['ar_condicionado']),
+('tech', 'Higienização de Ar Condicionado', 220.00, 'unidade', ARRAY['ar_condicionado']),
+('tech', 'Formatação de Computador', 150.00, 'unidade', ARRAY['ti']),
+('tech', 'Visita Técnica', 120.00, 'visita', ARRAY['ti']),
+('tech', 'Troca de Tela de Notebook', 250.00, 'unidade', ARRAY['ti']),
+('tech', 'Configuração de Rede Wi-Fi', 120.00, 'unidade', ARRAY['ti']),
+('tech', 'Instalação de Tomada', 40.00, 'unidade', ARRAY['eletricista']),
+('tech', 'Instalação de Chuveiro Elétrico', 90.00, 'unidade', ARRAY['eletricista']),
+('tech', 'Troca de Disjuntor', 60.00, 'unidade', ARRAY['eletricista']),
+('tech', 'Instalação de Ventilador de Teto', 80.00, 'unidade', ARRAY['eletricista'])
+ON CONFLICT DO NOTHING;
 
--- Beleza & Estética (Padrão de Mercado)
+-- Beleza & Estética
 INSERT INTO public.template_services (category_id, name, default_price, unit, specialty_tags) VALUES
 ('beauty', 'Corte de Cabelo Feminino', 60.00, 'unidade', ARRAY['cabelo']),
 ('beauty', 'Corte Masculino', 40.00, 'unidade', ARRAY['barbearia']),
-('beauty', 'Barba Simples', 35.00, 'unidade', ARRAY['barbearia']),
-('beauty', 'Escova com Lavagem', 50.00, 'unidade', ARRAY['cabelo']),
-('beauty', 'Escova Progressiva', 200.00, 'unidade', ARRAY['cabelo']),
-('beauty', 'Manicure (Mão)', 35.00, 'unidade', ARRAY['unhas']),
-('beauty', 'Pedicure (Pé)', 35.00, 'unidade', ARRAY['unhas']),
-('beauty', 'Design de Sobrancelhas', 40.00, 'unidade', ARRAY['estetica']),
-('beauty', 'Maquiagem Social', 150.00, 'unidade', ARRAY['estetica']);
+('beauty', 'Barba Completa', 35.00, 'unidade', ARRAY['barbearia']),
+('beauty', 'Escova Progressiva', 250.00, 'unidade', ARRAY['cabelo']),
+('beauty', 'Manicure', 35.00, 'unidade', ARRAY['unhas']),
+('beauty', 'Pedicure', 40.00, 'unidade', ARRAY['unhas']),
+('beauty', 'Design de Sobrancelhas', 45.00, 'unidade', ARRAY['estetica']),
+('beauty', 'Maquiagem para Eventos', 180.00, 'unidade', ARRAY['estetica']),
+('beauty', 'Coloração de Cabelo', 150.00, 'unidade', ARRAY['cabelo']),
+('beauty', 'Hidratação Capilar', 80.00, 'unidade', ARRAY['cabelo'])
+ON CONFLICT DO NOTHING;
 
 -- Produtos --
 
--- Automotivo Peças e Fluidos
+-- Automotivo
 INSERT INTO public.template_products (category_id, name, default_price, unit, specialty_tags) VALUES
-('auto', 'Óleo Motor 5W30 Sintético', 55.00, 'litro', ARRAY['mecanica_geral']),
-('auto', 'Óleo Motor 15W40 Semissintético', 40.00, 'litro', ARRAY['mecanica_geral']),
-('auto', 'Filtro de Óleo', 35.00, 'unidade', ARRAY['mecanica_geral']),
-('auto', 'Filtro de Ar Motor', 40.00, 'unidade', ARRAY['mecanica_geral']),
-('auto', 'Filtro de Cabine (Ar Condicionado)', 45.00, 'unidade', ARRAY['ar_condicionado']),
-('auto', 'Jogo de Pastilhas de Freio', 120.00, 'jogo', ARRAY['freios']),
-('auto', 'Fluido de Freio DOT4', 30.00, 'frasco', ARRAY['freios']),
-('auto', 'Aditivo de Radiador', 35.00, 'litro', ARRAY['mecanica_geral']);
+('auto', 'Óleo Motor 5W30', 60.00, 'litro', ARRAY['mecanica_geral']),
+('auto', 'Filtro de Óleo', 40.00, 'unidade', ARRAY['mecanica_geral']),
+('auto', 'Filtro de Ar', 45.00, 'unidade', ARRAY['mecanica_geral']),
+('auto', 'Jogo de Pastilhas de Freio', 140.00, 'jogo', ARRAY['freios']),
+('auto', 'Fluido de Freio DOT4', 35.00, 'frasco', ARRAY['freios']),
+('auto', 'Aditivo de Radiador', 40.00, 'litro', ARRAY['mecanica_geral']),
+('auto', 'Gás R134 (Ar Condicionado)', 120.00, 'lata', ARRAY['ar_condicionado'])
+ON CONFLICT DO NOTHING;
 
--- Construção Materiais Básicos
+-- Construção
 INSERT INTO public.template_products (category_id, name, default_price, unit, specialty_tags) VALUES
-('construction', 'Saco de Cimento (50kg)', 35.00, 'saco', ARRAY['pedreiro']),
-('construction', 'Argamassa Cola Piso (20kg)', 30.00, 'saco', ARRAY['acabamento']),
-('construction', 'Lata de Tinta (18L) Standard', 300.00, 'lata', ARRAY['pintor']),
-('construction', 'Kit Tomada Completo', 20.00, 'unidade', ARRAY['eletricista']),
-('construction', 'Fio Flexível 2.5mm', 3.50, 'metro', ARRAY['eletricista']);
+('construction', 'Cimento 50kg', 35.00, 'saco', ARRAY['pedreiro']),
+('construction', 'Argamassa Cola 20kg', 32.00, 'saco', ARRAY['acabamento']),
+('construction', 'Tinta Látex 18L', 320.00, 'lata', ARRAY['pintor']),
+('construction', 'Tomada Completa', 22.00, 'unidade', ARRAY['eletricista']),
+('construction', 'Fio 2.5mm', 4.00, 'metro', ARRAY['eletricista']),
+('construction', 'Cano PVC 25mm', 8.00, 'metro', ARRAY['encanador'])
+ON CONFLICT DO NOTHING;
 

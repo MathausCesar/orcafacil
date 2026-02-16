@@ -112,7 +112,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
     const total = items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0)
 
     return (
-        <form action={handleSubmit} className="space-y-6 pb-24">
+        <form action={handleSubmit} className="space-y-6 pb-44 md:pb-24">
             <div className="flex items-center gap-2 mb-4">
                 <Link href={initialData?.id ? `/quotes/${initialData.id}` : "/"}>
                     <Button variant="ghost" size="icon" className="hover:bg-primary/10 hover:text-primary"><ArrowLeft className="h-5 w-5" /></Button>
@@ -279,7 +279,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
             </Card>
 
             {/* Floating Save Button */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-xl border-t border-primary/10 md:static md:bg-transparent md:border-0 md:p-0 z-40">
+            <div className="fixed bottom-[4rem] left-0 right-0 p-4 bg-white/90 backdrop-blur-xl border-t border-primary/10 md:static md:bg-transparent md:border-0 md:p-0 z-40 pb-safe">
                 <Button size="lg" className="w-full text-lg h-14 shadow-xl shadow-primary/25 bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/90 hover:to-emerald-600/90" disabled={loading}>
                     {loading ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processando...</> : <><Save className="mr-2 h-5 w-5" /> {initialData?.id ? 'Atualizar Orçamento' : 'Finalizar Orçamento'}</>}
                 </Button>

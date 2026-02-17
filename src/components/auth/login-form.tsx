@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { login, signup } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,6 +21,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
 export function LoginForm() {
+    const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [mode, setMode] = useState<'login' | 'register'>('login')
     const [showSuccessDialog, setShowSuccessDialog] = useState(false)
@@ -38,8 +40,13 @@ export function LoginForm() {
                     toast.error(result.error)
                 }
             } else {
+                // Login action
                 if (result?.error) {
-                    toast.error('Credenciais inválidas.')
+                    toast.error(result.error)
+                } else if (result?.success && result?.redirect) {
+                    // Successful login - redirect to dashboard
+                    toast.success('Login realizado com sucesso!')
+                    router.push(result.redirect)
                 }
             }
         } catch {
@@ -52,9 +59,9 @@ export function LoginForm() {
     return (
         <div className="flex min-h-[85vh] w-full max-w-[1100px] overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-black/5">
             {/* Left Column: Abstract Visual */}
-            <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-zinc-900 p-12 text-white lg:flex">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop')] bg-cover bg-center opacity-40 mix-blend-overlay"></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/90 via-zinc-900/90 to-black/90"></div>
+            <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-emerald-900 via-zinc-900 to-black p-12 text-white lg:flex">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-700/20 via-transparent to-transparent"></div>
+                <div className="absolute bottom-0 left-0 h-96 w-96 -mb-20 -ml-20 rounded-full bg-emerald-600/10 blur-3xl"></div>
 
                 <div className="relative z-10 flex items-center gap-3">
                     <div className="relative h-10 w-10 overflow-hidden rounded-xl bg-white/10 backdrop-blur-md ring-1 ring-white/20 p-1.5">

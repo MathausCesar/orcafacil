@@ -42,6 +42,13 @@ const SPECIALTIES_BY_CATEGORY: Record<string, { label: string; value: string }[]
         { label: "Personal Trainer", value: "personal" },
         { label: "Consultoria", value: "consultoria" },
     ],
+    food: [
+        { label: "Salgados e Doces", value: "salgados" },
+        { label: "Confeitaria", value: "confeitaria" },
+        { label: "Buffet Completo", value: "buffet" },
+        { label: "Serviços Extras (Garçom, Copeira)", value: "servicos" },
+        { label: "Decoração de Eventos", value: "decoracao" },
+    ],
 };
 
 export function WizardStep2() {

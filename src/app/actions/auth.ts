@@ -7,8 +7,6 @@ import { createClient } from '@/lib/supabase/server'
 export async function login(formData: FormData) {
     const supabase = await createClient()
 
-    // Type-casting here for convenience
-    // In a production application, you should validate these inputs
     const email = formData.get('email') as string
     const password = formData.get('password') as string
 
@@ -18,11 +16,11 @@ export async function login(formData: FormData) {
     })
 
     if (error) {
-        return redirect('/login?message=Could not authenticate user')
+        return { error: 'Credenciais inválidas.' }
     }
 
     revalidatePath('/', 'layout')
-    redirect('/')
+    return { success: true, redirect: '/dashboard' }
 }
 
 export async function signup(formData: FormData) {

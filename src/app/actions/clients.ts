@@ -17,6 +17,8 @@ export async function createClientAction(formData: FormData) {
     const email = formData.get('email') as string
     const address = formData.get('address') as string
     const notes = formData.get('notes') as string
+    const personType = formData.get('person_type') as string || 'pf'
+    const companyName = formData.get('company_name') as string || null
 
     const { error } = await supabase
         .from('clients')
@@ -26,7 +28,9 @@ export async function createClientAction(formData: FormData) {
             phone,
             email,
             address,
-            notes
+            notes,
+            person_type: personType,
+            company_name: companyName
         })
 
     if (error) {
@@ -85,6 +89,8 @@ export async function updateClient(id: string, formData: FormData) {
     const email = formData.get('email') as string
     const address = formData.get('address') as string
     const notes = formData.get('notes') as string
+    const personType = formData.get('person_type') as string
+    const companyName = formData.get('company_name') as string || null
 
     const { error } = await supabase
         .from('clients')
@@ -93,7 +99,9 @@ export async function updateClient(id: string, formData: FormData) {
             phone,
             email,
             address,
-            notes
+            notes,
+            person_type: personType,
+            company_name: companyName
         })
         .eq('id', id)
 

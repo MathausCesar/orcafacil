@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Trash2, Save, ArrowLeft, Calendar as CalendarIcon, FileText, Loader2 } from 'lucide-react'
+import { Trash2, Save, ArrowLeft, Calendar as CalendarIcon, FileText, Loader2, Settings2 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { ClientAutocomplete } from '@/components/clients/client-autocomplete'
@@ -39,6 +40,15 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
     const [date, setDate] = useState<string>(initialData?.expirationDate || '')
     const [clientName, setClientName] = useState(initialData?.clientName || '')
     const [clientPhone, setClientPhone] = useState(initialData?.clientPhone || '')
+
+    // Customization states
+    const [showTimeline, setShowTimeline] = useState(false)
+    const [showPaymentOptions, setShowPaymentOptions] = useState(false)
+    const [estimatedDays, setEstimatedDays] = useState('')
+    const [cashDiscount, setCashDiscount] = useState('')
+    const [paymentMethods, setPaymentMethods] = useState<string[]>([])
+    const [installmentCount, setInstallmentCount] = useState('')
+
     const router = useRouter()
 
     useEffect(() => {
@@ -80,13 +90,26 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
 
         setLoading(true)
         formData.append('items', JSON.stringify(items))
-        // Ensure client name/phone state is passed if autocomplete didn't use name input directly
-        // But ClientAutocomplete usually updates a hidden input or state. 
-        // Let's manually append if the component logic uses internal state interactions.
-        // For now, let's rely on the inputs having names, but ClientAutocomplete might need careful handling.
-        // Actually, let's append our state to be sure.
         formData.set('clientName', clientName)
         if (clientPhone) formData.set('clientPhone', clientPhone)
+
+        // Add customization fields
+        formData.set('show_timeline', String(showTimeline))
+        formData.set('show_payment_options', String(showPaymentOptions))
+        if (showTimeline && estimatedDays) {
+            formData.set('estimated_days', estimatedDays)
+        }
+        if (showPaymentOptions) {
+            if (paymentMethods.length > 0) {
+                formData.set('payment_methods', JSON.stringify(paymentMethods))
+            }
+            if (cashDiscount) {
+                formData.set('cash_discount_percent', cashDiscount)
+            }
+            if (paymentMethods.includes('installment') && installmentCount) {
+                formData.set('installment_count', installmentCount)
+            }
+        }
 
         try {
             let result;
@@ -122,59 +145,25 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                 </h1>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="h-full border-primary/10">
-                    <CardHeader className="pb-3 bg-primary/5 border-b border-primary/10">
-                        <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
-                            <FileText className="h-4 w-4" /> Dados do Cliente
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4 pt-4">
-                        <ClientAutocomplete
-                            defaultValue={clientName}
-                            onSelect={(client) => {
-                                setClientName(client.name)
-                                setClientPhone(client.phone)
-                            }}
-                        />
-                        {/* Hidden input for phone if not provided by autocomplete text input directly */}
-                        <input type="hidden" name="clientPhone" value={clientPhone} />
-                    </CardContent>
-                </Card>
-
-                <Card className="h-full border-primary/10">
-                    <CardHeader className="pb-3 bg-primary/5 border-b border-primary/10">
-                        <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
-                            <CalendarIcon className="h-4 w-4" /> Detalhes do Orçamento
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4 pt-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="expirationDate">Validade da Proposta</Label>
-                            <Input
-                                id="expirationDate"
-                                name="expirationDate"
-                                type="date"
-                                value={date}
-                                onChange={(e) => setDate(e.target.value)}
-                                required
-                                className="focus-visible:ring-primary"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="paymentTerms">Condições de Pagamento</Label>
-                            <Input
-                                id="paymentTerms"
-                                name="paymentTerms"
-                                defaultValue={initialData?.paymentTerms}
-                                placeholder="Ex: 50% Entrada, 50% na Entrega / PIX"
-                                required
-                                className="focus-visible:ring-primary"
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+            {/* Client Data - Full Width */}
+            <Card className="border-primary/10">
+                <CardHeader className="pb-3 bg-primary/5 border-b border-primary/10">
+                    <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
+                        <FileText className="h-4 w-4" /> Dados do Cliente
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-4">
+                    <ClientAutocomplete
+                        defaultValue={clientName}
+                        onSelect={(client) => {
+                            setClientName(client.name)
+                            setClientPhone(client.phone)
+                        }}
+                    />
+                    {/* Hidden input for phone if not provided by autocomplete text input directly */}
+                    <input type="hidden" name="clientPhone" value={clientPhone} />
+                </CardContent>
+            </Card>
 
             {/* Items Section */}
             <Card className="border-t-4 border-t-primary border-primary/10">
@@ -259,6 +248,160 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                             <p>Nenhum item adicionado.</p>
                         </div>
                     )}
+                </CardContent>
+            </Card>
+
+            {/* Customization Section */}
+            <Card className="border-primary/10">
+                <CardHeader className="pb-3 bg-primary/5 border-b border-primary/10">
+                    <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
+                        <Settings2 className="h-4 w-4" /> Personalização do Orçamento
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">
+                        Adicione informações opcionais que aparecem automaticamente no orçamento
+                    </p>
+                </CardHeader>
+                <CardContent className="space-y-6 pt-6">
+                    {/* Timeline Toggle */}
+                    <div className="flex items-start space-x-3 p-4 rounded-lg border border-slate-200 bg-slate-50/50">
+                        <Checkbox
+                            id="show_timeline"
+                            checked={showTimeline}
+                            onCheckedChange={(checked) => setShowTimeline(checked as boolean)}
+                        />
+                        <div className="flex-1">
+                            <Label
+                                htmlFor="show_timeline"
+                                className="text-sm font-medium cursor-pointer"
+                            >
+                                📅 Mostrar Cronograma de Execução
+                            </Label>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Exibe timeline visual com fases do projeto
+                            </p>
+
+                            {showTimeline && (
+                                <div className="mt-3 space-y-2">
+                                    <Label htmlFor="estimated_days" className="text-xs">
+                                        Prazo estimado (dias úteis)
+                                    </Label>
+                                    <Input
+                                        id="estimated_days"
+                                        type="number"
+                                        min="1"
+                                        max="365"
+                                        value={estimatedDays}
+                                        onChange={(e) => setEstimatedDays(e.target.value)}
+                                        placeholder="Ex: 5"
+                                        className="h-9"
+                                    />
+                                    <p className="text-[10px] text-muted-foreground">
+                                        Deixe vazio para usar padrão (5-8 dias)
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Payment Options Toggle */}
+                    <div className="flex items-start space-x-3 p-4 rounded-lg border border-slate-200 bg-slate-50/50">
+                        <Checkbox
+                            id="show_payment"
+                            checked={showPaymentOptions}
+                            onCheckedChange={(checked) => setShowPaymentOptions(checked as boolean)}
+                        />
+                        <div className="flex-1">
+                            <Label
+                                htmlFor="show_payment"
+                                className="text-sm font-medium cursor-pointer"
+                            >
+                                💳 Mostrar Formas de Pagamento
+                            </Label>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Exibe ícones visuais das formas de pagamento aceitas
+                            </p>
+
+                            {showPaymentOptions && (
+                                <div className="mt-3 space-y-4">
+                                    {/* Payment Methods */}
+                                    <div className="space-y-2">
+                                        <Label className="text-xs">
+                                            Formas aceitas (selecione uma ou mais):
+                                        </Label>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {[
+                                                { value: 'pix', label: '📱 PIX' },
+                                                { value: 'cash', label: '💵 Dinheiro' },
+                                                { value: 'card', label: '💳 Cartão' },
+                                                { value: 'installment', label: '📅 Parcelado' },
+                                            ].map((method) => (
+                                                <div key={method.value} className="flex items-center space-x-2">
+                                                    <Checkbox
+                                                        id={method.value}
+                                                        checked={paymentMethods.includes(method.value)}
+                                                        onCheckedChange={(checked) => {
+                                                            if (checked) {
+                                                                setPaymentMethods([...paymentMethods, method.value])
+                                                            } else {
+                                                                setPaymentMethods(paymentMethods.filter(m => m !== method.value))
+                                                            }
+                                                        }}
+                                                    />
+                                                    <Label htmlFor={method.value} className="text-xs font-normal cursor-pointer">
+                                                        {method.label}
+                                                    </Label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Installment Count - Only if installment is selected */}
+                                    {paymentMethods.includes('installment') && (
+                                        <div className="space-y-2">
+                                            <Label htmlFor="installment_count" className="text-xs">
+                                                Número de parcelas
+                                            </Label>
+                                            <Input
+                                                id="installment_count"
+                                                type="number"
+                                                min="2"
+                                                max="36"
+                                                value={installmentCount}
+                                                onChange={(e) => setInstallmentCount(e.target.value)}
+                                                placeholder="Ex: 6"
+                                                className="h-9"
+                                            />
+                                            <p className="text-[10px] text-muted-foreground">
+                                                Máximo de 36 parcelas
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Cash Discount */}
+                                    {(paymentMethods.includes('pix') || paymentMethods.includes('cash')) && (
+                                        <div className="space-y-2">
+                                            <Label htmlFor="cash_discount" className="text-xs">
+                                                Desconto à vista (%) - opcional
+                                            </Label>
+                                            <Input
+                                                id="cash_discount"
+                                                type="number"
+                                                min="0"
+                                                max="100"
+                                                value={cashDiscount}
+                                                onChange={(e) => setCashDiscount(e.target.value)}
+                                                placeholder="Ex: 5"
+                                                className="h-9"
+                                            />
+                                            <p className="text-[10px] text-muted-foreground">
+                                                Será aplicado para PIX e/ou Dinheiro
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
 

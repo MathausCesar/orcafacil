@@ -166,3 +166,121 @@
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+/* Print-specific CSS to prevent page breaks */
+@media print {
+
+  /* Prevent page breaks inside important elements */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* Keep table rows together */
+  table {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Prevent awkward breaks */
+  img,
+  figure,
+  svg {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Ensure cards and sections stay together */
+  [class*="Card"],
+  [class*="card"],
+  section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Prevent orphans and widows */
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Better spacing for print */
+  @page {
+    margin: 1.5cm;
+  }
+}
+
+/* Quote Profile Tones - Adaptive Styling */
+
+/* Friendly Tone (Low Ticket) - Jovial, colorido, espaçoso */
+.tone-friendly {
+  --quote-spacing: 1.5rem;
+  --quote-font-weight: 500;
+}
+
+.tone-friendly h1,
+.tone-friendly h2,
+.tone-friendly h3 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Balanced Tone (Mid Ticket) - Equilibrado */
+.tone-balanced {
+  --quote-spacing: 1.25rem;
+  --quote-font-weight: 500;
+}
+
+/* Corporate Tone (High Ticket) - Formal, sóbrio */
+.tone-corporate {
+  --quote-spacing: 1rem;
+  --quote-font-weight: 400;
+}
+
+.tone-corporate h1,
+.tone-corporate h2,
+.tone-corporate h3 {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  font-size: 0.95em;
+}
+
+.tone-corporate {
+  font-family: 'Merriweather', serif, var(--font-sans);
+}
+
+/* Density Classes */
+.density-spacious {
+  line-height: 1.8;
+}
+
+.density-spacious>*+* {
+  margin-top: 2rem;
+}
+
+.density-normal {
+  line-height: 1.6;
+}
+
+.density-normal>*+* {
+  margin-top: 1.5rem;
+}
+
+.density-compact {
+  line-height: 1.5;
+}
+
+.density-compact>*+* {
+  margin-top: 1rem;
+}

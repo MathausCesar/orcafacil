@@ -21,6 +21,15 @@ export async function createQuote(formData: FormData) {
     const notes = formData.get('notes') as string
     const itemsJson = formData.get('items') as string
 
+    // Customization fields
+    const showTimeline = formData.get('show_timeline') === 'true'
+    const showPaymentOptions = formData.get('show_payment_options') === 'true'
+    const estimatedDays = formData.get('estimated_days') ? parseInt(formData.get('estimated_days') as string) : null
+    const cashDiscountPercent = formData.get('cash_discount_percent') ? parseInt(formData.get('cash_discount_percent') as string) : 0
+    const installmentCount = formData.get('installment_count') ? parseInt(formData.get('installment_count') as string) : null
+    const paymentMethodsStr = formData.get('payment_methods') as string
+    const paymentMethods = paymentMethodsStr ? JSON.parse(paymentMethodsStr) : []
+
     const items = JSON.parse(itemsJson)
 
     // Calcule Total
@@ -37,7 +46,14 @@ export async function createQuote(formData: FormData) {
             payment_terms: paymentTerms,
             notes: notes,
             total: total,
-            status: 'draft'
+            status: 'draft',
+            // Customization fields
+            show_timeline: showTimeline,
+            show_payment_options: showPaymentOptions,
+            estimated_days: estimatedDays,
+            cash_discount_percent: cashDiscountPercent,
+            payment_methods: paymentMethods,
+            installment_count: installmentCount
         })
         .select()
         .single()
@@ -92,6 +108,15 @@ export async function updateQuote(id: string, formData: FormData) {
     const notes = formData.get('notes') as string
     const itemsJson = formData.get('items') as string
 
+    // Customization fields
+    const showTimeline = formData.get('show_timeline') === 'true'
+    const showPaymentOptions = formData.get('show_payment_options') === 'true'
+    const estimatedDays = formData.get('estimated_days') ? parseInt(formData.get('estimated_days') as string) : null
+    const cashDiscountPercent = formData.get('cash_discount_percent') ? parseInt(formData.get('cash_discount_percent') as string) : 0
+    const installmentCount = formData.get('installment_count') ? parseInt(formData.get('installment_count') as string) : null
+    const paymentMethodsStr = formData.get('payment_methods') as string
+    const paymentMethods = paymentMethodsStr ? JSON.parse(paymentMethodsStr) : []
+
     const items = JSON.parse(itemsJson)
     const total = items.reduce((acc: number, item: any) => acc + (item.quantity * item.unitPrice), 0)
 
@@ -105,7 +130,14 @@ export async function updateQuote(id: string, formData: FormData) {
             payment_terms: paymentTerms,
             notes: notes,
             total: total,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
+            // Customization fields
+            show_timeline: showTimeline,
+            show_payment_options: showPaymentOptions,
+            estimated_days: estimatedDays,
+            cash_discount_percent: cashDiscountPercent,
+            payment_methods: paymentMethods,
+            installment_count: installmentCount
         })
         .eq('id', id)
         .eq('user_id', user.id)

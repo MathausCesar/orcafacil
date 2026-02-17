@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Plus, UserPlus, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -19,6 +20,7 @@ interface CreateClientDialogProps {
 export function CreateClientDialog({ trigger, onSuccess }: CreateClientDialogProps) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [personType, setPersonType] = useState('pf')
     const router = useRouter()
 
     const handleSubmit = async (formData: FormData) => {
@@ -55,9 +57,53 @@ export function CreateClientDialog({ trigger, onSuccess }: CreateClientDialogPro
                     <DialogTitle>Novo Cliente</DialogTitle>
                 </DialogHeader>
                 <form action={handleSubmit} className="space-y-4 pt-4">
+                    {/* Tipo de Pessoa */}
+                    <div className="space-y-3">
+                        <Label>Tipo de Cliente *</Label>
+                        <RadioGroup
+                            defaultValue="pf"
+                            name="person_type"
+                            onValueChange={setPersonType}
+                            className="flex gap-4"
+                        >
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="pf" id="pf" />
+                                <Label htmlFor="pf" className="font-normal cursor-pointer">
+                                    Pessoa Física
+                                </Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="pj" id="pj" />
+                                <Label htmlFor="pj" className="font-normal cursor-pointer">
+                                    Pessoa Jurídica
+                                </Label>
+                            </div>
+                        </RadioGroup>
+                    </div>
+
+                    {/* Razão Social (apenas PJ) */}
+                    {personType === 'pj' && (
+                        <div className="space-y-2">
+                            <Label htmlFor="company_name">Razão Social *</Label>
+                            <Input
+                                id="company_name"
+                                name="company_name"
+                                required={personType === 'pj'}
+                                placeholder="Ex: Tech Solutions Ltda"
+                            />
+                        </div>
+                    )}
+
                     <div className="space-y-2">
-                        <Label htmlFor="name">Nome Completo *</Label>
-                        <Input id="name" name="name" required placeholder="Ex: Maria Souza" />
+                        <Label htmlFor="name">
+                            {personType === 'pj' ? 'Nome Fantasia / Contato *' : 'Nome Completo *'}
+                        </Label>
+                        <Input
+                            id="name"
+                            name="name"
+                            required
+                            placeholder={personType === 'pj' ? 'Ex: Tech Solutions' : 'Ex: Maria Souza'}
+                        />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="phone">Telefone / WhatsApp</Label>

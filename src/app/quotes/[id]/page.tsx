@@ -11,6 +11,14 @@ import { PrintButton } from '@/components/quotes/print-button'
 import { cn } from '@/lib/utils'
 import { QuoteStatusActions } from '@/components/quotes/quote-status-actions'
 import { QuoteOwnerActions } from '@/components/quotes/quote-owner-actions'
+import { QRCodeGenerator } from '@/components/quotes/qr-code-generator'
+import { WarrantyBox } from '@/components/quotes/warranty-box'
+import { ValueProposition } from '@/components/quotes/value-proposition'
+import { TimelineSection } from '@/components/quotes/timeline-section'
+import { UrgencyBadge } from '@/components/quotes/urgency-badge'
+import { PaymentOptions } from '@/components/quotes/payment-options'
+import { detectItemCategory, adjustColorBrightness } from '@/lib/utils/category-detection'
+import { detectClientProfile, getToneClasses, getDensityClasses, shouldShowExtra } from '@/lib/utils/profile-detection'
 import { Metadata } from 'next'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -64,7 +72,27 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
 
     // Layout Logic
     const themeColor = profile?.theme_color || '#0D9B5C';
-    const layout = profile?.layout_style || 'modern';
+    const gradientColor = adjustColorBrightness(themeColor, 15);
+
+    // Detect client profile automatically
+    const detectedProfile = detectClientProfile(
+        {
+            id: quote.id,
+            total: quote.total,
+            client_name: quote.client_name,
+            quote_items: quote.quote_items,
+        },
+        {
+            business_name: profile?.business_name,
+            theme_color: profile?.theme_color,
+            layout_style: profile?.layout_style,
+        }
+    );
+
+    // Use detected layout or fallback to user's preference
+    const layout = profile?.layout_style || detectedProfile.layout;
+    const toneClasses = getToneClasses(detectedProfile.tone);
+    const densityClasses = getDensityClasses(detectedProfile.density);
 
     return (
         <div
@@ -92,7 +120,11 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
             </div>
 
             {/* Quote Document Wrapper */}
-            <div className="max-w-3xl mx-auto p-4 md:p-8 print:p-0 print:max-w-none space-y-6">
+            <div className={cn(
+                "max-w-3xl mx-auto p-4 md:p-8 print:p-0 print:max-w-none space-y-6",
+                toneClasses,
+                densityClasses
+            )}>
 
                 {/* Status Actions (Approve/Reject) - Visible to everyone, but context matters */}
                 {/* Normally only client approves, but for simplicity showing to all if not draft? Or show always? */}
@@ -149,18 +181,30 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-dashed divide-slate-200">
-                                        {quote.quote_items.map((item: any) => (
-                                            <tr key={item.id} className="group">
-                                                <td className="py-4 pl-2 font-medium text-foreground">{item.description}</td>
-                                                <td className="py-4 text-center text-muted-foreground">{item.quantity}</td>
-                                                <td className="py-4 text-right text-muted-foreground">
-                                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_price)}
-                                                </td>
-                                                <td className="py-4 text-right font-bold text-foreground pr-2">
-                                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.quantity * item.unit_price)}
-                                                </td>
-                                            </tr>
-                                        ))}
+                                        {quote.quote_items.map((item: any) => {
+                                            const categoryInfo = detectItemCategory(item.description)
+                                            const CategoryIcon = categoryInfo.icon
+                                            return (
+                                                <tr key={item.id} className="group">
+                                                    <td className="py-4 pl-2 font-medium text-foreground">
+                                                        <div className="flex items-center gap-2">
+                                                            <CategoryIcon
+                                                                className="h-4 w-4 flex-shrink-0 print:h-3 print:w-3"
+                                                                style={{ color: categoryInfo.color }}
+                                                            />
+                                                            <span>{item.description}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-4 text-center text-muted-foreground">{item.quantity}</td>
+                                                    <td className="py-4 text-right text-muted-foreground">
+                                                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_price)}
+                                                    </td>
+                                                    <td className="py-4 text-right font-bold text-foreground pr-2">
+                                                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.quantity * item.unit_price)}
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })}
                                     </tbody>
                                 </table>
 
@@ -174,8 +218,45 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     </div>
                                 </div>
 
+                                {/* Urgency Badge - Always show for non-draft quotes */}
+                                {quote.status !== 'draft' && (
+                                    <div className="flex justify-center">
+                                        <UrgencyBadge
+                                            themeColor={themeColor}
+                                            createdAt={quote.created_at}
+                                            validityDays={7}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Timeline - Show based on profile */}
+                                {shouldShowExtra('timeline', detectedProfile) && (
+                                    <TimelineSection themeColor={themeColor} />
+                                )}
+
+                                {/* Value Proposition - Show based on profile */}
+                                {shouldShowExtra('value_proposition', detectedProfile) && (
+                                    <div className="print:hidden">
+                                        <ValueProposition themeColor={themeColor} />
+                                    </div>
+                                )}
+
+                                {/* Payment Options - Show for low/mid ticket */}
+                                {(detectedProfile.tone === 'friendly' || detectedProfile.tone === 'balanced') && (
+                                    <PaymentOptions
+                                        themeColor={themeColor}
+                                        showCashDiscount={true}
+                                        cashDiscountPercent={5}
+                                    />
+                                )}
+
+                                {/* Warranty Box - Show based on profile */}
+                                {shouldShowExtra('warranty', detectedProfile) && (
+                                    <WarrantyBox themeColor={themeColor} />
+                                )}
+
                                 {/* Footer Notes */}
-                                <div className="pt-8 text-center sm:text-left text-sm text-muted-foreground grid gap-4 border-t border-slate-100">
+                                <div className="pt-6 text-center sm:text-left text-sm text-muted-foreground grid gap-4 border-t border-slate-100">
                                     {quote.payment_terms && (
                                         <div>
                                             <span className="font-semibold text-foreground">Condições de Pagamento:</span> {quote.payment_terms}
@@ -186,7 +267,14 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                             &quot;{quote.notes}&quot;
                                         </div>
                                     )}
-                                    <div className="text-center pt-8 text-xs text-slate-300">Orçamento gerado via OrçaFácil</div>
+
+                                    {/* QR Code Footer */}
+                                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-slate-100">
+                                        <div className="text-center sm:text-left">
+                                            <p className="text-xs text-slate-400">Orçamento gerado via OrçaFácil</p>
+                                        </div>
+                                        <QRCodeGenerator quoteId={quote.id} size={100} />
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>

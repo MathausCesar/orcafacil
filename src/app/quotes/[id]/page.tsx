@@ -67,7 +67,29 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
     const isOwner = user?.id === quote.user_id
 
     const total = quote.total || 0;
-    const whatsappMessage = `Olá ${quote.client_name}, aqui está o seu orçamento no valor de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}. Acesse: ${process.env.NEXT_PUBLIC_APP_URL || 'https://orcafacil.com'}/quotes/${id}`;
+    const approvalUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://orcafacil.com'}/quotes/${id}/approve`;
+    const totalFormatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total);
+    const businessName = profile?.business_name || 'nossa empresa';
+    const itemCount = quote.quote_items?.length ?? 0;
+
+    const whatsappLines = [
+        `Olá, ${quote.client_name}! 👋`,
+        ``,
+        `Aqui é a ${businessName}. Preparamos com cuidado a proposta que você solicitou e estamos prontos para começar! 🚀`,
+        ``,
+        `📋 *Resumo do Orçamento*`,
+        `• ${itemCount} ${itemCount === 1 ? 'item incluído' : 'itens incluídos'}`,
+        `• Valor total: *${totalFormatted}*`,
+        ...(quote.valid_until ? [`• Válido até: ${new Intl.DateTimeFormat('pt-BR').format(new Date(quote.valid_until))}`] : []),
+        ``,
+        `✅ *Aprovar a proposta com um clique:*`,
+        approvalUrl,
+        ``,
+        `📄 Para salvar o PDF da proposta, acesse o link acima e use o botão de impressão (🖨️) → "Salvar como PDF".`,
+        ``,
+        `Qualquer dúvida, estou à disposição! 😊`,
+    ];
+    const whatsappMessage = whatsappLines.join('\n');
     const whatsappLink = `https://wa.me/${quote.client_phone?.replace(/\D/g, '')}?text=${encodeURIComponent(whatsappMessage)}`;
 
     // Layout Logic
@@ -229,9 +251,12 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     </div>
                                 )}
 
-                                {/* Timeline - Show based on profile */}
-                                {shouldShowExtra('timeline', detectedProfile) && (
-                                    <TimelineSection themeColor={themeColor} />
+                                {/* Timeline - Usar a opção escolhida na personalização do orçamento */}
+                                {quote.show_timeline && (
+                                    <TimelineSection
+                                        themeColor={themeColor}
+                                        estimatedDays={quote.estimated_days ?? undefined}
+                                    />
                                 )}
 
                                 {/* Value Proposition - Show based on profile */}
@@ -241,12 +266,12 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     </div>
                                 )}
 
-                                {/* Payment Options - Show for low/mid ticket */}
-                                {(detectedProfile.tone === 'friendly' || detectedProfile.tone === 'balanced') && (
+                                {/* Payment Options - Usar a opção escolhida na personalização do orçamento */}
+                                {quote.show_payment_options && (
                                     <PaymentOptions
                                         themeColor={themeColor}
-                                        showCashDiscount={true}
-                                        cashDiscountPercent={5}
+                                        showCashDiscount={(quote.cash_discount_percent ?? 0) > 0}
+                                        cashDiscountPercent={quote.cash_discount_percent ?? 0}
                                     />
                                 )}
 
@@ -257,9 +282,10 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
 
                                 {/* Footer Notes */}
                                 <div className="pt-6 text-center sm:text-left text-sm text-muted-foreground grid gap-4 border-t border-slate-100">
-                                    {quote.payment_terms && (
+                                    {(quote.payment_terms || profile?.payment_info) && (
                                         <div>
-                                            <span className="font-semibold text-foreground">Condições de Pagamento:</span> {quote.payment_terms}
+                                            <span className="font-semibold text-foreground">Condições de Pagamento:</span>{' '}
+                                            {quote.payment_terms || profile?.payment_info}
                                         </div>
                                     )}
                                     {quote.notes && (
@@ -367,6 +393,49 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 </div>
                             )}
 
+                            {/* Cronograma - Layout Professional */}
+                            {quote.show_timeline && (
+                                <div className="border border-slate-200 p-6">
+                                    <h3 className="text-sm font-bold text-[var(--theme-color)] uppercase tracking-wider mb-4">Cronograma de Execução</h3>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="text-center border border-slate-200 p-3">
+                                            <p className="text-xs text-slate-500 uppercase mb-1">Aprovação</p>
+                                            <p className="font-bold text-sm">1–2 dias</p>
+                                        </div>
+                                        <div className="text-center border border-[var(--theme-color)] p-3 bg-[var(--theme-color)]/5">
+                                            <p className="text-xs text-slate-500 uppercase mb-1">Execução</p>
+                                            <p className="font-bold text-sm">{quote.estimated_days ? `${quote.estimated_days} dias` : '3–5 dias'}</p>
+                                        </div>
+                                        <div className="text-center border border-slate-200 p-3">
+                                            <p className="text-xs text-slate-500 uppercase mb-1">Entrega</p>
+                                            <p className="font-bold text-sm">1 dia</p>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-slate-500 mt-3">
+                                        Prazo total estimado: {quote.estimated_days ? `${quote.estimated_days + 3} dias úteis` : '5–8 dias úteis'}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Formas de Pagamento - Layout Professional */}
+                            {quote.show_payment_options && (
+                                <div className="border border-slate-200 p-6">
+                                    <h3 className="text-sm font-bold text-[var(--theme-color)] uppercase tracking-wider mb-4">Formas de Pagamento</h3>
+                                    <div className="flex flex-wrap gap-3">
+                                        {(quote.payment_methods?.length ? quote.payment_methods : ['pix', 'card', 'cash', 'installment']).map((m: string) => (
+                                            <span key={m} className="px-4 py-2 border border-slate-300 text-sm font-medium">
+                                                {m === 'pix' ? '📱 PIX' : m === 'cash' ? '💵 Dinheiro' : m === 'card' ? '💳 Cartão' : '📅 Parcelado'}
+                                            </span>
+                                        ))}
+                                    </div>
+                                    {(quote.cash_discount_percent ?? 0) > 0 && (
+                                        <p className="mt-3 text-sm font-semibold" style={{ color: themeColor }}>
+                                            ✓ {quote.cash_discount_percent}% de desconto para pagamento à vista (PIX ou Dinheiro)
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
                         </CardContent>
                     </Card>
                 )}
@@ -426,6 +495,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 </div>
                             </div>
 
+                            {/* Rodapé com assinaturas */}
                             <div className="text-center pt-16 pb-8 space-y-12">
                                 <div className="grid grid-cols-2 gap-16">
                                     <div className="border-t border-black pt-2">
@@ -437,6 +507,50 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 </div>
                                 <p className="text-xs uppercase tracking-widest">Orçamento válido por {quote.valid_until ? format(new Date(quote.valid_until), "dd/MM/yyyy") : '15 dias'}</p>
                             </div>
+
+                            {/* Cronograma - Layout Classic */}
+                            {quote.show_timeline && (
+                                <div className="border-t border-black pt-8 mt-4">
+                                    <h3 className="text-base font-bold uppercase tracking-widest text-center mb-6">Cronograma de Execução</h3>
+                                    <div className="grid grid-cols-3 gap-0 border border-black">
+                                        <div className="p-4 text-center border-r border-black">
+                                            <p className="text-xs uppercase tracking-wider mb-1">Aprovação</p>
+                                            <p className="font-bold">1–2 dias</p>
+                                        </div>
+                                        <div className="p-4 text-center border-r border-black bg-gray-50">
+                                            <p className="text-xs uppercase tracking-wider mb-1">Execução</p>
+                                            <p className="font-bold">{quote.estimated_days ? `${quote.estimated_days} dias` : '3–5 dias'}</p>
+                                        </div>
+                                        <div className="p-4 text-center">
+                                            <p className="text-xs uppercase tracking-wider mb-1">Entrega</p>
+                                            <p className="font-bold">1 dia</p>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-center mt-3 italic">
+                                        Prazo total estimado: {quote.estimated_days ? `${quote.estimated_days + 3} dias úteis` : '5–8 dias úteis'}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Formas de Pagamento - Layout Classic */}
+                            {quote.show_payment_options && (
+                                <div className="border-t border-black pt-8 mt-4">
+                                    <h3 className="text-base font-bold uppercase tracking-widest text-center mb-6">Formas de Pagamento</h3>
+                                    <div className="flex flex-wrap justify-center gap-4">
+                                        {(quote.payment_methods?.length ? quote.payment_methods : ['pix', 'card', 'cash', 'installment']).map((m: string) => (
+                                            <span key={m} className="px-6 py-3 border border-black text-sm uppercase tracking-wider">
+                                                {m === 'pix' ? 'PIX' : m === 'cash' ? 'Dinheiro' : m === 'card' ? 'Cartão' : 'Parcelado'}
+                                            </span>
+                                        ))}
+                                    </div>
+                                    {(quote.cash_discount_percent ?? 0) > 0 && (
+                                        <p className="text-center mt-4 text-sm font-bold">
+                                            {quote.cash_discount_percent}% de desconto para pagamento à vista
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
                         </CardContent>
                     </Card>
                 )}

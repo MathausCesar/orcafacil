@@ -13,7 +13,7 @@ export function QRCodeGenerator({ quoteId, size = 120 }: QRCodeGeneratorProps) {
 
     useEffect(() => {
         if (canvasRef.current) {
-            const url = `${window.location.origin}/quotes/${quoteId}`
+            const url = `${window.location.origin}/quotes/${quoteId}/approve`
             QRCode.toCanvas(canvasRef.current, url, {
                 width: size,
                 margin: 1,

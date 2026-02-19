@@ -21,8 +21,8 @@ export async function updateProfile(formData: FormData) {
     const updateData: any = {
         business_name: businessName,
         phone: phone,
-        email: email, // Save commercial email
-        updated_at: new Date().toISOString()
+        email: email,
+        updated_at: new Date().toISOString(),
     }
 
     if (themeColor) updateData.theme_color = themeColor

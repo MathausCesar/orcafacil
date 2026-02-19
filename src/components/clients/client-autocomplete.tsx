@@ -19,26 +19,47 @@ interface ClientAutocompleteProps {
 export function ClientAutocomplete({ onSelect, defaultValue, defaultPhone }: ClientAutocompleteProps) {
     const [query, setQuery] = useState(defaultValue || '')
     const [phone, setPhone] = useState(defaultPhone || '')
+    const [allClients, setAllClients] = useState<any[]>([])
     const [suggestions, setSuggestions] = useState<any[]>([])
     const [showSuggestions, setShowSuggestions] = useState(false)
     const [loading, setLoading] = useState(false)
 
-    // Debounce logic simplified
+    // Load all clients on mount (once)
     useEffect(() => {
-        const timer = setTimeout(async () => {
-            if (query.length > 1) {
-                setLoading(true)
-                const results = await getClients(query)
-                setSuggestions(results || [])
-                setLoading(false)
-                setShowSuggestions(true)
-            } else {
-                setSuggestions([])
-                setShowSuggestions(false)
-            }
-        }, 300)
-        return () => clearTimeout(timer)
-    }, [query])
+        const loadAll = async () => {
+            setLoading(true)
+            const results = await getClients('')
+            setAllClients(results || [])
+            setLoading(false)
+        }
+        loadAll()
+    }, [])
+
+    // Filter locally as user types
+    useEffect(() => {
+        if (!showSuggestions) return
+        if (!query.trim()) {
+            setSuggestions(allClients)
+        } else {
+            const q = query.toLowerCase()
+            setSuggestions(allClients.filter(c =>
+                c.name?.toLowerCase().includes(q) || c.phone?.includes(q)
+            ))
+        }
+    }, [query, allClients, showSuggestions])
+
+    const handleFocus = () => {
+        setSuggestions(query.trim()
+            ? allClients.filter(c => c.name?.toLowerCase().includes(query.toLowerCase()))
+            : allClients
+        )
+        setShowSuggestions(true)
+    }
+
+    const handleBlur = () => {
+        // Delay to allow click on suggestion
+        setTimeout(() => setShowSuggestions(false), 150)
+    }
 
     const handleSelect = (client: any) => {
         setQuery(client.name)
@@ -48,8 +69,6 @@ export function ClientAutocomplete({ onSelect, defaultValue, defaultPhone }: Cli
     }
 
     const handleCreateSuccess = (result: any) => {
-        // Idealmente a action retornaria o cliente criado. 
-        // Por enquanto, usuário preenche manual ou busca o novo.
         setSuggestions([])
     }
 
@@ -65,11 +84,13 @@ export function ClientAutocomplete({ onSelect, defaultValue, defaultPhone }: Cli
                             value={query}
                             onChange={(e) => {
                                 setQuery(e.target.value)
-                                onSelect({ name: e.target.value, phone }) // Update parent form even if not selected
+                                onSelect({ name: e.target.value, phone })
                             }}
+                            onFocus={handleFocus}
+                            onBlur={handleBlur}
                             autoComplete="off"
                             required
-                            placeholder="Buscar ou digitar nome..."
+                            placeholder={loading ? "Carregando clientes..." : "Clique para ver todos os clientes..."}
                         />
                         {loading && <Search className="absolute right-3 top-3 h-4 w-4 animate-spin text-muted-foreground" />}
                     </div>
@@ -78,21 +99,30 @@ export function ClientAutocomplete({ onSelect, defaultValue, defaultPhone }: Cli
                     } />
                 </div>
 
-                {showSuggestions && suggestions.length > 0 && (
+                {showSuggestions && (
                     <div className="absolute z-10 w-full bg-white border rounded-md shadow-lg mt-1 max-h-60 overflow-auto">
-                        {suggestions.map((client) => (
-                            <div
-                                key={client.id}
-                                className="p-2 hover:bg-slate-100 cursor-pointer flex items-center gap-2"
-                                onClick={() => handleSelect(client)}
-                            >
-                                <User className="h-4 w-4 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium">{client.name}</p>
-                                    <p className="text-xs text-muted-foreground">{client.phone}</p>
-                                </div>
+                        {suggestions.length === 0 ? (
+                            <div className="p-4 text-sm text-center text-muted-foreground">
+                                {query ? `Nenhum cliente encontrado para "${query}"` : 'Nenhum cliente cadastrado'}
                             </div>
-                        ))}
+                        ) : (
+                            suggestions.map((client) => (
+                                <div
+                                    key={client.id}
+                                    className="p-3 hover:bg-primary/5 cursor-pointer flex items-center gap-3 border-b last:border-0 transition-colors"
+                                    onMouseDown={(e) => e.preventDefault()} // prevent input blur before click
+                                    onClick={() => handleSelect(client)}
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                        <User className="h-4 w-4 text-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium">{client.name}</p>
+                                        {client.phone && <p className="text-xs text-muted-foreground">{client.phone}</p>}
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 )}
             </div>

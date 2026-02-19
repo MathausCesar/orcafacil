@@ -20,7 +20,7 @@ export async function login(formData: FormData) {
     }
 
     revalidatePath('/', 'layout')
-    return { success: true, redirect: '/dashboard' }
+    return { success: true, redirect: '/' }
 }
 
 export async function signup(formData: FormData) {

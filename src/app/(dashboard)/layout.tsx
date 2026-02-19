@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { checkOnboardingStatus } from '@/app/actions/profile'
 import { BottomNav } from '@/components/layout/bottom-nav'
+import { DesktopSidebar } from '@/components/layout/desktop-sidebar'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function DashboardLayout({
@@ -22,11 +23,25 @@ export default async function DashboardLayout({
     }
 
     return (
-        <div className="flex min-h-screen flex-col bg-background">
-            <main className="flex-1 pb-20 pt-4 px-4 container mx-auto max-w-2xl">
-                {children}
+        <div className="flex min-h-screen bg-slate-50/50">
+            {/* Desktop Sidebar - Hidden on Mobile */}
+            <div className="hidden lg:flex w-64 flex-col fixed inset-y-0 z-50">
+                <div className="flex-1 flex flex-col min-h-0 bg-white border-r border-slate-200">
+                    <DesktopSidebar />
+                </div>
+            </div>
+
+            {/* Main Content Area */}
+            <main className="flex-1 transition-all duration-300 lg:pl-64">
+                <div className="container mx-auto p-4 md:p-8 max-w-2xl lg:max-w-7xl pb-24 lg:pb-8">
+                    {children}
+                </div>
             </main>
-            <BottomNav />
+
+            {/* Mobile Navigation - Hidden on Desktop */}
+            <div className="lg:hidden">
+                <BottomNav />
+            </div>
         </div>
     )
 }

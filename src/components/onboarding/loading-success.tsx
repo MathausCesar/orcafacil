@@ -43,7 +43,14 @@ export function LoadingSuccess() {
             const res = await applyOnboardingKit(
                 data.category!.id,
                 data.specialties,
-                data.pricingTier!
+                data.pricingTier!,
+                {
+                    businessName: data.businessName,
+                    phone: data.phone,
+                    cnpj: data.cnpj,
+                    email: data.email,
+                    logoUrl: data.logoUrl
+                }
             );
 
             if (res.success) {

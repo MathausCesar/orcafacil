@@ -40,12 +40,20 @@ const OnboardingSchema = z.object({
     categoryId: z.string().min(1),
     specialties: z.array(z.string()),
     pricingTier: z.enum(["autonomous", "standard", "premium"]),
+    businessProfile: z.object({
+        businessName: z.string().optional(),
+        phone: z.string().optional(),
+        cnpj: z.string().optional(),
+        email: z.string().optional(),
+        logoUrl: z.string().nullable().optional()
+    }).optional()
 })
 
 export async function applyOnboardingKit(
     categoryId: string,
     specialties: string[],
-    pricingTier: PricingTier
+    pricingTier: PricingTier,
+    businessProfile?: { businessName?: string; phone?: string; cnpj?: string; email?: string; logoUrl?: string | null }
 ) {
     const supabase = await createClient()
 
@@ -57,7 +65,7 @@ export async function applyOnboardingKit(
     const userId = user.id
 
     // Validate Input
-    const result = OnboardingSchema.safeParse({ categoryId, specialties, pricingTier })
+    const result = OnboardingSchema.safeParse({ categoryId, specialties, pricingTier, businessProfile })
     if (!result.success) {
         return { success: false, error: "Invalid input data" }
     }
@@ -132,12 +140,22 @@ export async function applyOnboardingKit(
         console.log('Marking user as onboarded:', userId)
 
         // First, ensure profile exists (fallback in case trigger didn't fire)
+        const profileDataToUpsert: any = {
+            id: userId,
+            onboarded_at: new Date().toISOString()
+        };
+
+        if (businessProfile) {
+            if (businessProfile.businessName) profileDataToUpsert.business_name = businessProfile.businessName;
+            if (businessProfile.phone) profileDataToUpsert.phone = businessProfile.phone;
+            if (businessProfile.cnpj) profileDataToUpsert.cnpj = businessProfile.cnpj;
+            if (businessProfile.email) profileDataToUpsert.email = businessProfile.email;
+            if (businessProfile.logoUrl) profileDataToUpsert.logo_url = businessProfile.logoUrl;
+        }
+
         const { error: upsertError } = await supabase
             .from("profiles")
-            .upsert({
-                id: userId,
-                onboarded_at: new Date().toISOString()
-            }, {
+            .upsert(profileDataToUpsert, {
                 onConflict: 'id'
             })
 

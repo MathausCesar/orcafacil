@@ -27,7 +27,7 @@ export default async function OnboardingPage() {
 
     return (
         <OnboardingProvider>
-            <WizardContentClient />
+            <WizardContentClient userId={user.id} initialEmail={user.email || ''} />
         </OnboardingProvider>
     );
 }

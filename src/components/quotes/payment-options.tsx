@@ -12,12 +12,15 @@ interface PaymentOptionsProps {
     showCashDiscount?: boolean
     /** Percentual de desconto à vista (ex: 5 = 5%) */
     cashDiscountPercent?: number
+    /** Número de parcelas */
+    installmentCount?: number
 }
 
 export function PaymentOptions({
     themeColor = '#0D9B5C',
     showCashDiscount = false,
-    cashDiscountPercent = 5
+    cashDiscountPercent = 5,
+    installmentCount
 }: PaymentOptionsProps) {
     const paymentMethods: PaymentOption[] = [
         {
@@ -42,7 +45,7 @@ export function PaymentOptions({
         {
             icon: Calendar,
             title: 'Parcelado',
-            description: 'Condições a combinar'
+            description: installmentCount ? `Em até ${installmentCount}x` : 'Condições a combinar'
         }
     ]
 

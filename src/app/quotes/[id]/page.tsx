@@ -275,6 +275,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                         themeColor={themeColor}
                                         showCashDiscount={(quote.cash_discount_percent ?? 0) > 0}
                                         cashDiscountPercent={quote.cash_discount_percent ?? 0}
+                                        installmentCount={quote.installment_count}
                                     />
                                 )}
 
@@ -428,7 +429,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     <div className="flex flex-wrap gap-3">
                                         {(quote.payment_methods?.length ? quote.payment_methods : ['pix', 'card', 'cash', 'installment']).map((m: string) => (
                                             <span key={m} className="px-4 py-2 border border-slate-300 text-sm font-medium">
-                                                {m === 'pix' ? '📱 PIX' : m === 'cash' ? '💵 Dinheiro' : m === 'card' ? '💳 Cartão' : '📅 Parcelado'}
+                                                {m === 'pix' ? '📱 PIX' : m === 'cash' ? '💵 Dinheiro' : m === 'card' ? '💳 Cartão' : `📅 Parcelado${quote.installment_count ? ` em até ${quote.installment_count}x` : ''}`}
                                             </span>
                                         ))}
                                     </div>
@@ -549,7 +550,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     <div className="flex flex-wrap justify-center gap-4">
                                         {(quote.payment_methods?.length ? quote.payment_methods : ['pix', 'card', 'cash', 'installment']).map((m: string) => (
                                             <span key={m} className="px-6 py-3 border border-black text-sm uppercase tracking-wider">
-                                                {m === 'pix' ? 'PIX' : m === 'cash' ? 'Dinheiro' : m === 'card' ? 'Cartão' : 'Parcelado'}
+                                                {m === 'pix' ? 'PIX' : m === 'cash' ? 'Dinheiro' : m === 'card' ? 'Cartão' : `Parcelado${quote.installment_count ? ` em até ${quote.installment_count}x` : ''}`}
                                             </span>
                                         ))}
                                     </div>

@@ -27,11 +27,6 @@ export function DesktopSidebar({ className }: DesktopSidebarProps) {
             icon: FileText,
         },
         {
-            href: '/new',
-            label: 'Novo Orçamento',
-            icon: PlusCircle,
-        },
-        {
             href: '/clients',
             label: 'Meus Clientes',
             icon: Users,

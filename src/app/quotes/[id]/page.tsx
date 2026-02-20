@@ -167,8 +167,11 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                             <Image src={profile.logo_url} alt="Logo" fill className="object-contain object-left" unoptimized />
                                         </div>
                                     )}
-                                    <h1 className="text-2xl font-bold text-foreground">{profile?.business_name || 'Sua Empresa'}</h1>
-                                    <p className="text-sm text-muted-foreground">{profile?.phone}</p>
+                                    {profile?.business_name && <h1 className="text-2xl font-bold text-foreground">{profile.business_name}</h1>}
+                                    <div className="text-sm text-muted-foreground mt-1 space-y-0.5">
+                                        {profile?.cnpj && <p>CNPJ: {profile.cnpj}</p>}
+                                        {profile?.phone && <p>{profile.phone}</p>}
+                                    </div>
                                 </div>
                                 <div className="text-right">
                                     <h2 className="text-3xl font-black text-[var(--theme-color)]/20 tracking-tighter">ORÇAMENTO</h2>
@@ -317,8 +320,9 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     <div className="h-4 w-12 bg-[var(--theme-color)] mb-4"></div>
                                     <h1 className="text-3xl font-bold uppercase tracking-wide text-foreground">{profile?.business_name || 'EMPRESA'}</h1>
                                     <div className="mt-2 text-sm text-muted-foreground space-y-0.5">
-                                        <p>{profile?.phone}</p>
-                                        <p>{profile?.email}</p>
+                                        {profile?.cnpj && <p>CNPJ: {profile.cnpj}</p>}
+                                        {profile?.phone && <p>{profile.phone}</p>}
+                                        {profile?.email && <p>{profile.email}</p>}
                                     </div>
                                 </div>
                                 <div className="text-right flex flex-col items-end">
@@ -451,7 +455,13 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     </div>
                                 )}
                                 <h1 className="text-4xl font-normal text-black tracking-widest uppercase">{profile?.business_name}</h1>
-                                <p className="text-sm italic">{profile?.phone} &bull; {profile?.email}</p>
+
+                                <div className="text-sm italic space-y-1">
+                                    {profile?.cnpj && <p>CNPJ: {profile.cnpj}</p>}
+                                    <p>
+                                        {[profile?.phone, profile?.email].filter(Boolean).join(' • ')}
+                                    </p>
+                                </div>
                             </div>
 
                             <div className="flex justify-between items-baseline pt-4">

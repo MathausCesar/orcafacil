@@ -120,15 +120,28 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="email">Email Comercial</Label>
-                                        <Input
-                                            id="email"
-                                            name="email"
-                                            defaultValue={initialProfile?.email}
-                                            placeholder="Ex: contato@suaempresa.com"
-                                            className="focus-visible:ring-primary h-10"
-                                        />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="cnpj">CNPJ</Label>
+                                            <Input
+                                                id="cnpj"
+                                                name="cnpj"
+                                                defaultValue={initialProfile?.cnpj || ''}
+                                                className="focus-visible:ring-primary h-10 font-mono"
+                                                placeholder="00.000.000/0000-00"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="email">Email Comercial</Label>
+                                            <Input
+                                                id="email"
+                                                name="email"
+                                                defaultValue={initialProfile?.email || ''}
+                                                placeholder="Ex: contato@suaempresa.com"
+                                                className="focus-visible:ring-primary h-10"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

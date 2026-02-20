@@ -1,8 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { login, signup } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,10 +22,21 @@ import { cn } from '@/lib/utils'
 
 export function LoginForm() {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const [loading, setLoading] = useState(false)
     const [mode, setMode] = useState<'login' | 'register'>('login')
     const [showSuccessDialog, setShowSuccessDialog] = useState(false)
     const [emailSent, setEmailSent] = useState('')
+
+    useEffect(() => {
+        const message = searchParams.get('message')
+        if (message === 'auth_code_error') {
+            toast.error('Link inválido ou já utilizado.', {
+                description: 'Tente fazer login com sua senha. Se não conseguir, refaça o cadastro.'
+            })
+            router.replace('/login')
+        }
+    }, [searchParams, router])
 
     const handleSubmit = async (formData: FormData, action: typeof login | typeof signup) => {
         setLoading(true)

@@ -39,7 +39,7 @@ export default async function Dashboard() {
     .from('quotes')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
-    .eq('status', 'pending')
+    .in('status', ['pending', 'draft'])
 
   const { data: recentQuotes } = await supabase
     .from('quotes')

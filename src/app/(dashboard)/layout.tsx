@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { checkOnboardingStatus } from '@/app/actions/profile'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { DesktopSidebar } from '@/components/layout/desktop-sidebar'
+import { SupportWidget } from '@/components/support/support-widget'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function DashboardLayout({
@@ -42,6 +43,9 @@ export default async function DashboardLayout({
             <div className="lg:hidden">
                 <BottomNav />
             </div>
+
+            {/* Floating Support Widget - Rendered globally for logged in providers */}
+            <SupportWidget />
         </div>
     )
 }

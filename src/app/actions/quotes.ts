@@ -201,6 +201,7 @@ export async function deleteQuote(id: string) {
     }
 
     revalidatePath('/')
+    revalidatePath('/quotes')
     return { success: true }
 }
 

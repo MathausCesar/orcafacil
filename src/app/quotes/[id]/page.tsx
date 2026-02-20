@@ -149,8 +149,8 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
             )}>
 
                 {/* Status Actions (Approve/Reject) - Visible to everyone, but context matters */}
-                {/* Normally only client approves, but for simplicity showing to all if not draft? Or show always? */}
-                {/* Let's show it prominently if status is draft or sent */}
+                {/* Normally only client approves, but for simplicity showing to all if not pending? Or show always? */}
+                {/* Let's show it prominently if status is pending or sent */}
                 <div className="print:hidden">
                     <QuoteStatusActions quoteId={quote.id} currentStatus={quote.status} isOwner={isOwner} />
                 </div>
@@ -240,8 +240,8 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     </div>
                                 </div>
 
-                                {/* Urgency Badge - Always show for non-draft quotes */}
-                                {quote.status !== 'draft' && (
+                                {/* Urgency Badge - Always show for non-pending quotes (since pending replaces draft) */}
+                                {quote.status !== 'pending' && (
                                     <div className="flex justify-center">
                                         <UrgencyBadge
                                             themeColor={themeColor}

@@ -49,11 +49,11 @@ export async function markAllAsRead() {
 async function checkInactiveQuotes(userId: string) {
     const supabase = await createClient()
 
-    // 1. Get active quotes (draft or sent)
+    // 1. Get active quotes (pending or sent)
     const { data: quotes } = await supabase
         .from('quotes')
         .select('id, client_name, updated_at, created_at, status')
-        .in('status', ['draft', 'sent'])
+        .in('status', ['pending', 'sent'])
         .eq('user_id', userId)
 
     if (!quotes) return

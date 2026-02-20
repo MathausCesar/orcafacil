@@ -46,7 +46,7 @@ export async function createQuote(formData: FormData) {
             payment_terms: paymentTerms,
             notes: notes,
             total: total,
-            status: 'draft',
+            status: 'pending',
             // Customization fields
             show_timeline: showTimeline,
             show_payment_options: showPaymentOptions,

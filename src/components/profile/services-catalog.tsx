@@ -250,28 +250,36 @@ export function ServicesCatalog({ initialServices, initialFolders, userId }: Ser
                                         {items.map((service) => (
                                             <div
                                                 key={service.id}
-                                                className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200 hover:border-primary/40 hover:shadow-sm transition-all group"
+                                                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white rounded-xl border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all group gap-4"
                                             >
-                                                <div className="flex-1 min-w-0 flex flex-col items-start gap-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <p className="font-medium text-sm text-foreground truncate">{service.description}</p>
-                                                        <Badge variant="outline" className="text-[10px] py-0 h-4 border-slate-200 text-slate-500 font-normal">
+                                                <div className="flex-1 min-w-0 flex flex-col items-start gap-1.5 w-full">
+                                                    <div className="flex items-start justify-between w-full gap-3">
+                                                        <p className="font-semibold text-sm text-slate-800 leading-tight">
+                                                            {service.description}
+                                                        </p>
+                                                        <Badge variant="outline" className="text-[10px] py-0 h-5 border-slate-200 text-slate-500 font-normal shrink-0 bg-slate-50">
                                                             {service.type === 'product' ? <Package className="h-3 w-3 mr-1" /> : <Wrench className="h-3 w-3 mr-1" />}
                                                             {service.type === 'product' ? 'Produto' : 'Serviço'}
                                                         </Badge>
                                                     </div>
                                                     {service.details && (
-                                                        <p className="text-xs text-muted-foreground truncate max-w-sm">{service.details}</p>
+                                                        <p className="text-xs text-slate-500 leading-snug line-clamp-2 sm:line-clamp-1 w-full max-w-2xl">
+                                                            {service.details}
+                                                        </p>
                                                     )}
                                                 </div>
-                                                <div className="flex items-center gap-3">
-                                                    <p className="text-sm text-primary font-bold">{formatBRL(service.default_price)}</p>
-                                                    <div className="flex items-center gap-1 opacity-50 group-hover:opacity-100 transition-opacity">
+
+                                                <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4 pt-3 sm:pt-0 border-t border-slate-100 sm:border-0 mt-1 sm:mt-0">
+                                                    <div className="flex flex-col sm:text-right">
+                                                        <span className="text-[10px] uppercase tracking-wider text-slate-400 font-medium sm:hidden mb-0.5">Valor Unitário</span>
+                                                        <p className="text-sm text-emerald-600 font-bold">{formatBRL(service.default_price)}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                                         <EditServiceDialog service={service} initialFolders={initialFolders} />
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
-                                                            className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50"
+                                                            className="h-8 w-8 text-rose-500 hover:text-rose-600 hover:bg-rose-50 rounded-full"
                                                             onClick={() => handleDelete(service.id)}
                                                         >
                                                             <Trash2 className="h-4 w-4" />

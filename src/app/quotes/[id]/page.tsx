@@ -67,7 +67,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
     const isOwner = user?.id === quote.user_id
 
     const total = quote.total || 0;
-    const approvalUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://orcafacil.com'}/quotes/${id}/approve`;
+    const approvalUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://orcafacil.com'}/quotes/${id}`;
     const totalFormatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total);
     const businessName = profile?.business_name || 'nossa empresa';
     const itemCount = quote.quote_items?.length ?? 0;

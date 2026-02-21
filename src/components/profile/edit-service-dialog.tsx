@@ -13,6 +13,13 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
 import { Pencil } from 'lucide-react'
 import { updateService } from '@/app/actions/services'
 import { toast } from 'sonner'
@@ -122,15 +129,15 @@ export function EditServiceDialog({ service, initialFolders }: EditServiceDialog
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="type" className="text-right">Tipo</Label>
-                        <select
-                            id="type"
-                            value={type}
-                            onChange={(e) => setType(e.target.value as 'service' | 'product')}
-                            className="col-span-3 flex h-9 w-full items-center justify-between rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                        >
-                            <option value="service">Serviço</option>
-                            <option value="product">Produto</option>
-                        </select>
+                        <Select value={type} onValueChange={(val) => setType(val as 'service' | 'product')}>
+                            <SelectTrigger id="type" className="col-span-3 bg-white">
+                                <SelectValue placeholder="Selecione..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="service">Serviço</SelectItem>
+                                <SelectItem value="product">Produto</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="details" className="text-right">Detalhes / Descrição</Label>
@@ -144,17 +151,17 @@ export function EditServiceDialog({ service, initialFolders }: EditServiceDialog
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="folder" className="text-right">Pasta</Label>
-                        <select
-                            id="folder"
-                            value={folderId}
-                            onChange={(e) => setFolderId(e.target.value)}
-                            className="col-span-3 flex h-9 w-full items-center justify-between rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                        >
-                            <option value="">Nenhuma pasta</option>
-                            {initialFolders.map(f => (
-                                <option key={f.id} value={f.id}>{f.name}</option>
-                            ))}
-                        </select>
+                        <Select value={folderId || 'none'} onValueChange={(val) => setFolderId(val === 'none' ? '' : val)}>
+                            <SelectTrigger id="folder" className="col-span-3 bg-white">
+                                <SelectValue placeholder="Sem pasta" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">Nenhuma pasta</SelectItem>
+                                {initialFolders.map(f => (
+                                    <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
                 <DialogFooter>

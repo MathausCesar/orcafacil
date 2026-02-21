@@ -12,6 +12,13 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
 
 interface Service {
     id: string
@@ -151,14 +158,15 @@ export function ServicesCatalog({ initialServices, initialFolders, userId }: Ser
                     </div>
                     <div className="w-full sm:w-40 space-y-1">
                         <Label className="text-xs text-muted-foreground">Tipo</Label>
-                        <select
-                            value={type}
-                            onChange={(e) => setType(e.target.value as 'service' | 'product')}
-                            className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            <option value="service">Serviço</option>
-                            <option value="product">Produto</option>
-                        </select>
+                        <Select value={type} onValueChange={(value) => setType(value as 'service' | 'product')}>
+                            <SelectTrigger className="bg-white">
+                                <SelectValue placeholder="Selecione o tipo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="service">Serviço</SelectItem>
+                                <SelectItem value="product">Produto</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
 
@@ -175,18 +183,17 @@ export function ServicesCatalog({ initialServices, initialFolders, userId }: Ser
                     </div>
                     <div className="w-full sm:w-48 space-y-1">
                         <Label className="text-xs text-muted-foreground">Pasta (Opcional)</Label>
-                        <div className="flex gap-2">
-                            <select
-                                value={folderId}
-                                onChange={(e) => setFolderId(e.target.value)}
-                                className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                <option value="">Sem pasta</option>
+                        <Select value={folderId || 'none'} onValueChange={(val) => setFolderId(val === 'none' ? '' : val)}>
+                            <SelectTrigger className="bg-white">
+                                <SelectValue placeholder="Sem pasta" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">Sem pasta</SelectItem>
                                 {initialFolders.map(f => (
-                                    <option key={f.id} value={f.id}>{f.name}</option>
+                                    <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
                                 ))}
-                            </select>
-                        </div>
+                            </SelectContent>
+                        </Select>
                     </div>
                     <Button
                         onClick={handleAdd}
@@ -206,48 +213,80 @@ export function ServicesCatalog({ initialServices, initialFolders, userId }: Ser
                     <p className="text-xs mt-1 text-primary/50">Cadastre seus serviços para agilizar orçamentos.</p>
                 </div>
             ) : (
-                <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
-                    {services.map((service) => {
-                        const folder = initialFolders.find(f => f.id === service.folder_id)
-                        return (
-                            <div
-                                key={service.id}
-                                className="flex items-center justify-between p-3 bg-card rounded-lg border border-primary/10 hover:border-primary/25 transition-all group"
-                            >
-                                <div className="flex-1 min-w-0 flex flex-col items-start gap-1">
-                                    <div className="flex items-center gap-2">
-                                        <p className="font-medium text-sm text-foreground truncate">{service.description}</p>
-                                        <Badge variant="outline" className="text-[10px] py-0 h-4 border-slate-200 text-slate-500 font-normal">
-                                            {service.type === 'product' ? <Package className="h-3 w-3 mr-1" /> : <Wrench className="h-3 w-3 mr-1" />}
-                                            {service.type === 'product' ? 'Produto' : 'Serviço'}
-                                        </Badge>
-                                        {folder && (
-                                            <Badge variant="secondary" className="text-[10px] py-0 h-4 bg-slate-100 text-slate-600 font-normal">
-                                                <Folder className="h-3 w-3 mr-1" /> {folder.name}
-                                            </Badge>
-                                        )}
+                <div className="space-y-6 max-h-[32rem] overflow-y-auto pr-1 pb-4">
+                    {(() => {
+                        // Agrupar serviços por pasta
+                        const grouped = services.reduce((acc, currentService) => {
+                            const groupKey = currentService.folder_id || 'unassigned'
+                            if (!acc[groupKey]) {
+                                acc[groupKey] = []
+                            }
+                            acc[groupKey].push(currentService)
+                            return acc
+                        }, {} as Record<string, Service[]>)
+
+                        // Ordenar chaves: pastas existentes primeiro, "unassigned" por último
+                        const sortedKeys = Object.keys(grouped).sort((a, b) => {
+                            if (a === 'unassigned') return 1
+                            if (b === 'unassigned') return -1
+                            const folderA = initialFolders.find(f => f.id === a)
+                            const folderB = initialFolders.find(f => f.id === b)
+                            return (folderA?.name || '').localeCompare(folderB?.name || '')
+                        })
+
+                        return sortedKeys.map(key => {
+                            const items = grouped[key]
+                            const isUnassigned = key === 'unassigned'
+                            const folder = !isUnassigned ? initialFolders.find(f => f.id === key) : null
+
+                            return (
+                                <div key={key} className="space-y-3">
+                                    <h4 className="flex items-center gap-2 text-sm font-semibold text-slate-800 pb-1 border-b border-slate-100">
+                                        <Folder className="h-4 w-4" style={{ color: folder?.color || '#94a3b8' }} />
+                                        {folder ? folder.name : 'Sem Pasta'}
+                                        <span className="text-xs font-normal text-muted-foreground bg-slate-100 px-2 py-0.5 rounded-full ml-1">
+                                            {items.length}
+                                        </span>
+                                    </h4>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {items.map((service) => (
+                                            <div
+                                                key={service.id}
+                                                className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200 hover:border-primary/40 hover:shadow-sm transition-all group"
+                                            >
+                                                <div className="flex-1 min-w-0 flex flex-col items-start gap-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="font-medium text-sm text-foreground truncate">{service.description}</p>
+                                                        <Badge variant="outline" className="text-[10px] py-0 h-4 border-slate-200 text-slate-500 font-normal">
+                                                            {service.type === 'product' ? <Package className="h-3 w-3 mr-1" /> : <Wrench className="h-3 w-3 mr-1" />}
+                                                            {service.type === 'product' ? 'Produto' : 'Serviço'}
+                                                        </Badge>
+                                                    </div>
+                                                    {service.details && (
+                                                        <p className="text-xs text-muted-foreground truncate max-w-sm">{service.details}</p>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <p className="text-sm text-primary font-bold">{formatBRL(service.default_price)}</p>
+                                                    <div className="flex items-center gap-1 opacity-50 group-hover:opacity-100 transition-opacity">
+                                                        <EditServiceDialog service={service} initialFolders={initialFolders} />
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50"
+                                                            onClick={() => handleDelete(service.id)}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                    {service.details && (
-                                        <p className="text-xs text-muted-foreground truncate max-w-sm">{service.details}</p>
-                                    )}
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <p className="text-sm text-primary font-bold">{formatBRL(service.default_price)}</p>
-                                    <div className="flex items-center gap-1 opacity-50 group-hover:opacity-100 transition-opacity">
-                                        <EditServiceDialog service={service} initialFolders={initialFolders} />
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50"
-                                            onClick={() => handleDelete(service.id)}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        )
-                    })}
+                            )
+                        })
+                    })()}
                 </div>
             )}
         </div>

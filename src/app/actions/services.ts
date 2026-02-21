@@ -14,6 +14,10 @@ export async function createService(formData: FormData) {
     const description = formData.get('description') as string
     const priceRaw = formData.get('price') as string
     const price = parseFloat(priceRaw.replace(',', '.'))
+    const type = (formData.get('type') as string) || 'service'
+    const details = (formData.get('details') as string) || null
+    const folderIdRaw = formData.get('folder_id') as string
+    const folder_id = folderIdRaw && folderIdRaw !== 'none' ? folderIdRaw : null
 
     if (!description || isNaN(price)) {
         return { error: 'Invalid data' }
@@ -24,7 +28,10 @@ export async function createService(formData: FormData) {
         .insert({
             user_id: user.id,
             description: description.trim(),
-            default_price: price
+            default_price: price,
+            type,
+            details: details?.trim() || null,
+            folder_id
         })
 
     if (error) {
@@ -47,6 +54,10 @@ export async function updateService(id: string, formData: FormData) {
     const description = formData.get('description') as string
     const priceRaw = formData.get('price') as string
     const price = parseFloat(priceRaw.replace(',', '.'))
+    const type = (formData.get('type') as string) || 'service'
+    const details = (formData.get('details') as string) || null
+    const folderIdRaw = formData.get('folder_id') as string
+    const folder_id = folderIdRaw && folderIdRaw !== 'none' ? folderIdRaw : null
 
     if (!description || isNaN(price)) {
         return { error: 'Invalid data' }
@@ -56,7 +67,10 @@ export async function updateService(id: string, formData: FormData) {
         .from('services')
         .update({
             description: description.trim(),
-            default_price: price
+            default_price: price,
+            type,
+            details: details?.trim() || null,
+            folder_id
         })
         .eq('id', id)
         .eq('user_id', user.id) // Security check

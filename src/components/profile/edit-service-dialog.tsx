@@ -23,16 +23,29 @@ interface Service {
     description: string
     default_price: number
     category: string | null
+    type?: 'service' | 'product'
+    details?: string | null
+    folder_id?: string | null
+}
+
+export interface ItemFolder {
+    id: string
+    name: string
+    color: string | null
 }
 
 interface EditServiceDialogProps {
     service: Service
+    initialFolders: ItemFolder[]
 }
 
-export function EditServiceDialog({ service }: EditServiceDialogProps) {
+export function EditServiceDialog({ service, initialFolders }: EditServiceDialogProps) {
     const [open, setOpen] = useState(false)
     const [description, setDescription] = useState(service.description)
     const [price, setPrice] = useState(service.default_price.toString().replace('.', ','))
+    const [type, setType] = useState<'service' | 'product'>(service.type || 'service')
+    const [details, setDetails] = useState(service.details || '')
+    const [folderId, setFolderId] = useState(service.folder_id || '')
     const [saving, setSaving] = useState(false)
     const router = useRouter()
 
@@ -47,8 +60,11 @@ export function EditServiceDialog({ service }: EditServiceDialogProps) {
             const formData = new FormData()
             formData.append('description', description)
             formData.append('price', price)
+            formData.append('type', type)
+            if (details.trim()) formData.append('details', details)
+            if (folderId) formData.append('folder_id', folderId)
 
-            console.log('Sending data:', { description, price }) // Debug
+            console.log('Sending data:', { description, price, type, folderId }) // Debug
 
             const result = await updateService(service.id, formData)
 
@@ -103,6 +119,42 @@ export function EditServiceDialog({ service }: EditServiceDialogProps) {
                             onChange={(e) => setPrice(e.target.value)}
                             className="col-span-3"
                         />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="type" className="text-right">Tipo</Label>
+                        <select
+                            id="type"
+                            value={type}
+                            onChange={(e) => setType(e.target.value as 'service' | 'product')}
+                            className="col-span-3 flex h-9 w-full items-center justify-between rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        >
+                            <option value="service">Serviço</option>
+                            <option value="product">Produto</option>
+                        </select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="details" className="text-right">Detalhes / Descrição</Label>
+                        <Input
+                            id="details"
+                            value={details}
+                            onChange={(e) => setDetails(e.target.value)}
+                            className="col-span-3"
+                            placeholder="Ex: Descrição rica do item..."
+                        />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="folder" className="text-right">Pasta</Label>
+                        <select
+                            id="folder"
+                            value={folderId}
+                            onChange={(e) => setFolderId(e.target.value)}
+                            className="col-span-3 flex h-9 w-full items-center justify-between rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        >
+                            <option value="">Nenhuma pasta</option>
+                            {initialFolders.map(f => (
+                                <option key={f.id} value={f.id}>{f.name}</option>
+                            ))}
+                        </select>
                     </div>
                 </div>
                 <DialogFooter>

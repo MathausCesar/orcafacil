@@ -28,6 +28,12 @@ export default async function ProfilePage() {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
+    const { data: folders } = await supabase
+        .from('item_folders')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('name', { ascending: true })
+
     return (
         <div className="space-y-6 pb-20">
             <div className="flex items-center gap-2 mb-4">
@@ -51,7 +57,7 @@ export default async function ProfilePage() {
                     </p>
                 </CardHeader>
                 <CardContent className="pt-6">
-                    <ServicesCatalog initialServices={services || []} userId={user.id} />
+                    <ServicesCatalog initialServices={services || []} initialFolders={folders || []} userId={user.id} />
                 </CardContent>
             </Card>
 

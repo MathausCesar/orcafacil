@@ -4,9 +4,10 @@ import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Plus, Package } from 'lucide-react'
+import { Plus, Package, Folder, Wrench } from 'lucide-react'
 import { toast } from 'sonner'
 import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
 
 interface ProductSearchProps {
     onAddProduct: (product: { name: string; price: number; quantity: number }) => void;
@@ -16,6 +17,14 @@ interface SavedService {
     id: string
     description: string
     default_price: number
+    type?: 'service' | 'product'
+    details?: string | null
+    folder_id?: string | null
+}
+
+interface ItemFolder {
+    id: string
+    name: string
 }
 
 export function ProductSearch({ onAddProduct }: ProductSearchProps) {
@@ -23,6 +32,7 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
     const [price, setPrice] = useState('')
     const [quantity, setQuantity] = useState('1')
     const [savedServices, setSavedServices] = useState<SavedService[]>([])
+    const [folders, setFolders] = useState<ItemFolder[]>([])
     const [suggestions, setSuggestions] = useState<SavedService[]>([])
     const [showSuggestions, setShowSuggestions] = useState(false)
     const suggestionsRef = useRef<HTMLDivElement>(null)
@@ -33,9 +43,14 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
             const supabase = createClient()
             const { data } = await supabase
                 .from('services')
-                .select('id, description, default_price')
+                .select('*')
                 .order('description')
 
+            const { data: folderData } = await supabase
+                .from('item_folders')
+                .select('id, name')
+
+            if (folderData) setFolders(folderData)
             if (data) setSavedServices(data)
         }
         loadServices()
@@ -130,18 +145,53 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
 
                 {/* Suggestions dropdown */}
                 {showSuggestions && (
-                    <div className="absolute z-20 left-0 right-0 top-full mt-1 bg-card border border-primary/15 rounded-lg shadow-lg max-h-40 overflow-y-auto">
-                        {suggestions.map((s) => (
-                            <button
-                                key={s.id}
-                                type="button"
-                                className="w-full text-left px-3 py-2.5 hover:bg-primary/10 transition-colors flex justify-between items-center border-b border-primary/5 last:border-0"
-                                onClick={() => selectSuggestion(s)}
-                            >
-                                <span className="text-sm font-medium text-foreground">{s.description}</span>
-                                <span className="text-xs font-semibold text-primary ml-2">{formatBRL(s.default_price)}</span>
-                            </button>
-                        ))}
+                    <div className="absolute z-20 left-0 right-0 top-full mt-1 bg-card border border-primary/15 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                        {(() => {
+                            // Group suggestions by folder
+                            const grouped = suggestions.reduce((acc, curr) => {
+                                const key = curr.folder_id || 'none'
+                                if (!acc[key]) acc[key] = []
+                                acc[key].push(curr)
+                                return acc
+                            }, {} as Record<string, typeof suggestions>)
+
+                            return Object.entries(grouped).map(([folderId, items]) => {
+                                const folderName = folderId === 'none' ? 'Itens sem pasta' : folders.find(f => f.id === folderId)?.name || 'Pasta Desconhecida'
+
+                                return (
+                                    <div key={folderId} className="border-b border-primary/10 last:border-0 pb-1">
+                                        <div className="px-3 py-1.5 bg-slate-50 border-y border-slate-100/50 flex items-center gap-1.5 sticky top-0 z-10">
+                                            <Folder className="h-3 w-3 text-slate-400" />
+                                            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider sticky top-0">
+                                                {folderName}
+                                            </span>
+                                        </div>
+                                        {items.map((s) => (
+                                            <button
+                                                key={s.id}
+                                                type="button"
+                                                className="w-full text-left px-3 py-2.5 hover:bg-primary/5 transition-colors flex flex-col items-start border-b border-slate-50 last:border-0"
+                                                onClick={() => selectSuggestion(s)}
+                                            >
+                                                <div className="flex justify-between items-center w-full">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm font-medium text-foreground">{s.description}</span>
+                                                        <Badge variant="outline" className="text-[10px] py-0 h-4 border-slate-200 text-slate-500 font-normal">
+                                                            {s.type === 'product' ? <Package className="h-3 w-3 mr-1" /> : <Wrench className="h-3 w-3 mr-1" />}
+                                                            {s.type === 'product' ? 'Produto' : 'Serviço'}
+                                                        </Badge>
+                                                    </div>
+                                                    <span className="text-xs font-semibold text-primary ml-2">{formatBRL(s.default_price)}</span>
+                                                </div>
+                                                {s.details && (
+                                                    <p className="text-[10px] text-muted-foreground mt-1 truncate max-w-sm">{s.details}</p>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )
+                            })
+                        })()}
                     </div>
                 )}
             </div>

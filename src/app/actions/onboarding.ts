@@ -103,17 +103,21 @@ export async function applyOnboardingKit(
         )
 
         // Combine both into 'services' table (acting as generic catalog)
-        // Schema: user_id, description, default_price
+        // Schema: user_id, description, default_price, details, type
         const allItems = [
             ...relevantServices.map(s => ({
                 user_id: userId,
                 description: s.name, // Map name to description
-                default_price: Math.round(s.default_price * multiplier)
+                default_price: Math.round(s.default_price * multiplier),
+                details: s.description || null,
+                type: 'service'
             })),
             ...relevantProducts.map(p => ({
                 user_id: userId,
                 description: p.name, // Map name to description
-                default_price: Math.round(p.default_price * multiplier)
+                default_price: Math.round(p.default_price * multiplier),
+                details: p.description || null,
+                type: 'product'
             }))
         ]
 

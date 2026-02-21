@@ -125,14 +125,12 @@ export function ServicesCatalog({ initialServices, initialFolders, userId }: Ser
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center mb-[-1rem]">
-                <h3 className="text-sm font-semibold text-foreground hidden sm:block">Adicionar Item</h3>
-                <div className="flex flex-1 justify-end">
-                    <FoldersDialog folders={initialFolders} />
-                </div>
-            </div>
             {/* Add Form */}
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-200/60">
+                    <h3 className="text-sm font-semibold text-slate-800">Adicionar Novo Item</h3>
+                    <FoldersDialog folders={initialFolders} />
+                </div>
                 <div className="flex flex-col sm:flex-row gap-3">
                     <div className="flex-1 space-y-1">
                         <Label className="text-xs text-muted-foreground">Título do Item</Label>

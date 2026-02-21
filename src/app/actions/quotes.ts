@@ -24,6 +24,7 @@ export async function createQuote(formData: FormData) {
     // Customization fields
     const showTimeline = formData.get('show_timeline') === 'true'
     const showPaymentOptions = formData.get('show_payment_options') === 'true'
+    const showDetailedItems = formData.get('show_detailed_items') === 'true'
     const estimatedDays = formData.get('estimated_days') ? parseInt(formData.get('estimated_days') as string) : null
     const cashDiscountPercent = formData.get('cash_discount_percent') ? parseInt(formData.get('cash_discount_percent') as string) : 0
     const installmentCount = formData.get('installment_count') ? parseInt(formData.get('installment_count') as string) : null
@@ -50,6 +51,7 @@ export async function createQuote(formData: FormData) {
             // Customization fields
             show_timeline: showTimeline,
             show_payment_options: showPaymentOptions,
+            show_detailed_items: showDetailedItems,
             estimated_days: estimatedDays,
             cash_discount_percent: cashDiscountPercent,
             payment_methods: paymentMethods,
@@ -67,6 +69,7 @@ export async function createQuote(formData: FormData) {
     const quoteItems = items.map((item: any) => ({
         quote_id: quote.id,
         description: item.description,
+        details: item.details || null,
         quantity: item.quantity,
         unit_price: item.unitPrice
     }))
@@ -111,6 +114,7 @@ export async function updateQuote(id: string, formData: FormData) {
     // Customization fields
     const showTimeline = formData.get('show_timeline') === 'true'
     const showPaymentOptions = formData.get('show_payment_options') === 'true'
+    const showDetailedItems = formData.get('show_detailed_items') === 'true'
     const estimatedDays = formData.get('estimated_days') ? parseInt(formData.get('estimated_days') as string) : null
     const cashDiscountPercent = formData.get('cash_discount_percent') ? parseInt(formData.get('cash_discount_percent') as string) : 0
     const installmentCount = formData.get('installment_count') ? parseInt(formData.get('installment_count') as string) : null
@@ -131,9 +135,9 @@ export async function updateQuote(id: string, formData: FormData) {
             notes: notes,
             total: total,
             updated_at: new Date().toISOString(),
-            // Customization fields
             show_timeline: showTimeline,
             show_payment_options: showPaymentOptions,
+            show_detailed_items: showDetailedItems,
             estimated_days: estimatedDays,
             cash_discount_percent: cashDiscountPercent,
             payment_methods: paymentMethods,
@@ -163,6 +167,7 @@ export async function updateQuote(id: string, formData: FormData) {
     const quoteItems = items.map((item: any) => ({
         quote_id: id,
         description: item.description,
+        details: item.details || null,
         quantity: item.quantity,
         unit_price: item.unitPrice
     }))

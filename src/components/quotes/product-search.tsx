@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 
 interface ProductSearchProps {
-    onAddProduct: (product: { name: string; price: number; quantity: number }) => void;
+    onAddProduct: (product: { name: string; price: number; quantity: number; details?: string | null }) => void;
 }
 
 interface SavedService {
@@ -85,8 +85,13 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
     const selectSuggestion = (service: SavedService) => {
         setDescription(service.description)
         setPrice(service.default_price.toString())
+        // Store details in state or just trigger immediately? 
+        // We can just keep a ref/state of the selected service details
+        setSelectedDetails(service.details || null)
         setShowSuggestions(false)
     }
+
+    const [selectedDetails, setSelectedDetails] = useState<string | null>(null)
 
     const handleAdd = () => {
         if (!description.trim()) {
@@ -101,10 +106,11 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
             return
         }
 
-        onAddProduct({ name: description.trim(), price: priceVal, quantity: qtyVal })
+        onAddProduct({ name: description.trim(), price: priceVal, quantity: qtyVal, details: selectedDetails })
         setDescription('')
         setPrice('')
         setQuantity('1')
+        setSelectedDetails(null)
         toast.success('Item adicionado!')
     }
 

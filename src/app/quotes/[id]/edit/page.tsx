@@ -41,9 +41,11 @@ export default async function EditQuotePage(props: PageProps) {
         expirationDate: quote.expiration_date,
         paymentTerms: quote.payment_terms,
         notes: quote.notes,
+        showDetailedItems: quote.show_detailed_items || false,
         items: quote.quote_items.map((item: any) => ({
             id: item.id, // Or generate random if needed, but ID is fine
             description: item.description,
+            details: item.details,
             quantity: item.quantity,
             unitPrice: item.unit_price
         }))

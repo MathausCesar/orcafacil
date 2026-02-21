@@ -219,6 +219,9 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                                             />
                                                             <span>{item.description}</span>
                                                         </div>
+                                                        {quote.show_detailed_items && item.details && (
+                                                            <p className="text-sm text-muted-foreground mt-1 ml-6 whitespace-pre-wrap font-normal leading-relaxed">{item.details}</p>
+                                                        )}
                                                     </td>
                                                     <td className="py-4 text-center text-muted-foreground">{item.quantity}</td>
                                                     <td className="py-4 text-right text-muted-foreground">
@@ -369,7 +372,12 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 <tbody className="divide-y divide-slate-100">
                                     {quote.quote_items.map((item: any) => (
                                         <tr key={item.id}>
-                                            <td className="py-3 pl-4 text-sm font-medium">{item.description}</td>
+                                            <td className="py-3 pl-4 text-sm font-medium">
+                                                <div>{item.description}</div>
+                                                {quote.show_detailed_items && item.details && (
+                                                    <div className="text-xs text-slate-500 mt-1 whitespace-pre-wrap font-normal leading-relaxed">{item.details}</div>
+                                                )}
+                                            </td>
                                             <td className="py-3 text-center text-sm text-slate-500">{item.quantity}</td>
                                             <td className="py-3 text-right text-sm text-slate-500">
                                                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_price)}
@@ -487,7 +495,12 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 <div className="divide-y divide-dotted divide-gray-300">
                                     {quote.quote_items.map((item: any) => (
                                         <div key={item.id} className="grid grid-cols-12 gap-4 py-3 px-2 text-sm">
-                                            <div className="col-span-6">{item.description}</div>
+                                            <div className="col-span-6">
+                                                <div>{item.description}</div>
+                                                {quote.show_detailed_items && item.details && (
+                                                    <div className="text-xs italic text-gray-600 mt-1 whitespace-pre-wrap leading-relaxed">{item.details}</div>
+                                                )}
+                                            </div>
                                             <div className="col-span-2 text-center">{item.quantity}</div>
                                             <div className="col-span-2 text-right">
                                                 {new Intl.NumberFormat('pt-BR', { style: 'decimal', minimumFractionDigits: 2 }).format(item.unit_price)}

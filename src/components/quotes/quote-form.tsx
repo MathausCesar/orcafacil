@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
-import { Trash2, Save, ArrowLeft, Calendar as CalendarIcon, FileText, Loader2, Settings2, Wallet, Clock, CheckCircle2 } from 'lucide-react'
+import { Trash2, Save, ArrowLeft, Calendar as CalendarIcon, FileText, Loader2, Settings2, Wallet, Clock, CheckCircle2, AlignLeft } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { ClientAutocomplete } from '@/components/clients/client-autocomplete'
@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation'
 export interface QuoteItem {
     id: string;
     description: string;
+    details?: string | null;
     quantity: number;
     unitPrice: number;
 }
@@ -30,6 +31,7 @@ interface QuoteFormProps {
         expirationDate?: string
         paymentTerms?: string
         notes?: string
+        showDetailedItems?: boolean
         items: QuoteItem[]
     }
 }
@@ -43,6 +45,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
 
     // Customization states
     // In a real app, these could come from initialData too if persisted
+    const [showDetailedItems, setShowDetailedItems] = useState(initialData?.showDetailedItems || false)
     const [showTimeline, setShowTimeline] = useState(false)
     const [showPaymentOptions, setShowPaymentOptions] = useState(false)
     const [estimatedDays, setEstimatedDays] = useState('')
@@ -60,10 +63,11 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
         }
     }, [date])
 
-    const handleAddItem = (product: { name: string; price: number; quantity: number }) => {
+    const handleAddItem = (product: { name: string; price: number; quantity: number; details?: string | null }) => {
         const newItem: QuoteItem = {
             id: Math.random().toString(36).substr(2, 9),
             description: product.name,
+            details: product.details || null,
             quantity: product.quantity,
             unitPrice: product.price
         }
@@ -95,6 +99,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
         if (clientPhone) formData.set('clientPhone', clientPhone)
 
         // Add customization fields
+        formData.set('show_detailed_items', String(showDetailedItems))
         formData.set('show_timeline', String(showTimeline))
         formData.set('show_payment_options', String(showPaymentOptions))
         if (showTimeline && estimatedDays) {
@@ -250,6 +255,17 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </div>
+
+                                                {showDetailedItems && (
+                                                    <div className="col-span-1 lg:col-span-12 mt-2">
+                                                        <Textarea
+                                                            value={item.details || ''}
+                                                            onChange={(e) => handleUpdateItem(item.id, 'details', e.target.value)}
+                                                            className="text-sm min-h-[60px] resize-none bg-slate-50 border-slate-200"
+                                                            placeholder="Detalhamento opcional do serviço ou produto..."
+                                                        />
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -318,6 +334,26 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="divide-y divide-slate-100">
+                                    {/* Detailed Items Toggle */}
+                                    <div className="p-4 space-y-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                                <AlignLeft className="h-4 w-4" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="flex items-center justify-between">
+                                                    <Label htmlFor="show_detailed" className="font-medium cursor-pointer">Orçamento Detalhado</Label>
+                                                    <Checkbox
+                                                        id="show_detailed"
+                                                        checked={showDetailedItems}
+                                                        onCheckedChange={(checked) => setShowDetailedItems(checked as boolean)}
+                                                    />
+                                                </div>
+                                                <p className="text-xs text-slate-500 mt-1 leading-snug">Se ativo, exibe as descrições extras de produtos e serviços no documento.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     {/* Timeline */}
                                     <div className="p-4 space-y-3">
                                         <div className="flex items-center gap-3">

@@ -29,6 +29,21 @@ export async function signup(formData: FormData) {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
 
+    // 1. Verificar proativamente se o e-mail já existe contornando a prevenção de enumeração
+    const { data: emailExists, error: rpcError } = await supabase.rpc('check_email_exists', {
+        email_to_check: email
+    })
+
+    if (rpcError) {
+        console.error('Erro na verificação de email:', rpcError)
+        return { error: 'Ocorreu um erro ao validar seus dados.' }
+    }
+
+    if (emailExists) {
+        return { error: 'Este e-mail já está cadastrado em nossa base.' }
+    }
+
+    // 2. Cria conta caso o email não exista.
     const { error } = await supabase.auth.signUp({
         email,
         password,

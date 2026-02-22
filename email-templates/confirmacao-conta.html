@@ -1,29 +1,118 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Confirme sua conta na Zacly</title>
   <style>
     /* Reset basic styles */
-    body, p, h1, h2, h3 { margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f9f9ef; color: #27272a; line-height: 1.6; }
-    .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(22, 89, 82, 0.05); border: 1px solid #f4f4f5; }
-    .header { background-color: #165952; padding: 40px 30px; text-align: center; }
+    body,
+    p,
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f9f9ef;
+      color: #27272a;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(22, 89, 82, 0.05);
+      border: 1px solid #f4f4f5;
+    }
+
+    .header {
+      background-color: #165952;
+      padding: 40px 30px;
+      text-align: center;
+    }
+
     /* Para a logo funcionar no e-mail, precisamos usar uma URL externa válida. Adapte este link: */
-    .logo { height: 48px; width: auto; max-width: 100%; object-fit: contain; }
-    .content { padding: 40px 30px; }
-    .title { font-size: 24px; font-weight: 700; color: #165952; margin-bottom: 16px; letter-spacing: -0.02em; }
-    .text { font-size: 16px; color: #52525b; margin-bottom: 24px; }
-    .highlight { color: #165952; font-weight: 600; }
-    .cta-container { text-align: center; margin: 32px 0; }
-    .btn { display: inline-block; background-color: #165952; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px; padding: 16px 32px; border-radius: 8px; transition: background-color 0.2s; box-shadow: 0 4px 12px rgba(22, 89, 82, 0.2); }
-    .btn:hover { background-color: #0f403b; }
-    .divider { height: 1px; background-color: #f4f4f5; margin: 32px 0; }
-    .footer { text-align: center; padding: 0 30px 40px; color: #a1a1aa; font-size: 14px; }
-    .footer a { color: #36cba5; text-decoration: none; font-weight: 500; }
+    .logo {
+      height: 48px;
+      width: auto;
+      max-width: 100%;
+      object-fit: contain;
+    }
+
+    .content {
+      padding: 40px 30px;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #165952;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .text {
+      font-size: 16px;
+      color: #52525b;
+      margin-bottom: 24px;
+    }
+
+    .highlight {
+      color: #165952;
+      font-weight: 600;
+    }
+
+    .cta-container {
+      text-align: center;
+      margin: 32px 0;
+    }
+
+    .btn {
+      display: inline-block;
+      background-color: #165952;
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      padding: 16px 32px;
+      border-radius: 8px;
+      transition: background-color 0.2s;
+      box-shadow: 0 4px 12px rgba(22, 89, 82, 0.2);
+    }
+
+    .btn:hover {
+      background-color: #0f403b;
+    }
+
+    .divider {
+      height: 1px;
+      background-color: #f4f4f5;
+      margin: 32px 0;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 0 30px 40px;
+      color: #a1a1aa;
+      font-size: 14px;
+    }
+
+    .footer a {
+      color: #36cba5;
+      text-decoration: none;
+      font-weight: 500;
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <div class="header">
@@ -32,29 +121,33 @@
       <!-- Exemplo de texto caso a logo quebre: -->
       <h1 style="color: #ffffff; font-size: 32px; margin: 0; letter-spacing: -0.02em;">Zacly</h1>
     </div>
-    
+
     <div class="content">
       <h2 class="title">Boas-vindas à Zacly!</h2>
       <p class="text">Olá,</p>
-      <p class="text">Falta pouco para você começar a criar orçamentos profissionais, encantar seus clientes e organizar suas finanças com a <span class="highlight">Zacly</span>.</p>
-      <p class="text">Para garantir a segurança da sua conta e começar, clique no botão abaixo para confirmar seu endereço de e-mail:</p>
-      
+      <p class="text">Falta pouco para você começar a criar orçamentos profissionais, encantar seus clientes e organizar
+        suas finanças com a <span class="highlight">Zacly</span>.</p>
+      <p class="text">Para garantir a segurança da sua conta e começar, clique no botão abaixo para confirmar seu
+        endereço de e-mail:</p>
+
       <div class="cta-container">
         <!-- A variável {{ .ConfirmationURL }} é utilizada nativamente pelo Supabase -->
         <a href="{{ .ConfirmationURL }}" class="btn">Confirmar meu e-mail</a>
       </div>
-      
-      <p class="text" style="font-size: 14px; margin-bottom: 0;">Se você não solicitou a criação desta conta, fique tranquilo. Você pode ignorar ou deletar este e-mail.</p>
-      
+
+      <p class="text" style="font-size: 14px; margin-bottom: 0;">Se você não solicitou a criação desta conta, fique
+        tranquilo. Você pode ignorar ou deletar este e-mail.</p>
+
       <div class="divider"></div>
-      
+
       <p class="text" style="font-weight: 600; color: #165952;">A simplicidade que seu negócio merece.</p>
     </div>
-    
+
     <div class="footer">
       <p>&copy; 2026 Zacly. Todos os direitos reservados.</p>
-      <p><a href="https://zacly.com.br">Acessar a Plataforma</a></p>
+      <p><a href="{{ .SiteURL }}">Acessar a Plataforma</a></p>
     </div>
   </div>
 </body>
+
 </html>

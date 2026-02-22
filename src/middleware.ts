@@ -61,10 +61,12 @@ export async function updateSession(request: NextRequest) {
     // Protected routes pattern
     const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard') ||
         request.nextUrl.pathname.startsWith('/onboarding') ||
-        request.nextUrl.pathname.startsWith('/orcamentos')
+        request.nextUrl.pathname.startsWith('/orcamentos') ||
+        request.nextUrl.pathname.startsWith('/update-password')
 
     const isAuthRoute = request.nextUrl.pathname.startsWith('/login') ||
-        request.nextUrl.pathname.startsWith('/register')
+        request.nextUrl.pathname.startsWith('/register') ||
+        request.nextUrl.pathname.startsWith('/forgot-password')
 
     if (isProtectedRoute && !user) {
         return NextResponse.redirect(new URL('/login', request.url))

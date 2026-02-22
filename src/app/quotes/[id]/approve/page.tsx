@@ -10,7 +10,7 @@ import { Metadata } from 'next'
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params
     return {
-        title: `Aprovar Orçamento - OrçaFácil`,
+        title: `Aprovar Orçamento - Zacly`,
         description: 'Visualize e aprove seu orçamento com um clique.',
         robots: { index: false, follow: false },
     }
@@ -163,7 +163,7 @@ export default async function ApprovePage({ params }: { params: Promise<{ id: st
                 )}
 
                 <p className="text-center text-xs text-muted-foreground pb-4">
-                    Orçamento gerado via <span className="font-semibold">OrçaFácil</span>
+                    Orçamento gerado via <span className="font-semibold">Zacly</span>
                 </p>
             </main>
         </div>

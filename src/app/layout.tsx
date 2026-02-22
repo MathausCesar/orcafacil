@@ -10,36 +10,36 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "OrçaFácil — Orçamentos Profissionais",
-    template: "%s | OrçaFácil",
+    default: "Zacly — Orçamentos Profissionais",
+    template: "%s | Zacly",
   },
   description:
     "Crie orçamentos profissionais em segundos. A ferramenta ideal para autônomos e pequenos negócios gerarem propostas irresistíveis.",
-  applicationName: "OrçaFácil",
+  applicationName: "Zacly",
   authors: [{ name: "Mathaus Cesar" }],
   keywords: ["orçamento", "proposta comercial", "gerador de orçamento", "autônomo", "freelancer", "pdf", "gestão financeira"],
   creator: "Mathaus Cesar",
-  publisher: "OrçaFácil",
+  publisher: "Zacly",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://www.orcafacil.com.br"),
+  metadataBase: new URL("https://www.zacly.com.br"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "OrçaFácil — Orçamentos Profissionais",
-    description: "Crie orçamentos, emita PDFs e conquiste mais clientes com o OrçaFácil.",
-    url: "https://www.orcafacil.com.br",
-    siteName: "OrçaFácil",
+    title: "Zacly — Orçamentos Profissionais",
+    description: "Crie orçamentos, emita PDFs e conquiste mais clientes com o Zacly.",
+    url: "https://www.zacly.com.br",
+    siteName: "Zacly",
     locale: "pt_BR",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "OrçaFácil — Orçamentos Profissionais",
+    title: "Zacly — Orçamentos Profissionais",
     description: "Crie orçamentos profissionais em segundos. Simples e rápido.",
   },
   robots: {
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0D9B5C",
+  themeColor: "#165952", // Zacly Deep Teal
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -70,7 +70,7 @@ export default function RootLayout({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "name": "OrçaFácil",
+    "name": "Zacly",
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web",
     "offers": {

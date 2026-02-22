@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperação de Senha - Zacly</title>
+    <style>
+        body,
+        p,
+        h1,
+        h2,
+        h3 {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f9f9ef;
+            color: #27272a;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(22, 89, 82, 0.05);
+            border: 1px solid #f4f4f5;
+        }
+
+        .header {
+            background-color: #165952;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #165952;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+
+        .text {
+            font-size: 16px;
+            color: #52525b;
+            margin-bottom: 24px;
+        }
+
+        .cta-container {
+            text-align: center;
+            margin: 32px 0;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #165952;
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            padding: 16px 32px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+            box-shadow: 0 4px 12px rgba(22, 89, 82, 0.2);
+        }
+
+        .btn:hover {
+            background-color: #0f403b;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #f4f4f5;
+            margin: 32px 0;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 0 30px 40px;
+            color: #a1a1aa;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #36cba5;
+            text-decoration: none;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="color: #ffffff; font-size: 32px; margin: 0; letter-spacing: -0.02em;">Zacly</h1>
+        </div>
+
+        <div class="content">
+            <h2 class="title">Recuperação de Senha</h2>
+            <p class="text">Olá,</p>
+            <p class="text">Recebemos uma solicitação para redefinir a senha da sua conta na <strong>Zacly</strong>.</p>
+            <p class="text">Para criar uma nova senha, clique no botão abaixo:</p>
+
+            <div class="cta-container">
+                <!-- A variável {{ .ConfirmationURL }} é utilizada nativamente pelo Supabase para reset de senha -->
+                <a href="{{ .ConfirmationURL }}" class="btn">Redefinir minha senha</a>
+            </div>
+
+            <p class="text" style="font-size: 14px; margin-bottom: 0;">Se você não fez essa solicitação, pode ignorar
+                este e-mail. Sua senha atual continuará a mesma.</p>
+
+            <div class="divider"></div>
+
+            <p class="text" style="font-weight: 600; color: #165952;">A simplicidade que seu negócio merece.</p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2026 Zacly. Todos os direitos reservados.</p>
+            <p><a href="https://zacly.com.br">Acessar a Plataforma</a></p>
+        </div>
+    </div>
+</body>
+
+</html>

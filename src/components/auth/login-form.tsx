@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { login, signup } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -70,27 +71,29 @@ export function LoginForm() {
     return (
         <div className="flex min-h-[85vh] w-full max-w-[1100px] overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-black/5">
             {/* Left Column: Abstract Visual */}
-            <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-emerald-900 via-zinc-900 to-black p-12 text-white lg:flex">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-700/20 via-transparent to-transparent"></div>
-                <div className="absolute bottom-0 left-0 h-96 w-96 -mb-20 -ml-20 rounded-full bg-emerald-600/10 blur-3xl"></div>
+            <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-teal-900 via-zinc-900 to-black p-12 text-white lg:flex">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-teal-700/20 via-transparent to-transparent"></div>
+                <div className="absolute bottom-0 left-0 h-96 w-96 -mb-20 -ml-20 rounded-full bg-primary/20 blur-3xl"></div>
 
                 <div className="relative z-10 flex items-center gap-3">
-                    <div className="relative h-10 w-10 overflow-hidden rounded-xl bg-white/10 backdrop-blur-md ring-1 ring-white/20 p-1.5">
-                        <Image
-                            src="/logo/logo1.png"
-                            alt="OrçaFácil Logo"
-                            fill
-                            className="object-contain"
-                            priority
-                        />
+                    <div className="relative h-14 w-32 overflow-hidden rounded-xl bg-white/10 backdrop-blur-md ring-1 ring-white/20 p-2 flex items-center justify-center">
+                        <div className="relative h-full w-full">
+                            <Image
+                                src="/logo/logozacly.png"
+                                alt="Zacly Logo"
+                                fill
+                                className="object-contain"
+                                priority
+                            />
+                        </div>
                     </div>
-                    <span className="text-xl font-semibold tracking-wide text-white/90">OrçaFácil</span>
+                    <span className="text-xl font-semibold tracking-wide text-white/90">Zacly</span>
                 </div>
 
                 <div className="relative z-10 space-y-6">
                     <h1 className="text-4xl font-bold leading-tight tracking-tight text-white">
                         A simplicidade que <br />
-                        <span className="text-emerald-400">seu negócio merece.</span>
+                        <span className="text-accent">seu negócio merece.</span>
                     </h1>
                     <p className="max-w-md text-lg text-zinc-400 font-light">
                         Orçamentos profissionais, gestão de clientes e controle financeiro. Tudo em um só lugar.
@@ -99,15 +102,15 @@ export function LoginForm() {
 
                 <div className="relative z-10 grid grid-cols-2 gap-4 text-sm text-zinc-400/80">
                     <div className="flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                        <CheckCircle2 className="h-4 w-4 text-accent" />
                         <span>Gestão Simplificada</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                        <CheckCircle2 className="h-4 w-4 text-accent" />
                         <span>Orçamentos PDF</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                        <CheckCircle2 className="h-4 w-4 text-accent" />
                         <span>Relatórios Financeiros</span>
                     </div>
                 </div>
@@ -118,15 +121,16 @@ export function LoginForm() {
                 <div className="mx-auto w-full max-w-[380px] space-y-8">
                     {/* Mobile Logo */}
                     <div className="lg:hidden text-center mb-8">
-                        <div className="relative mx-auto mb-4 h-14 w-14 rounded-xl bg-zinc-50 p-2 ring-1 ring-zinc-100">
-                            <Image
-                                src="/logo/logo1.png"
-                                alt="OrçaFácil Logo"
-                                fill
-                                className="object-contain"
-                            />
+                        <div className="relative mx-auto mb-4 h-16 w-32 rounded-xl bg-zinc-50 p-2 ring-1 ring-zinc-100 flex items-center justify-center">
+                            <div className="relative h-full w-full">
+                                <Image
+                                    src="/logo/logozacly.png"
+                                    alt="Zacly Logo"
+                                    fill
+                                    className="object-contain"
+                                />
+                            </div>
                         </div>
-                        <h2 className="text-2xl font-bold tracking-tight">OrçaFácil</h2>
                     </div>
 
                     <div className="flex rounded-xl bg-zinc-100/80 p-1">
@@ -175,7 +179,14 @@ export function LoginForm() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="password" className="text-xs font-medium text-foreground/80">Senha</Label>
+                                <div className="flex items-center justify-between">
+                                    <Label htmlFor="password" className="text-xs font-medium text-foreground/80">Senha</Label>
+                                    {mode === 'login' && (
+                                        <Link href="/forgot-password" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors">
+                                            Esqueci a senha
+                                        </Link>
+                                    )}
+                                </div>
                                 <Input
                                     id="password"
                                     name="password"
@@ -186,7 +197,7 @@ export function LoginForm() {
                                 />
                             </div>
                             <Button
-                                className="group h-11 w-full rounded-lg bg-gradient-to-r from-primary to-emerald-600 text-white shadow-lg shadow-emerald-500/20 transition-all hover:shadow-emerald-500/30 hover:scale-[1.01] active:scale-[0.98]"
+                                className="group h-11 w-full rounded-lg bg-gradient-to-r from-primary to-teal-600 text-white shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 hover:scale-[1.01] active:scale-[0.98]"
                                 type="submit"
                                 disabled={loading}
                             >
@@ -200,9 +211,9 @@ export function LoginForm() {
 
             <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
                 <AlertDialogContent className="max-w-md rounded-2xl border-none p-0 shadow-2xl overflow-hidden">
-                    <div className="bg-gradient-to-br from-emerald-50 to-white p-8 text-center">
-                        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 ring-4 ring-white">
-                            <Mail className="h-8 w-8 text-emerald-600" />
+                    <div className="bg-gradient-to-br from-teal-50 to-white p-8 text-center">
+                        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-teal-100 ring-4 ring-white">
+                            <Mail className="h-8 w-8 text-primary" />
                         </div>
                         <AlertDialogTitle className="text-xl font-semibold text-zinc-900">Verifique seu email</AlertDialogTitle>
                         <AlertDialogDescription className="text-center pt-2 text-zinc-500">

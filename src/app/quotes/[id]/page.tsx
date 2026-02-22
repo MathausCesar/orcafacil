@@ -25,8 +25,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     const { id } = await params
 
     return {
-        title: `Orçamento #${id.substring(0, 8)} - OrçaFácil`,
-        description: 'Visualize seu orçamento no OrçaFácil.',
+        title: `Orçamento #${id.substring(0, 8)} - Zacly`,
+        description: 'Visualize seu orçamento no Zacly.',
         robots: {
             index: false,
             follow: false,
@@ -67,7 +67,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
     const isOwner = user?.id === quote.user_id
 
     const total = quote.total || 0;
-    const approvalUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://orcafacil.com'}/quotes/${id}`;
+    const approvalUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://zacly.com.br'}/quotes/${id}`;
     const totalFormatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total);
     const businessName = profile?.business_name || 'nossa empresa';
     const itemCount = quote.quote_items?.length ?? 0;
@@ -304,7 +304,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     {/* QR Code Footer */}
                                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-slate-100">
                                         <div className="text-center sm:text-left">
-                                            <p className="text-xs text-slate-400">Orçamento gerado via OrçaFácil</p>
+                                            <p className="text-xs text-slate-400">Orçamento gerado via Zacly</p>
                                         </div>
                                         <QRCodeGenerator quoteId={quote.id} size={100} />
                                     </div>

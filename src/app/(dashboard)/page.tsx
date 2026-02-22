@@ -65,15 +65,15 @@ export default async function Dashboard() {
       />
 
       {/* Main Action - Elegant Gradient */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 to-emerald-500 shadow-xl shadow-emerald-900/10 transition-all hover:shadow-emerald-900/20">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary to-teal-500 shadow-xl shadow-primary/20 transition-all hover:shadow-primary/30">
         <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-8 md:p-10 gap-6">
           <div className="text-white space-y-2 text-center md:text-left">
             <h2 className="text-3xl font-bold tracking-tight">Criar Novo Orçamento</h2>
-            <p className="text-emerald-100 font-medium">Gere propostas profissionais em segundos.</p>
+            <p className="text-teal-100 font-medium">Gere propostas profissionais em segundos.</p>
           </div>
           <Link href="/new">
-            <Button size="lg" className="h-14 px-8 text-lg rounded-xl bg-white text-emerald-700 hover:bg-emerald-50 shadow-lg border-2 border-transparent transition-all hover:scale-105 active:scale-95 font-semibold">
+            <Button size="lg" className="h-14 px-8 text-lg rounded-xl bg-white text-primary hover:bg-teal-50 shadow-lg border-2 border-transparent transition-all hover:scale-105 active:scale-95 font-semibold">
               <Plus className="mr-2 h-6 w-6" /> Começar Agora
             </Button>
           </Link>
@@ -89,8 +89,8 @@ export default async function Dashboard() {
           </div>
           <CardContent className="p-8 flex flex-col justify-between h-48">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-emerald-50 rounded-xl">
-                <Wallet className="h-6 w-6 text-emerald-600" />
+              <div className="p-3 bg-teal-50 rounded-xl">
+                <Wallet className="h-6 w-6 text-primary" />
               </div>
               <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Receita Aprovada</p>
             </div>
@@ -128,7 +128,7 @@ export default async function Dashboard() {
         <div className="flex items-center justify-between px-2">
           <h2 className="text-xl font-bold tracking-tight text-zinc-800">Últimos Orçamentos</h2>
           <Link href="/quotes">
-            <Button variant="ghost" className="text-emerald-600 font-medium hover:text-emerald-700 hover:bg-emerald-50">
+            <Button variant="ghost" className="text-primary font-medium hover:text-teal-700 hover:bg-teal-50">
               Ver todos <ArrowUpRight className="ml-1 h-4 w-4" />
             </Button>
           </Link>
@@ -146,14 +146,14 @@ export default async function Dashboard() {
           ) : (
             recentQuotes?.map((quote) => (
               <Link key={quote.id} href={`/quotes/${quote.id}`} className="block group">
-                <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:shadow-md hover:border-emerald-100/50 hover:bg-emerald-50/10">
+                <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:shadow-md hover:border-teal-100/50 hover:bg-teal-50/10">
 
                   <div className="flex items-center gap-5">
                     <div className="h-12 w-12 rounded-full bg-gradient-to-br from-zinc-100 to-zinc-200 flex items-center justify-center font-bold text-lg text-zinc-600 shadow-inner">
                       {quote.client_name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <h4 className="font-bold text-lg text-zinc-900 group-hover:text-emerald-700 transition-colors">{quote.client_name}</h4>
+                      <h4 className="font-bold text-lg text-zinc-900 group-hover:text-primary transition-colors">{quote.client_name}</h4>
                       <p className="text-xs font-medium text-muted-foreground">
                         {format(new Date(quote.created_at), "d 'de' MMMM, yyyy", { locale: ptBR })}
                       </p>

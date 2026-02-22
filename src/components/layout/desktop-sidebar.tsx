@@ -41,23 +41,23 @@ export function DesktopSidebar({ className }: DesktopSidebarProps) {
     return (
         <div className={cn("flex flex-col h-full", className)}>
             {/* Logo Area */}
-            <div className="h-20 flex items-center px-6 border-b border-slate-100/50">
-                <div className="relative h-8 w-8 mr-3">
+            <div className="h-24 flex items-center justify-center border-b border-slate-100/50 p-4">
+                <Link href="/" className="relative h-full w-full max-w-[200px] transition-transform hover:scale-105 active:scale-95 block">
                     <Image
-                        src="/logo/logo1.png"
-                        alt="OrçaFácil Logo"
+                        src="/logo/logozacly.png"
+                        alt="Zacly Logo"
                         fill
                         className="object-contain"
+                        priority
                     />
-                </div>
-                <span className="font-bold text-lg tracking-tight text-slate-900">OrçaFácil</span>
+                </Link>
             </div>
 
             {/* Navigation */}
             <div className="flex-1 py-6 px-3 space-y-6 overflow-y-auto">
                 <div className="px-2">
                     <Link href="/new">
-                        <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200/50 font-bold h-11 rounded-lg flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:translate-y-0 active:shadow-md">
+                        <Button className="w-full bg-primary hover:bg-teal-700 text-white shadow-lg shadow-primary/30 font-bold h-11 rounded-lg flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:translate-y-0 active:shadow-md">
                             <PlusCircle className="h-4 w-4" />
                             <span>Criar Novo</span>
                         </Button>
@@ -80,17 +80,17 @@ export function DesktopSidebar({ className }: DesktopSidebarProps) {
                                 className={cn(
                                     "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative",
                                     isActive
-                                        ? "bg-emerald-50 text-emerald-700 font-semibold"
+                                        ? "bg-primary/5 text-primary font-semibold"
                                         : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                                 )}
                             >
                                 <Icon className={cn(
                                     "h-5 w-5 transition-colors",
-                                    isActive ? "text-emerald-600" : "text-slate-400 group-hover:text-slate-600"
+                                    isActive ? "text-primary" : "text-slate-400 group-hover:text-slate-600"
                                 )} />
                                 <span className="text-sm">{link.label}</span>
                                 {isActive && (
-                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-emerald-600 rounded-r-full" />
+                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full" />
                                 )}
                             </Link>
                         )

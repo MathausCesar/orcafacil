@@ -1,12 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, Wrench } from 'lucide-react'
+import { ArrowLeft, Wrench, Palette } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ServicesCatalog } from '@/components/profile/services-catalog'
 import { ProfileForm } from '@/components/profile/profile-form'
 import { LogoutButton } from '@/components/auth/logout-button'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export default async function ProfilePage() {
     const supabase = await createClient()
@@ -58,6 +59,27 @@ export default async function ProfilePage() {
                 </CardHeader>
                 <CardContent className="pt-6">
                     <ServicesCatalog initialServices={services || []} initialFolders={folders || []} userId={user.id} />
+                </CardContent>
+            </Card>
+
+            {/* Appearance Section */}
+            <Card className="border-primary/10">
+                <CardHeader className="bg-primary/5 border-b border-primary/10">
+                    <CardTitle className="text-primary flex items-center gap-2">
+                        <Palette className="h-5 w-5" /> Aparência e Tema
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">
+                        Personalize a aparência do sistema de acordo com sua preferência.
+                    </p>
+                </CardHeader>
+                <CardContent className="pt-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 className="text-sm font-medium text-foreground">Modo do Sistema</h3>
+                            <p className="text-sm text-muted-foreground">Escolha entre modo claro, escuro ou automático.</p>
+                        </div>
+                        <ThemeToggle />
+                    </div>
                 </CardContent>
             </Card>
 

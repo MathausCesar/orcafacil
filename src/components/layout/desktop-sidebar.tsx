@@ -39,15 +39,15 @@ export function DesktopSidebar({ className }: DesktopSidebarProps) {
     ]
 
     return (
-        <div className={cn("flex flex-col h-full", className)}>
+        <div className={cn("flex flex-col h-full bg-sidebar border-r border-sidebar-border", className)}>
             {/* Logo Area */}
-            <div className="h-24 flex items-center justify-center border-b border-slate-100/50 p-4">
+            <div className="h-24 flex items-center justify-center border-b border-sidebar-border p-4">
                 <Link href="/" className="relative h-full w-full max-w-[200px] transition-transform hover:scale-105 active:scale-95 block">
                     <Image
                         src="/logo/logozacly.png"
                         alt="Zacly Logo"
                         fill
-                        className="object-contain"
+                        className="object-contain dark:invert"
                         priority
                     />
                 </Link>
@@ -80,13 +80,13 @@ export function DesktopSidebar({ className }: DesktopSidebarProps) {
                                 className={cn(
                                     "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative",
                                     isActive
-                                        ? "bg-primary/5 text-primary font-semibold"
-                                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                                        ? "bg-sidebar-primary/10 text-sidebar-primary font-semibold"
+                                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                                 )}
                             >
                                 <Icon className={cn(
                                     "h-5 w-5 transition-colors",
-                                    isActive ? "text-primary" : "text-slate-400 group-hover:text-slate-600"
+                                    isActive ? "text-sidebar-primary" : "text-sidebar-foreground/50 group-hover:text-sidebar-accent-foreground"
                                 )} />
                                 <span className="text-sm">{link.label}</span>
                                 {isActive && (
@@ -99,13 +99,13 @@ export function DesktopSidebar({ className }: DesktopSidebarProps) {
             </div>
 
             {/* Footer / Logout */}
-            <div className="p-4 border-t border-slate-100 mt-auto">
+            <div className="p-4 border-t border-sidebar-border mt-auto">
                 <form action={signout}>
                     <button
                         type="submit"
-                        className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-700 transition-colors group text-sm font-medium"
+                        className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sidebar-foreground/80 hover:bg-destructive/10 hover:text-destructive transition-colors group text-sm font-medium"
                     >
-                        <LogOut className="h-4 w-4 group-hover:text-red-600" />
+                        <LogOut className="h-4 w-4 group-hover:text-destructive" />
                         <span>Sair da conta</span>
                     </button>
                 </form>

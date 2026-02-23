@@ -1,7 +1,6 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createNotification } from './notifications'
 
@@ -11,7 +10,7 @@ export async function createQuote(formData: FormData) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        redirect('/login')
+        return { error: 'Unauthorized', redirect: '/login' }
     }
 
     const clientName = formData.get('clientName') as string
@@ -93,7 +92,7 @@ export async function createQuote(formData: FormData) {
     )
 
     revalidatePath('/')
-    redirect(`/quotes/${quote.id}`)
+    return { success: true, redirect: `/quotes/${quote.id}` }
 }
 
 export async function updateQuote(id: string, formData: FormData) {
@@ -101,7 +100,7 @@ export async function updateQuote(id: string, formData: FormData) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        redirect('/login')
+        return { error: 'Unauthorized', redirect: '/login' }
     }
 
     const clientName = formData.get('clientName') as string
@@ -183,7 +182,7 @@ export async function updateQuote(id: string, formData: FormData) {
 
     revalidatePath(`/quotes/${id}`)
     revalidatePath('/')
-    redirect(`/quotes/${id}`)
+    return { success: true, redirect: `/quotes/${id}` }
 }
 
 export async function deleteQuote(id: string) {
@@ -191,7 +190,7 @@ export async function deleteQuote(id: string) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        redirect('/login')
+        throw new Error('Unauthorized')
     }
 
     const { error } = await supabase

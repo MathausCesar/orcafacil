@@ -128,8 +128,11 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
 
             if (result?.error) {
                 toast.error(result.error)
-            } else {
+            } else if (result?.success) {
                 toast.success(initialData?.id ? 'Orçamento atualizado!' : 'Orçamento criado!')
+                if (result.redirect) {
+                    router.push(result.redirect)
+                }
             }
         } catch (e) {
             toast.error('Erro ao salvar orçamento.')

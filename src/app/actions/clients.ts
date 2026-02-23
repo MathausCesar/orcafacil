@@ -9,7 +9,7 @@ export async function createClientAction(formData: FormData) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        redirect('/login')
+        return { error: 'Unauthorized', redirect: '/login' }
     }
 
     const name = formData.get('name') as string
@@ -70,7 +70,7 @@ export async function updateClient(id: string, formData: FormData) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        redirect('/login')
+        return { error: 'Unauthorized', redirect: '/login' }
     }
 
     // Verify ownership

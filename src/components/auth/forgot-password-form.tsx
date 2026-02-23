@@ -44,7 +44,7 @@ export function ForgotPasswordForm() {
     }
 
     return (
-        <div className="flex min-h-[85vh] w-full max-w-[1100px] overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-black/5 mx-auto">
+        <div className="flex min-h-[85vh] w-full max-w-[1100px] overflow-hidden rounded-3xl bg-card text-card-foreground shadow-2xl ring-1 ring-border/50 mx-auto">
             {/* Left Column: Abstract Visual */}
             <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-teal-900 via-zinc-900 to-black p-12 text-white lg:flex">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-teal-700/20 via-transparent to-transparent"></div>
@@ -54,7 +54,7 @@ export function ForgotPasswordForm() {
                     <div className="relative h-14 w-32 overflow-hidden rounded-xl bg-white/10 backdrop-blur-md ring-1 ring-white/20 p-2 flex items-center justify-center">
                         <div className="relative h-full w-full">
                             <Image
-                                src="/logo/logozacly.png"
+                                src="/logo/logo.png"
                                 alt="Zacly Logo"
                                 fill
                                 className="object-contain"
@@ -77,14 +77,14 @@ export function ForgotPasswordForm() {
             </div>
 
             {/* Right Column: Form */}
-            <div className="flex w-full flex-col justify-center bg-white p-8 lg:w-1/2 lg:p-16">
+            <div className="flex w-full flex-col justify-center bg-card p-8 lg:w-1/2 lg:p-16">
                 <div className="mx-auto w-full max-w-[380px] space-y-8">
                     {/* Mobile Logo */}
                     <div className="lg:hidden text-center mb-8">
-                        <div className="relative mx-auto mb-4 h-16 w-32 rounded-xl bg-zinc-50 p-2 ring-1 ring-zinc-100 flex items-center justify-center">
+                        <div className="relative mx-auto mb-4 h-16 w-32 rounded-xl bg-muted/50 p-2 ring-1 ring-border/50 flex items-center justify-center">
                             <div className="relative h-full w-full">
                                 <Image
-                                    src="/logo/logozacly.png"
+                                    src="/logo/logo.png"
                                     alt="Zacly Logo"
                                     fill
                                     className="object-contain"
@@ -113,7 +113,7 @@ export function ForgotPasswordForm() {
                                     type="email"
                                     placeholder="seu@email.com"
                                     required
-                                    className="h-11 rounded-lg border-zinc-200 bg-zinc-50/50 px-4 transition-all focus:border-primary/50 focus:bg-white focus:ring-4 focus:ring-primary/10"
+                                    className="h-11 rounded-lg border-input bg-muted/30 px-4 transition-all focus:border-primary/50 focus:bg-background focus:ring-4 focus:ring-primary/10"
                                 />
                             </div>
 
@@ -139,22 +139,22 @@ export function ForgotPasswordForm() {
 
             <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
                 <AlertDialogContent className="max-w-md rounded-2xl border-none p-0 shadow-2xl overflow-hidden">
-                    <div className="bg-gradient-to-br from-teal-50 to-white p-8 text-center">
-                        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-teal-100 ring-4 ring-white">
+                    <div className="bg-gradient-to-br from-primary/10 to-background p-8 text-center">
+                        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/20 ring-4 ring-background">
                             <Mail className="h-8 w-8 text-primary" />
                         </div>
-                        <AlertDialogTitle className="text-xl font-semibold text-zinc-900">Verifique seu email</AlertDialogTitle>
-                        <AlertDialogDescription className="text-center pt-2 text-zinc-500">
-                            Enviamos um link de redefinição para <span className="font-medium text-zinc-900">{emailSent}</span>.
+                        <AlertDialogTitle className="text-xl font-semibold text-foreground">Verifique seu email</AlertDialogTitle>
+                        <AlertDialogDescription className="text-center pt-2 text-muted-foreground">
+                            Enviamos um link de redefinição para <span className="font-medium text-foreground">{emailSent}</span>.
                         </AlertDialogDescription>
                     </div>
-                    <AlertDialogFooter className="bg-zinc-50 p-6 sm:justify-center border-t border-zinc-100">
+                    <AlertDialogFooter className="bg-muted/30 p-6 sm:justify-center border-t border-border">
                         <AlertDialogAction
                             onClick={() => {
                                 setShowSuccessDialog(false)
                                 router.push('/login')
                             }}
-                            className="w-full rounded-xl bg-zinc-900 font-medium hover:bg-zinc-800 sm:w-auto px-8"
+                            className="w-full rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 sm:w-auto px-8"
                         >
                             Entendi
                         </AlertDialogAction>

@@ -24,10 +24,10 @@ export default async function DashboardLayout({
     }
 
     return (
-        <div className="flex min-h-screen bg-slate-50/50">
+        <div className="flex min-h-screen bg-background">
             {/* Desktop Sidebar - Hidden on Mobile */}
             <div className="hidden lg:flex w-64 flex-col fixed inset-y-0 z-50">
-                <div className="flex-1 flex flex-col min-h-0 bg-white border-r border-slate-200">
+                <div className="flex-1 flex flex-col min-h-0 bg-sidebar border-r border-sidebar-border">
                     <DesktopSidebar />
                 </div>
             </div>

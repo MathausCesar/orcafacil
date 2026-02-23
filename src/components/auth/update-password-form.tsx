@@ -42,7 +42,7 @@ export function UpdatePasswordForm() {
     }
 
     return (
-        <div className="flex min-h-[85vh] w-full max-w-[1100px] overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-black/5 mx-auto">
+        <div className="flex min-h-[85vh] w-full max-w-[1100px] overflow-hidden rounded-3xl bg-card text-card-foreground shadow-2xl ring-1 ring-border/50 mx-auto">
             {/* Left Column: Abstract Visual */}
             <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-teal-900 via-zinc-900 to-black p-12 text-white lg:flex">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-teal-700/20 via-transparent to-transparent"></div>
@@ -52,7 +52,7 @@ export function UpdatePasswordForm() {
                     <div className="relative h-14 w-32 overflow-hidden rounded-xl bg-white/10 backdrop-blur-md ring-1 ring-white/20 p-2 flex items-center justify-center">
                         <div className="relative h-full w-full">
                             <Image
-                                src="/logo/logozacly.png"
+                                src="/logo/logo.png"
                                 alt="Zacly Logo"
                                 fill
                                 className="object-contain"
@@ -75,14 +75,14 @@ export function UpdatePasswordForm() {
             </div>
 
             {/* Right Column: Form */}
-            <div className="flex w-full flex-col justify-center bg-white p-8 lg:w-1/2 lg:p-16">
+            <div className="flex w-full flex-col justify-center bg-card p-8 lg:w-1/2 lg:p-16">
                 <div className="mx-auto w-full max-w-[380px] space-y-8">
                     {/* Mobile Logo */}
                     <div className="lg:hidden text-center mb-8">
-                        <div className="relative mx-auto mb-4 h-16 w-32 rounded-xl bg-zinc-50 p-2 ring-1 ring-zinc-100 flex items-center justify-center">
+                        <div className="relative mx-auto mb-4 h-16 w-32 rounded-xl bg-muted/50 p-2 ring-1 ring-border/50 flex items-center justify-center">
                             <div className="relative h-full w-full">
                                 <Image
-                                    src="/logo/logozacly.png"
+                                    src="/logo/logo.png"
                                     alt="Zacly Logo"
                                     fill
                                     className="object-contain"
@@ -112,7 +112,7 @@ export function UpdatePasswordForm() {
                                     placeholder="No mínimo 6 caracteres"
                                     minLength={6}
                                     required
-                                    className="h-11 rounded-lg border-zinc-200 bg-zinc-50/50 px-4 transition-all focus:border-primary/50 focus:bg-white focus:ring-4 focus:ring-primary/10"
+                                    className="h-11 rounded-lg border-input bg-muted/30 px-4 transition-all focus:border-primary/50 focus:bg-background focus:ring-4 focus:ring-primary/10"
                                 />
                             </div>
                             <div className="space-y-2">
@@ -124,7 +124,7 @@ export function UpdatePasswordForm() {
                                     placeholder="Repita a nova senha"
                                     minLength={6}
                                     required
-                                    className="h-11 rounded-lg border-zinc-200 bg-zinc-50/50 px-4 transition-all focus:border-primary/50 focus:bg-white focus:ring-4 focus:ring-primary/10"
+                                    className="h-11 rounded-lg border-input bg-muted/30 px-4 transition-all focus:border-primary/50 focus:bg-background focus:ring-4 focus:ring-primary/10"
                                 />
                             </div>
 

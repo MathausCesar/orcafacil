@@ -126,7 +126,7 @@ export function ServicesCatalog({ initialServices, initialFolders, userId }: Ser
     return (
         <div className="space-y-6">
             {/* Add Form */}
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+            <div className="bg-muted/50 p-4 rounded-xl border border-border space-y-4">
                 <div className="flex justify-between items-center pb-2 border-b border-slate-200/60">
                     <h3 className="text-sm font-semibold text-slate-800">Adicionar Novo Item</h3>
                     <FoldersDialog folders={initialFolders} />
@@ -139,7 +139,7 @@ export function ServicesCatalog({ initialServices, initialFolders, userId }: Ser
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            className="bg-white focus-visible:ring-primary"
+                            className="bg-background focus-visible:ring-primary"
                         />
                     </div>
                     <div className="w-full sm:w-32 space-y-1">
@@ -151,13 +151,13 @@ export function ServicesCatalog({ initialServices, initialFolders, userId }: Ser
                             value={price}
                             onChange={(e) => setPrice(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            className="bg-white focus-visible:ring-primary"
+                            className="bg-background focus-visible:ring-primary"
                         />
                     </div>
                     <div className="w-full sm:w-40 space-y-1">
                         <Label className="text-xs text-muted-foreground">Tipo</Label>
                         <Select value={type} onValueChange={(value) => setType(value as 'service' | 'product')}>
-                            <SelectTrigger className="bg-white">
+                            <SelectTrigger className="bg-background">
                                 <SelectValue placeholder="Selecione o tipo" />
                             </SelectTrigger>
                             <SelectContent>
@@ -176,13 +176,13 @@ export function ServicesCatalog({ initialServices, initialFolders, userId }: Ser
                             value={details}
                             onChange={(e) => setDetails(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            className="bg-white focus-visible:ring-primary"
+                            className="bg-background focus-visible:ring-primary"
                         />
                     </div>
                     <div className="w-full sm:w-48 space-y-1">
                         <Label className="text-xs text-muted-foreground">Pasta (Opcional)</Label>
                         <Select value={folderId || 'none'} onValueChange={(val) => setFolderId(val === 'none' ? '' : val)}>
-                            <SelectTrigger className="bg-white">
+                            <SelectTrigger className="bg-background">
                                 <SelectValue placeholder="Sem pasta" />
                             </SelectTrigger>
                             <SelectContent>
@@ -250,7 +250,7 @@ export function ServicesCatalog({ initialServices, initialFolders, userId }: Ser
                                         {items.map((service) => (
                                             <div
                                                 key={service.id}
-                                                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white rounded-xl border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all group gap-4"
+                                                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-card rounded-xl border border-border hover:border-primary/30 hover:shadow-md transition-all group gap-4"
                                             >
                                                 <div className="flex-1 min-w-0 flex flex-col items-start gap-1.5 w-full">
                                                     <div className="flex items-start justify-between w-full gap-3">

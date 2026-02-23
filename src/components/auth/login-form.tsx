@@ -79,7 +79,7 @@ export function LoginForm() {
                     <div className="relative h-14 w-32 overflow-hidden rounded-xl bg-white/10 backdrop-blur-md ring-1 ring-white/20 p-2 flex items-center justify-center">
                         <div className="relative h-full w-full">
                             <Image
-                                src="/logo/logozacly.png"
+                                src="/logo/logo.png"
                                 alt="Zacly Logo"
                                 fill
                                 className="object-contain"
@@ -124,7 +124,7 @@ export function LoginForm() {
                         <div className="relative mx-auto mb-4 h-16 w-32 rounded-xl bg-muted/50 p-2 ring-1 ring-border/50 flex items-center justify-center">
                             <div className="relative h-full w-full">
                                 <Image
-                                    src="/logo/logozacly.png"
+                                    src="/logo/logo.png"
                                     alt="Zacly Logo"
                                     fill
                                     className="object-contain"

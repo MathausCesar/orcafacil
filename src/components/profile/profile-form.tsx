@@ -150,7 +150,7 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
 
                     {/* Visual Style */}
                     <Card className="border-0 shadow-sm ring-1 ring-slate-200">
-                        <CardHeader className="pb-4 border-b border-slate-100 bg-slate-50/50">
+                        <CardHeader className="pb-4 border-b border-border bg-muted/30">
                             <CardTitle className="text-lg font-semibold flex items-center gap-2">
                                 <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
                                     <Palette className="h-5 w-5" />
@@ -178,11 +178,11 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                     <div className="sticky top-6 space-y-6">
 
                         {/* Status Card */}
-                        <Card className="border-0 shadow-lg ring-1 ring-slate-200 bg-white overflow-hidden">
+                        <Card className="border-0 shadow-lg ring-1 ring-border bg-card overflow-hidden">
                             <div className="h-2 w-full bg-gradient-to-r from-primary to-emerald-500" />
                             <CardContent className="p-6">
                                 <div className="flex items-center gap-4 mb-6">
-                                    <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
+                                    <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-border">
                                         {logoUrl ? (
                                             <img src={logoUrl} alt="Logo" className="h-full w-full object-cover" />
                                         ) : (
@@ -198,7 +198,7 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                                     </div>
                                 </div>
 
-                                <Button type="submit" size="lg" className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold h-12 shadow-lg shadow-slate-900/10 border-0 mb-4" disabled={loading}>
+                                <Button type="submit" size="lg" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 shadow-lg shadow-primary/10 border-0 mb-4" disabled={loading}>
                                     {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                                     Salvar Alterações
                                 </Button>
@@ -228,8 +228,8 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                 </div>
 
                 {/* Mobile Floating Button */}
-                <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t lg:hidden z-50">
-                    <Button type="submit" size="lg" className="w-full bg-slate-900 text-white font-bold" disabled={loading}>
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t lg:hidden z-50">
+                    <Button type="submit" size="lg" className="w-full bg-primary text-primary-foreground font-bold" disabled={loading}>
                         {loading ? 'Salvando...' : 'Salvar Perfil'}
                     </Button>
                 </div>

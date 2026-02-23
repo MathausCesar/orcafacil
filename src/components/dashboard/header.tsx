@@ -13,7 +13,7 @@ export function DashboardHeader({ title, profileImage, className }: HeaderProps)
     return (
         <header className={cn("flex items-center justify-between mb-8", className)}>
             <div className="flex items-center gap-4">
-                <Avatar className="h-12 w-12 border border-zinc-200 shadow-sm transition-all hover:scale-105">
+                <Avatar className="h-12 w-12 border border-border shadow-sm transition-all hover:scale-105">
                     <AvatarImage src={profileImage || ''} className="object-cover" />
                     <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
                         {(title || 'SU')?.substring(0, 2).toUpperCase()}

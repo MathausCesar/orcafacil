@@ -15,7 +15,7 @@ export function ThemeToggle() {
 
     if (!mounted) {
         return (
-            <div className="flex bg-muted/30 p-1 rounded-xl w-full sm:w-auto h-12 w-[240px] animate-pulse"></div>
+            <div className="flex bg-muted/30 p-1 rounded-xl w-full sm:w-auto h-12 w-[180px] animate-pulse"></div>
         )
     }
 
@@ -24,8 +24,8 @@ export function ThemeToggle() {
             <button
                 onClick={() => setTheme("light")}
                 className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${theme === "light"
-                        ? "bg-background text-foreground shadow-sm ring-1 ring-border/50"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
+                    ? "bg-background text-foreground shadow-sm ring-1 ring-border/50"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
                     }`}
             >
                 <Sun className="h-4 w-4" />
@@ -34,22 +34,12 @@ export function ThemeToggle() {
             <button
                 onClick={() => setTheme("dark")}
                 className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${theme === "dark"
-                        ? "bg-background text-foreground shadow-sm ring-1 ring-border/50"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
+                    ? "bg-background text-foreground shadow-sm ring-1 ring-border/50"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
                     }`}
             >
                 <Moon className="h-4 w-4" />
                 <span>Escuro</span>
-            </button>
-            <button
-                onClick={() => setTheme("system")}
-                className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${theme === "system"
-                        ? "bg-background text-foreground shadow-sm ring-1 ring-border/50"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
-                    }`}
-            >
-                <Monitor className="h-4 w-4" />
-                <span>Sistema</span>
             </button>
         </div>
     )

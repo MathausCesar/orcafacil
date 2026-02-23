@@ -43,11 +43,20 @@ export function DesktopSidebar({ className }: DesktopSidebarProps) {
             {/* Logo Area */}
             <div className="h-24 flex items-center justify-center border-b border-sidebar-border p-4">
                 <Link href="/" className="relative h-full w-full max-w-[200px] transition-transform hover:scale-105 active:scale-95 block">
+                    {/* Light mode logo (dark text) */}
+                    <Image
+                        src="/logo/logozacly.png"
+                        alt="Zacly Logo"
+                        fill
+                        className="object-contain dark:hidden"
+                        priority
+                    />
+                    {/* Dark mode logo (light/colored) */}
                     <Image
                         src="/logo/logo.png"
                         alt="Zacly Logo"
                         fill
-                        className="object-contain"
+                        className="object-contain hidden dark:block"
                         priority
                     />
                 </Link>

@@ -48,8 +48,8 @@ export function UpdatePasswordForm() {
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-teal-700/20 via-transparent to-transparent"></div>
                 <div className="absolute bottom-0 left-0 h-96 w-96 -mb-20 -ml-20 rounded-full bg-primary/20 blur-3xl"></div>
 
-                <div className="relative z-10 flex items-center gap-3">
-                    <div className="relative h-14 w-32 overflow-hidden rounded-xl bg-white/10 backdrop-blur-md ring-1 ring-white/20 p-2 flex items-center justify-center">
+                <div className="relative z-10 flex items-center justify-start">
+                    <div className="relative h-20 w-48 overflow-hidden rounded-2xl bg-white/10 backdrop-blur-md ring-1 ring-white/20 p-3 flex items-center justify-center">
                         <div className="relative h-full w-full">
                             <Image
                                 src="/logo/logo.png"
@@ -60,7 +60,6 @@ export function UpdatePasswordForm() {
                             />
                         </div>
                     </div>
-                    <span className="text-xl font-semibold tracking-wide text-white/90">Zacly</span>
                 </div>
 
                 <div className="relative z-10 space-y-6">
@@ -82,10 +81,16 @@ export function UpdatePasswordForm() {
                         <div className="relative mx-auto mb-4 h-16 w-32 rounded-xl bg-muted/50 p-2 ring-1 ring-border/50 flex items-center justify-center">
                             <div className="relative h-full w-full">
                                 <Image
+                                    src="/logo/logozacly.png"
+                                    alt="Zacly Logo"
+                                    fill
+                                    className="object-contain dark:hidden"
+                                />
+                                <Image
                                     src="/logo/logo.png"
                                     alt="Zacly Logo"
                                     fill
-                                    className="object-contain"
+                                    className="object-contain hidden dark:block"
                                 />
                             </div>
                         </div>

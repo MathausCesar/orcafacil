@@ -170,6 +170,30 @@
   --sidebar-ring: oklch(0.75 0.14 160);
 }
 
+/* Force light mode for document views (quotes, invoices) that must always be legible */
+.force-light {
+  color-scheme: light !important;
+  --background: oklch(0.98 0.01 100);
+  --foreground: oklch(0.25 0.05 175);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.25 0.05 175);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.25 0.05 175);
+  --primary: oklch(0.42 0.08 175);
+  --primary-foreground: oklch(0.98 0.01 100);
+  --secondary: oklch(0.94 0.04 160);
+  --secondary-foreground: oklch(0.42 0.08 175);
+  --muted: oklch(0.95 0.01 100);
+  --muted-foreground: oklch(0.60 0.02 175);
+  --accent: oklch(0.77 0.15 158);
+  --accent-foreground: oklch(0.25 0.05 175);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.92 0.01 100);
+  --input: oklch(0.92 0.01 100);
+  --ring: oklch(0.77 0.15 158);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

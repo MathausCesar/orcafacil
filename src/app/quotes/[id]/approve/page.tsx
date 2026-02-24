@@ -40,7 +40,7 @@ export default async function ApprovePage({ params }: { params: Promise<{ id: st
     const isRejected = quote.status === 'rejected'
 
     return (
-        <div className="light min-h-screen bg-slate-50 flex flex-col" style={{ colorScheme: 'light' }}>
+        <div className="force-light min-h-screen bg-slate-50 flex flex-col" style={{ colorScheme: 'light' }}>
             {/* Header */}
             <header className="bg-white border-b px-6 py-4 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-3">

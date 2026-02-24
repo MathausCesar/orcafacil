@@ -118,7 +118,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
 
     return (
         <div
-            className="light min-h-screen bg-slate-50 pb-20 print:bg-white print:pb-0"
+            className="force-light min-h-screen bg-slate-50 pb-20 print:bg-white print:pb-0"
             style={{ '--theme-color': themeColor, colorScheme: 'light' } as React.CSSProperties}
         >
             {/* Actions Header */}

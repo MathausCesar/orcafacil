@@ -100,7 +100,7 @@ export function ClientAutocomplete({ onSelect, defaultValue, defaultPhone }: Cli
                 </div>
 
                 {showSuggestions && (
-                    <div className="absolute z-10 w-full bg-white border rounded-md shadow-lg mt-1 max-h-60 overflow-auto">
+                    <div className="absolute z-10 w-full bg-popover border border-border rounded-md shadow-lg mt-1 max-h-60 overflow-auto">
                         {suggestions.length === 0 ? (
                             <div className="p-4 text-sm text-center text-muted-foreground">
                                 {query ? `Nenhum cliente encontrado para "${query}"` : 'Nenhum cliente cadastrado'}

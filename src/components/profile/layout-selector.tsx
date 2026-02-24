@@ -122,7 +122,7 @@ export function LayoutSelector({ currentLayout, currentColor, onLayoutChange, on
                             "h-8 w-8 rounded-full border-2 border-slate-200 flex items-center justify-center bg-white hover:border-slate-400 transition-colors",
                             !defaultColors.includes(currentColor) ? "border-slate-900" : ""
                         )}>
-                            <span className="text-xs font-bold text-slate-500">+</span>
+                            <span className="text-xs font-bold text-muted-foreground">+</span>
                         </div>
                     </div>
                 </div>

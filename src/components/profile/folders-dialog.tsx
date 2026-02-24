@@ -113,7 +113,7 @@ export function FoldersDialog({ folders }: FoldersDialogProps) {
                         folders.map((folder) => (
                             <div key={folder.id} className="flex items-center justify-between p-2 rounded-md hover:bg-slate-50 border border-transparent hover:border-slate-100 group">
                                 <div className="flex items-center gap-2">
-                                    <Folder className="h-4 w-4 text-slate-400" />
+                                    <Folder className="h-4 w-4 text-muted-foreground" />
                                     <span className="text-sm font-medium">{folder.name}</span>
                                 </div>
                                 <Button

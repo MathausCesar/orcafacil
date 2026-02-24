@@ -148,15 +148,15 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
             {/* Header Area */}
             <div className="flex items-center gap-4 mb-8">
                 <Link href={initialData?.id ? `/quotes/${initialData.id}` : "/"}>
-                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-full border-slate-200">
-                        <ArrowLeft className="h-5 w-5 text-slate-600" />
+                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-full border-border">
+                        <ArrowLeft className="h-5 w-5 text-muted-foreground" />
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+                    <h1 className="text-2xl font-bold text-foreground tracking-tight">
                         {initialData?.id ? 'Editar Orçamento' : 'Novo Orçamento'}
                     </h1>
-                    <p className="text-slate-500 text-sm">Preencha as informações para gerar a proposta.</p>
+                    <p className="text-muted-foreground text-sm">Preencha as informações para gerar a proposta.</p>
                 </div>
             </div>
 
@@ -166,10 +166,10 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                 <div className="lg:col-span-2 space-y-6">
 
                     {/* Client Data */}
-                    <Card className="border-0 shadow-sm ring-1 ring-slate-200">
-                        <CardHeader className="pb-4 border-b border-slate-100">
+                    <Card className="border-0 shadow-sm ring-1 ring-border">
+                        <CardHeader className="pb-4 border-b border-border">
                             <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                <div className="p-2 bg-primary/10 text-primary rounded-lg">
                                     <FileText className="h-5 w-5" />
                                 </div>
                                 Dados do Cliente
@@ -188,10 +188,10 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                     </Card>
 
                     {/* Items Section */}
-                    <Card className="border-0 shadow-sm ring-1 ring-slate-200 overflow-hidden">
-                        <CardHeader className="pb-4 border-b border-slate-100 bg-slate-50/50">
+                    <Card className="border-0 shadow-sm ring-1 ring-border overflow-hidden">
+                        <CardHeader className="pb-4 border-b border-border bg-muted/30">
                             <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                                <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg">
                                     <CheckCircle2 className="h-5 w-5" />
                                 </div>
                                 Itens e Serviços
@@ -203,7 +203,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                             {items.length > 0 ? (
                                 <div className="space-y-4">
                                     {/* Desktop Table Header */}
-                                    <div className="hidden lg:grid grid-cols-12 gap-4 text-xs font-semibold text-slate-500 px-4 uppercase tracking-wider">
+                                    <div className="hidden lg:grid grid-cols-12 gap-4 text-xs font-semibold text-muted-foreground px-4 uppercase tracking-wider">
                                         <div className="col-span-6">Descrição</div>
                                         <div className="col-span-2 text-center">Qtd</div>
                                         <div className="col-span-2 text-right">Unitário</div>
@@ -212,7 +212,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
 
                                     <div className="space-y-3">
                                         {items.map((item) => (
-                                            <div key={item.id} className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm group hover:border-emerald-200 hover:shadow-md transition-all">
+                                            <div key={item.id} className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center bg-card p-4 rounded-xl border border-border shadow-sm group hover:border-primary/30 hover:shadow-md transition-all">
 
                                                 <div className="lg:col-span-6">
                                                     <Input
@@ -224,7 +224,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                                                 </div>
 
                                                 <div className="lg:col-span-2 flex items-center lg:justify-center">
-                                                    <span className="lg:hidden text-sm text-slate-500 mr-2">Qtd:</span>
+                                                    <span className="lg:hidden text-sm text-muted-foreground mr-2">Qtd:</span>
                                                     <Input
                                                         type="number"
                                                         value={item.quantity}
@@ -234,7 +234,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                                                 </div>
 
                                                 <div className="lg:col-span-2 flex items-center lg:justify-end">
-                                                    <span className="lg:hidden text-sm text-slate-500 mr-2">Unit:</span>
+                                                    <span className="lg:hidden text-sm text-muted-foreground mr-2">Unit:</span>
                                                     <Input
                                                         type="number"
                                                         step="0.01"
@@ -245,14 +245,14 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                                                 </div>
 
                                                 <div className="lg:col-span-2 flex items-center justify-between lg:justify-end gap-4 border-t lg:border-t-0 pt-3 lg:pt-0 mt-2 lg:mt-0">
-                                                    <span className="font-bold text-slate-900">
+                                                    <span className="font-bold text-foreground">
                                                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.quantity * item.unitPrice)}
                                                     </span>
                                                     <Button
                                                         type="button"
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full"
+                                                        className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-500/10 rounded-full"
                                                         onClick={() => handleRemoveItem(item.id)}
                                                     >
                                                         <Trash2 className="h-4 w-4" />
@@ -264,7 +264,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                                                         <Textarea
                                                             value={item.details || ''}
                                                             onChange={(e) => handleUpdateItem(item.id, 'details', e.target.value)}
-                                                            className="text-sm min-h-[60px] resize-none bg-slate-50 border-slate-200"
+                                                            className="text-sm min-h-[60px] resize-none bg-muted/30 border-border"
                                                             placeholder="Detalhamento opcional do serviço ou produto..."
                                                         />
                                                     </div>
@@ -273,27 +273,27 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                                         ))}
                                     </div>
 
-                                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                                    <div className="flex justify-end pt-4 border-t border-border">
                                         <div className="text-right">
-                                            <p className="text-sm text-slate-500">Subtotal dos itens</p>
-                                            <p className="text-2xl font-bold text-slate-900">
+                                            <p className="text-sm text-muted-foreground">Subtotal dos itens</p>
+                                            <p className="text-2xl font-bold text-foreground">
                                                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
                                             </p>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
-                                <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                                    <p className="text-slate-500">Nenhum item adicionado ainda.</p>
-                                    <p className="text-sm text-slate-400">Use a busca acima para adicionar serviços.</p>
+                                <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed border-border">
+                                    <p className="text-muted-foreground">Nenhum item adicionado ainda.</p>
+                                    <p className="text-sm text-muted-foreground/70">Use a busca acima para adicionar serviços.</p>
                                 </div>
                             )}
                         </CardContent>
                     </Card>
 
                     {/* Observations */}
-                    <Card className="border-0 shadow-sm ring-1 ring-slate-200">
-                        <CardHeader className="pb-4 border-b border-slate-100">
+                    <Card className="border-0 shadow-sm ring-1 ring-border">
+                        <CardHeader className="pb-4 border-b border-border">
                             <CardTitle className="text-base font-semibold">Observações Finais</CardTitle>
                         </CardHeader>
                         <CardContent className="pt-6">
@@ -313,11 +313,11 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                     <div className="sticky top-6 space-y-6">
 
                         {/* Summary & Save */}
-                        <Card className="border-0 shadow-lg ring-1 ring-slate-200 bg-slate-900 text-white overflow-hidden">
+                        <Card className="border-0 shadow-lg ring-1 ring-border bg-slate-900 dark:bg-card text-white dark:text-card-foreground overflow-hidden">
                             <CardContent className="p-6">
                                 <div className="space-y-1 mb-6">
-                                    <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Valor Total</p>
-                                    <p className="text-4xl font-bold text-white tracking-tight">
+                                    <p className="text-slate-400 dark:text-muted-foreground text-sm font-medium uppercase tracking-wider">Valor Total</p>
+                                    <p className="text-4xl font-bold text-white dark:text-foreground tracking-tight">
                                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
                                     </p>
                                 </div>
@@ -329,18 +329,18 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                         </Card>
 
                         {/* Customization Options */}
-                        <Card className="border-0 shadow-sm ring-1 ring-slate-200">
-                            <CardHeader className="pb-3 border-b border-slate-100 bg-slate-50/50">
-                                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-700">
+                        <Card className="border-0 shadow-sm ring-1 ring-border">
+                            <CardHeader className="pb-3 border-b border-border bg-muted/30">
+                                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
                                     <Settings2 className="h-4 w-4" /> Configurações
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-0">
-                                <div className="divide-y divide-slate-100">
+                                <div className="divide-y divide-border">
                                     {/* Detailed Items Toggle */}
                                     <div className="p-4 space-y-3">
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                            <div className="p-2 bg-blue-500/10 text-blue-500 rounded-lg">
                                                 <AlignLeft className="h-4 w-4" />
                                             </div>
                                             <div className="flex-1">
@@ -352,7 +352,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                                                         onCheckedChange={(checked) => setShowDetailedItems(checked as boolean)}
                                                     />
                                                 </div>
-                                                <p className="text-xs text-slate-500 mt-1 leading-snug">Se ativo, exibe as descrições extras de produtos e serviços no documento.</p>
+                                                <p className="text-xs text-muted-foreground mt-1 leading-snug">Se ativo, exibe as descrições extras de produtos e serviços no documento.</p>
                                             </div>
                                         </div>
                                     </div>
@@ -360,7 +360,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                                     {/* Timeline */}
                                     <div className="p-4 space-y-3">
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                                            <div className="p-2 bg-purple-500/10 text-purple-500 rounded-lg">
                                                 <Clock className="h-4 w-4" />
                                             </div>
                                             <div className="flex-1">
@@ -376,7 +376,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                                         </div>
                                         {showTimeline && (
                                             <div className="pl-11 pr-1 animate-in slide-in-from-top-2 duration-200">
-                                                <Label className="text-xs text-slate-500 mb-1.5 block">Dias estimados</Label>
+                                                <Label className="text-xs text-muted-foreground mb-1.5 block">Dias estimados</Label>
                                                 <Input
                                                     type="number"
                                                     placeholder="Ex: 5"
@@ -391,7 +391,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                                     {/* Payment */}
                                     <div className="p-4 space-y-3">
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-orange-50 text-orange-600 rounded-lg">
+                                            <div className="p-2 bg-orange-500/10 text-orange-500 rounded-lg">
                                                 <Wallet className="h-4 w-4" />
                                             </div>
                                             <div className="flex-1">
@@ -430,7 +430,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
 
                                                 {paymentMethods.includes('installment') && (
                                                     <div>
-                                                        <Label className="text-xs text-slate-500 mb-1 block">Nº Parcelas</Label>
+                                                        <Label className="text-xs text-muted-foreground mb-1 block">Nº Parcelas</Label>
                                                         <Input
                                                             type="number"
                                                             placeholder="Ex: 12"
@@ -443,7 +443,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
 
                                                 {(paymentMethods.includes('pix') || paymentMethods.includes('cash')) && (
                                                     <div>
-                                                        <Label className="text-xs text-slate-500 mb-1 block">Desconto à vista (%)</Label>
+                                                        <Label className="text-xs text-muted-foreground mb-1 block">Desconto à vista (%)</Label>
                                                         <Input
                                                             type="number"
                                                             placeholder="Ex: 5"
@@ -463,7 +463,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                 </div>
 
                 {/* Mobile Floating Button - Visible only on mobile */}
-                <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t lg:hidden z-50">
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border lg:hidden z-50">
                     <Button type="submit" size="lg" className="w-full bg-emerald-600 font-bold" disabled={loading}>
                         {loading ? 'Salvando...' : `Salvar (${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)})`}
                     </Button>

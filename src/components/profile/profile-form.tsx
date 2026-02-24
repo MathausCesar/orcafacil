@@ -68,10 +68,10 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                 <div className="lg:col-span-2 space-y-6">
 
                     {/* Business Info */}
-                    <Card className="border-0 shadow-sm ring-1 ring-slate-200">
-                        <CardHeader className="pb-4 border-b border-slate-100">
+                    <Card className="border-0 shadow-sm ring-1 ring-border">
+                        <CardHeader className="pb-4 border-b border-border">
                             <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                <div className="p-2 bg-primary/10 text-primary rounded-lg">
                                     <Building2 className="h-5 w-5" />
                                 </div>
                                 Identidade da Empresa
@@ -149,7 +149,7 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                     </Card>
 
                     {/* Visual Style */}
-                    <Card className="border-0 shadow-sm ring-1 ring-slate-200">
+                    <Card className="border-0 shadow-sm ring-1 ring-border">
                         <CardHeader className="pb-4 border-b border-border bg-muted/30">
                             <CardTitle className="text-lg font-semibold flex items-center gap-2">
                                 <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
@@ -186,11 +186,11 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                                         {logoUrl ? (
                                             <img src={logoUrl} alt="Logo" className="h-full w-full object-cover" />
                                         ) : (
-                                            <Building2 className="h-6 w-6 text-slate-400" />
+                                            <Building2 className="h-6 w-6 text-muted-foreground" />
                                         )}
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-slate-900 line-clamp-1">{initialProfile?.business_name || 'Sua Empresa'}</h3>
+                                        <h3 className="font-bold text-foreground line-clamp-1">{initialProfile?.business_name || 'Sua Empresa'}</h3>
                                         <div className="flex items-center gap-1.5 mt-1">
                                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                                             <p className="text-xs font-medium text-emerald-600">Perfil Ativo</p>

@@ -166,9 +166,9 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
 
                                 return (
                                     <div key={folderId} className="border-b border-primary/10 last:border-0 pb-1">
-                                        <div className="px-3 py-1.5 bg-slate-50 border-y border-slate-100/50 flex items-center gap-1.5 sticky top-0 z-10">
-                                            <Folder className="h-3 w-3 text-slate-400" />
-                                            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider sticky top-0">
+                                        <div className="px-3 py-1.5 bg-muted/50 border-y border-border/50 flex items-center gap-1.5 sticky top-0 z-10">
+                                            <Folder className="h-3 w-3 text-muted-foreground" />
+                                            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider sticky top-0">
                                                 {folderName}
                                             </span>
                                         </div>
@@ -176,13 +176,13 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
                                             <button
                                                 key={s.id}
                                                 type="button"
-                                                className="w-full text-left px-3 py-2.5 hover:bg-primary/5 transition-colors flex flex-col items-start border-b border-slate-50 last:border-0"
+                                                className="w-full text-left px-3 py-2.5 hover:bg-primary/5 transition-colors flex flex-col items-start border-b border-border/30 last:border-0"
                                                 onClick={() => selectSuggestion(s)}
                                             >
                                                 <div className="flex justify-between items-center w-full">
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-sm font-medium text-foreground">{s.description}</span>
-                                                        <Badge variant="outline" className="text-[10px] py-0 h-4 border-slate-200 text-slate-500 font-normal">
+                                                        <Badge variant="outline" className="text-[10px] py-0 h-4 border-border text-muted-foreground font-normal">
                                                             {s.type === 'product' ? <Package className="h-3 w-3 mr-1" /> : <Wrench className="h-3 w-3 mr-1" />}
                                                             {s.type === 'product' ? 'Produto' : 'Serviço'}
                                                         </Badge>

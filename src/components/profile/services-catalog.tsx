@@ -128,7 +128,7 @@ export function ServicesCatalog({ initialServices, initialFolders, userId }: Ser
             {/* Add Form */}
             <div className="bg-muted/50 p-4 rounded-xl border border-border space-y-4">
                 <div className="flex justify-between items-center pb-2 border-b border-slate-200/60">
-                    <h3 className="text-sm font-semibold text-slate-800">Adicionar Novo Item</h3>
+                    <h3 className="text-sm font-semibold text-foreground">Adicionar Novo Item</h3>
                     <FoldersDialog folders={initialFolders} />
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -239,7 +239,7 @@ export function ServicesCatalog({ initialServices, initialFolders, userId }: Ser
 
                             return (
                                 <div key={key} className="space-y-3">
-                                    <h4 className="flex items-center gap-2 text-sm font-semibold text-slate-800 pb-1 border-b border-slate-100">
+                                    <h4 className="flex items-center gap-2 text-sm font-semibold text-foreground pb-1 border-b border-border">
                                         <Folder className="h-4 w-4" style={{ color: folder?.color || '#94a3b8' }} />
                                         {folder ? folder.name : 'Sem Pasta'}
                                         <span className="text-xs font-normal text-muted-foreground bg-slate-100 px-2 py-0.5 rounded-full ml-1">
@@ -254,16 +254,16 @@ export function ServicesCatalog({ initialServices, initialFolders, userId }: Ser
                                             >
                                                 <div className="flex-1 min-w-0 flex flex-col items-start gap-1.5 w-full">
                                                     <div className="flex items-start justify-between w-full gap-3">
-                                                        <p className="font-semibold text-sm text-slate-800 leading-tight">
+                                                        <p className="font-semibold text-sm text-foreground leading-tight">
                                                             {service.description}
                                                         </p>
-                                                        <Badge variant="outline" className="text-[10px] py-0 h-5 border-slate-200 text-slate-500 font-normal shrink-0 bg-slate-50">
+                                                        <Badge variant="outline" className="text-[10px] py-0 h-5 border-border text-muted-foreground font-normal shrink-0 bg-muted/50">
                                                             {service.type === 'product' ? <Package className="h-3 w-3 mr-1" /> : <Wrench className="h-3 w-3 mr-1" />}
                                                             {service.type === 'product' ? 'Produto' : 'Serviço'}
                                                         </Badge>
                                                     </div>
                                                     {service.details && (
-                                                        <p className="text-xs text-slate-500 leading-snug line-clamp-2 sm:line-clamp-1 w-full max-w-2xl">
+                                                        <p className="text-xs text-muted-foreground leading-snug line-clamp-2 sm:line-clamp-1 w-full max-w-2xl">
                                                             {service.details}
                                                         </p>
                                                     )}
@@ -271,7 +271,7 @@ export function ServicesCatalog({ initialServices, initialFolders, userId }: Ser
 
                                                 <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4 pt-3 sm:pt-0 border-t border-slate-100 sm:border-0 mt-1 sm:mt-0">
                                                     <div className="flex flex-col sm:text-right">
-                                                        <span className="text-[10px] uppercase tracking-wider text-slate-400 font-medium sm:hidden mb-0.5">Valor Unitário</span>
+                                                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium sm:hidden mb-0.5">Valor Unitário</span>
                                                         <p className="text-sm text-emerald-600 font-bold">{formatBRL(service.default_price)}</p>
                                                     </div>
                                                     <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">

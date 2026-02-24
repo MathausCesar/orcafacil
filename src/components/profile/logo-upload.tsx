@@ -36,6 +36,16 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete }: LogoUpl
             const ext = file.name.split('.').pop()
             const filePath = `${userId}/logo.${ext}`
 
+            // Clean up any existing logo files to avoid orphaned files (e.g. user switches from .png to .jpg)
+            const { data: existingFiles } = await supabase.storage
+                .from('logos')
+                .list(userId)
+
+            if (existingFiles && existingFiles.length > 0) {
+                const filesToDelete = existingFiles.map(f => `${userId}/${f.name}`)
+                await supabase.storage.from('logos').remove(filesToDelete)
+            }
+
             const { error: uploadError } = await supabase.storage
                 .from('logos')
                 .upload(filePath, file, { upsert: true })
@@ -46,12 +56,12 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete }: LogoUpl
                 .from('logos')
                 .getPublicUrl(filePath)
 
-            // Add cache-busting param
-            const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`
+            // Add cache-busting param so browsers/CDN always fetch the new image
+            const urlWithCacheBust = `${publicUrl}?v=${Date.now()}`
 
             const { error: updateError } = await supabase
                 .from('profiles')
-                .update({ logo_url: publicUrl })
+                .update({ logo_url: urlWithCacheBust })
                 .eq('id', userId)
 
             if (updateError) throw updateError

@@ -25,8 +25,8 @@ export function WizardStep3() {
                 {/* Tier 1: Autonomous */}
                 <TierCard
                     icon={Rocket}
-                    title="Autônomo / 'Eu-quipe'"
-                    description="Trabalho sozinho, custos baixos, preço competitivo."
+                    title="Profissional Autônomo"
+                    description="Atuo de forma independente com estrutura enxuta."
                     isSelected={data.pricingTier === "autonomous"}
                     onClick={() => handleSelect("autonomous")}
                 />
@@ -34,8 +34,8 @@ export function WizardStep3() {
                 {/* Tier 2: Small Business */}
                 <TierCard
                     icon={Store}
-                    title="Pequeno Negócio / Oficina"
-                    description="Tenho ponto comercial e equipe enxuta."
+                    title="Pequena Empresa"
+                    description="Tenho ponto comercial e equipe reduzida."
                     isSelected={data.pricingTier === "standard"}
                     onClick={() => handleSelect("standard")}
                 />
@@ -43,8 +43,8 @@ export function WizardStep3() {
                 {/* Tier 3: Premium */}
                 <TierCard
                     icon={Building2}
-                    title="Empresa Consolidada / Premium"
-                    description="Estrutura completa, custos mais altos, valor agregado."
+                    title="Empresa Estruturada"
+                    description="Estrutura completa com equipe e processos definidos."
                     isSelected={data.pricingTier === "premium"}
                     onClick={() => handleSelect("premium")}
                 />

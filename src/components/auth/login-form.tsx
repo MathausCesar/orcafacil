@@ -120,7 +120,7 @@ export function LoginForm() {
                 <div className="mx-auto w-full max-w-[380px] space-y-8">
                     {/* Mobile Logo */}
                     <div className="lg:hidden text-center mb-8">
-                        <div className="relative mx-auto mb-4 h-16 w-32 rounded-xl bg-muted/50 p-2 ring-1 ring-border/50 flex items-center justify-center">
+                        <div className="relative mx-auto h-20 w-48 rounded-xl bg-muted/50 p-3 ring-1 ring-border/50 flex items-center justify-center">
                             <div className="relative h-full w-full">
                                 <Image
                                     src="/logo/logozacly.png"

@@ -315,108 +315,114 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                     </Card>
                 )}
 
-                {/* PROFESSIONAL LAYOUT — Corporate, structured, premium */}
+                {/* PROFESSIONAL LAYOUT — Executive, subdued, sophisticated */}
                 {layout === 'professional' && (
-                    <Card className="shadow-lg print:shadow-none print:border-none rounded-xl overflow-hidden border border-slate-200">
+                    <Card className="shadow-lg print:shadow-none print:border-none rounded-none overflow-hidden border border-slate-200">
                         <CardContent className="p-0">
-                            {/* Header — Split with accent bar */}
-                            <div className="flex">
-                                <div className="w-2 bg-[var(--theme-color)]" />
-                                <div className="flex-1 p-8 md:p-10 flex justify-between items-start">
+                            {/* Executive Header — Dark, authoritative */}
+                            <div className="bg-slate-900 text-white p-8 md:p-10">
+                                <div className="flex justify-between items-start">
                                     <div>
                                         {profile?.logo_url && (
-                                            <div className="relative h-16 w-28 mb-4">
-                                                <Image src={profile.logo_url} alt="Logo" fill className="object-contain object-left" unoptimized />
+                                            <div className="relative h-14 w-24 mb-4">
+                                                <Image src={profile.logo_url} alt="Logo" fill className="object-contain object-left brightness-0 invert" unoptimized />
                                             </div>
                                         )}
-                                        <h1 className="text-xl font-bold text-slate-900 tracking-tight">{profile?.business_name || 'Empresa'}</h1>
-                                        <div className="text-sm text-slate-500 mt-1 space-y-0.5">
+                                        <h1 className="text-lg font-semibold tracking-wide uppercase">{profile?.business_name || 'Empresa'}</h1>
+                                        <div className="text-sm text-slate-400 mt-1 space-y-0.5">
                                             {profile?.cnpj && <p>CNPJ: {profile.cnpj}</p>}
                                             <p>{[profile?.phone, profile?.email].filter(Boolean).join(' · ')}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Proposta</p>
-                                        <p className="text-2xl font-bold text-slate-900 mt-1">#{quote.id.substring(0, 8).toUpperCase()}</p>
-                                        <p className="text-sm text-slate-500 mt-2">{format(new Date(quote.created_at), "dd/MM/yyyy")}</p>
+                                        <p className="text-xs font-medium uppercase tracking-widest text-slate-500">Proposta</p>
+                                        <p className="text-2xl font-bold mt-1">#{quote.id.substring(0, 8).toUpperCase()}</p>
+                                        <p className="text-sm text-slate-400 mt-2">{format(new Date(quote.created_at), "dd/MM/yyyy")}</p>
                                         {quote.valid_until && (
-                                            <p className="text-sm font-medium mt-1" style={{ color: themeColor }}>
+                                            <p className="text-sm text-slate-400 mt-1">
                                                 Válido até {format(new Date(quote.valid_until), "dd/MM/yyyy")}
                                             </p>
                                         )}
                                     </div>
                                 </div>
+                                {/* Brand color hairline */}
+                                <div className="h-0.5 mt-6 rounded-full" style={{ backgroundColor: themeColor }} />
                             </div>
 
-                            <div className="px-8 md:px-10 pb-10 space-y-8">
-                                {/* Client Card */}
-                                <div className="flex border border-slate-200 rounded-lg overflow-hidden">
-                                    <div className="w-1.5 bg-[var(--theme-color)]" />
-                                    <div className="p-5 flex-1">
-                                        <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: themeColor }}>Cliente</p>
-                                        <p className="text-lg font-semibold text-slate-900">{quote.client_name}</p>
+                            <div className="p-8 md:p-10 space-y-8">
+                                {/* Client Section — Minimal */}
+                                <div className="grid grid-cols-2 gap-8">
+                                    <div>
+                                        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">Cliente</p>
+                                        <p className="text-base font-semibold text-slate-900">{quote.client_name}</p>
                                         {quote.client_phone && <p className="text-sm text-slate-500 mt-0.5">{quote.client_phone}</p>}
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">Detalhes</p>
+                                        <p className="text-sm text-slate-700">Data: {format(new Date(quote.created_at), "dd/MM/yyyy")}</p>
+                                        {quote.valid_until && <p className="text-sm text-slate-700">Validade: {format(new Date(quote.valid_until), "dd/MM/yyyy")}</p>}
                                     </div>
                                 </div>
 
-                                {/* Items Table */}
-                                <div className="rounded-lg overflow-hidden border border-slate-200">
+                                {/* Items Table — Neutral, clean */}
+                                <div>
                                     <table className="w-full text-sm">
                                         <thead>
-                                            <tr style={{ backgroundColor: themeColor }}>
-                                                <th className="py-3 pl-5 text-left font-semibold text-white text-xs uppercase tracking-wider">Descrição</th>
-                                                <th className="py-3 text-center font-semibold text-white text-xs uppercase tracking-wider w-16">Qtd</th>
-                                                <th className="py-3 text-right font-semibold text-white text-xs uppercase tracking-wider w-28">Unitário</th>
-                                                <th className="py-3 pr-5 text-right font-semibold text-white text-xs uppercase tracking-wider w-28">Total</th>
+                                            <tr className="border-b-2 border-slate-800">
+                                                <th className="py-3 text-left font-semibold text-slate-800 text-xs uppercase tracking-wider">Descrição</th>
+                                                <th className="py-3 text-center font-semibold text-slate-800 text-xs uppercase tracking-wider w-16">Qtd</th>
+                                                <th className="py-3 text-right font-semibold text-slate-800 text-xs uppercase tracking-wider w-28">Unitário</th>
+                                                <th className="py-3 text-right font-semibold text-slate-800 text-xs uppercase tracking-wider w-28">Total</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {quote.quote_items.map((item: any, idx: number) => (
-                                                <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                                                    <td className="py-3.5 pl-5 font-medium text-slate-800">
+                                            {quote.quote_items.map((item: any) => (
+                                                <tr key={item.id} className="border-b border-slate-100">
+                                                    <td className="py-3.5 font-medium text-slate-800">
                                                         <div>{item.description}</div>
                                                         {quote.show_detailed_items && item.details && (
-                                                            <div className="text-xs text-slate-500 mt-1 whitespace-pre-wrap font-normal leading-relaxed">{item.details}</div>
+                                                            <div className="text-xs text-slate-400 mt-1 whitespace-pre-wrap font-normal leading-relaxed">{item.details}</div>
                                                         )}
                                                     </td>
-                                                    <td className="py-3.5 text-center text-slate-600">{item.quantity}</td>
-                                                    <td className="py-3.5 text-right text-slate-600">
+                                                    <td className="py-3.5 text-center text-slate-500">{item.quantity}</td>
+                                                    <td className="py-3.5 text-right text-slate-500">
                                                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_price)}
                                                     </td>
-                                                    <td className="py-3.5 pr-5 text-right font-semibold text-slate-900">
+                                                    <td className="py-3.5 text-right font-semibold text-slate-900">
                                                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.quantity * item.unit_price)}
                                                     </td>
                                                 </tr>
                                             ))}
                                         </tbody>
                                     </table>
-                                    {/* Total Bar */}
-                                    <div className="flex justify-between items-center px-5 py-4 text-white font-bold text-lg" style={{ backgroundColor: themeColor }}>
-                                        <span className="uppercase text-sm tracking-wider">Total</span>
-                                        <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}</span>
+                                    {/* Total — Understated, right-aligned */}
+                                    <div className="flex justify-end mt-4 pt-4 border-t border-slate-200">
+                                        <div className="text-right">
+                                            <p className="text-[11px] uppercase tracking-widest text-slate-400 mb-1">Total</p>
+                                            <p className="text-2xl font-bold text-slate-900">
+                                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Notes */}
+                                {/* Notes — Clean, neutral */}
                                 {(quote.notes || quote.payment_terms) && (
-                                    <div className="flex border border-slate-200 rounded-lg overflow-hidden">
-                                        <div className="w-1.5 bg-[var(--theme-color)]" />
-                                        <div className="p-5 flex-1 text-sm space-y-2">
-                                            {quote.payment_terms && <p><span className="font-semibold text-slate-900">Pagamento:</span> {quote.payment_terms}</p>}
-                                            {quote.notes && <p className="italic text-slate-600">{quote.notes}</p>}
-                                        </div>
+                                    <div className="bg-slate-50 p-5 text-sm space-y-1.5 border-l-2 border-slate-300">
+                                        {quote.payment_terms && <p className="text-slate-700"><span className="font-semibold text-slate-900">Pagamento:</span> {quote.payment_terms}</p>}
+                                        {quote.notes && <p className="italic text-slate-500">{quote.notes}</p>}
                                     </div>
                                 )}
 
                                 {/* Timeline */}
                                 {quote.show_timeline && (
-                                    <TimelineSection themeColor={themeColor} estimatedDays={quote.estimated_days ?? undefined} quoteStatus={quote.status} />
+                                    <TimelineSection themeColor="#334155" estimatedDays={quote.estimated_days ?? undefined} quoteStatus={quote.status} />
                                 )}
 
                                 {/* Payment Options */}
                                 {quote.show_payment_options && (
                                     <PaymentOptions
-                                        themeColor={themeColor}
+                                        themeColor="#334155"
                                         showCashDiscount={(quote.cash_discount_percent ?? 0) > 0}
                                         cashDiscountPercent={quote.cash_discount_percent ?? 0}
                                         installmentCount={quote.installment_count}

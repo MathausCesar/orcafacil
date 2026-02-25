@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Plus, UserPlus, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { CepInput } from './cep-input'
 
 interface CreateClientDialogProps {
     trigger?: React.ReactNode;
@@ -113,10 +114,7 @@ export function CreateClientDialog({ trigger, onSuccess }: CreateClientDialogPro
                         <Label htmlFor="email">Email</Label>
                         <Input id="email" name="email" type="email" placeholder="cliente@email.com" />
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="address">Endereço</Label>
-                        <Textarea id="address" name="address" placeholder="Rua, Número, Bairro..." className="min-h-[80px]" />
-                    </div>
+                    <CepInput />
                     <div className="space-y-2">
                         <Label htmlFor="notes">Observações</Label>
                         <Textarea id="notes" name="notes" placeholder="Preferências, histórico..." />

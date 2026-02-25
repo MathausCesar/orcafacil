@@ -16,6 +16,7 @@ export async function createClientAction(formData: FormData) {
     const phone = formData.get('phone') as string
     const email = formData.get('email') as string
     const address = formData.get('address') as string
+    const cep = formData.get('cep') as string || null
     const notes = formData.get('notes') as string
     const personType = formData.get('person_type') as string || 'pf'
     const companyName = formData.get('company_name') as string || null
@@ -28,6 +29,7 @@ export async function createClientAction(formData: FormData) {
             phone,
             email,
             address,
+            cep,
             notes,
             person_type: personType,
             company_name: companyName
@@ -88,6 +90,7 @@ export async function updateClient(id: string, formData: FormData) {
     const phone = formData.get('phone') as string
     const email = formData.get('email') as string
     const address = formData.get('address') as string
+    const cep = formData.get('cep') as string || null
     const notes = formData.get('notes') as string
     const personType = formData.get('person_type') as string
     const companyName = formData.get('company_name') as string || null
@@ -99,6 +102,7 @@ export async function updateClient(id: string, formData: FormData) {
             phone,
             email,
             address,
+            cep,
             notes,
             person_type: personType,
             company_name: companyName

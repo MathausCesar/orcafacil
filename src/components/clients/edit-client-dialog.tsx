@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Pencil, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { CepInput } from './cep-input'
 
 interface Client {
     id: string
@@ -17,6 +18,7 @@ interface Client {
     phone?: string | null
     email?: string | null
     address?: string | null
+    cep?: string | null
     notes?: string | null
 }
 
@@ -91,16 +93,7 @@ export function EditClientDialog({ client, trigger }: EditClientDialogProps) {
                             placeholder="cliente@email.com"
                         />
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="edit-address">Endereço</Label>
-                        <Textarea
-                            id="edit-address"
-                            name="address"
-                            defaultValue={client.address || ''}
-                            placeholder="Rua, Número, Bairro..."
-                            className="min-h-[80px]"
-                        />
-                    </div>
+                    <CepInput defaultCep={client.cep || ''} defaultAddress={client.address || ''} />
                     <div className="space-y-2">
                         <Label htmlFor="edit-notes">Observações</Label>
                         <Textarea

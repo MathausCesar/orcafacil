@@ -280,6 +280,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                         showCashDiscount={(quote.cash_discount_percent ?? 0) > 0}
                                         cashDiscountPercent={quote.cash_discount_percent ?? 0}
                                         installmentCount={quote.installment_count}
+                                        total={total}
                                     />
                                 )}
 
@@ -325,7 +326,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     <div>
                                         {profile?.logo_url && (
                                             <div className="relative h-14 w-24 mb-4">
-                                                <Image src={profile.logo_url} alt="Logo" fill className="object-contain object-left brightness-0 invert" unoptimized />
+                                                <Image src={profile.logo_url} alt="Logo" fill className="object-contain object-left" unoptimized />
                                             </div>
                                         )}
                                         <h1 className="text-lg font-semibold tracking-wide uppercase">{profile?.business_name || 'Empresa'}</h1>
@@ -426,6 +427,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                         showCashDiscount={(quote.cash_discount_percent ?? 0) > 0}
                                         cashDiscountPercent={quote.cash_discount_percent ?? 0}
                                         installmentCount={quote.installment_count}
+                                        total={total}
                                     />
                                 )}
 
@@ -551,6 +553,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     showCashDiscount={(quote.cash_discount_percent ?? 0) > 0}
                                     cashDiscountPercent={quote.cash_discount_percent ?? 0}
                                     installmentCount={quote.installment_count}
+                                    total={total}
                                 />
                             )}
 

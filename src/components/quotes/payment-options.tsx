@@ -14,28 +14,40 @@ interface PaymentOptionsProps {
     cashDiscountPercent?: number
     /** Número de parcelas */
     installmentCount?: number
+    /** Total do orçamento para cálculo de parcelas */
+    total?: number
 }
 
 export function PaymentOptions({
     themeColor = '#0D9B5C',
     showCashDiscount = false,
     cashDiscountPercent = 5,
-    installmentCount
+    installmentCount,
+    total
 }: PaymentOptionsProps) {
+    const formatCurrency = (value: number) =>
+        new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+
+    const installmentValue = installmentCount && total ? total / installmentCount : null
+
     const paymentMethods: PaymentOption[] = [
         {
             icon: QrCode,
             title: 'PIX',
-            description: showCashDiscount
-                ? `À vista com ${cashDiscountPercent}% de desconto`
-                : 'Pagamento instantâneo'
+            description: showCashDiscount && total
+                ? `À vista ${formatCurrency(total * (1 - cashDiscountPercent / 100))} (${cashDiscountPercent}% desc.)`
+                : showCashDiscount
+                    ? `À vista com ${cashDiscountPercent}% de desconto`
+                    : 'Pagamento instantâneo'
         },
         {
             icon: Banknote,
             title: 'Dinheiro',
-            description: showCashDiscount
-                ? `À vista com ${cashDiscountPercent}% de desconto`
-                : 'Pagamento em espécie'
+            description: showCashDiscount && total
+                ? `À vista ${formatCurrency(total * (1 - cashDiscountPercent / 100))} (${cashDiscountPercent}% desc.)`
+                : showCashDiscount
+                    ? `À vista com ${cashDiscountPercent}% de desconto`
+                    : 'Pagamento em espécie'
         },
         {
             icon: CreditCard,
@@ -45,7 +57,11 @@ export function PaymentOptions({
         {
             icon: Calendar,
             title: 'Parcelado',
-            description: installmentCount ? `Em até ${installmentCount}x` : 'Condições a combinar'
+            description: installmentCount && installmentValue
+                ? `Em até ${installmentCount}x de ${formatCurrency(installmentValue)}`
+                : installmentCount
+                    ? `Em até ${installmentCount}x`
+                    : 'Condições a combinar'
         }
     ]
 

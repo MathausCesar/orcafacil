@@ -227,6 +227,43 @@ export async function updateQuoteStatus(id: string, status: 'approved' | 'reject
         throw new Error('Failed to update status')
     }
 
+    // Create notification for status change
+    const { data: quote } = await supabase
+        .from('quotes')
+        .select('client_name, user_id')
+        .eq('id', id)
+        .single()
+
+    if (quote) {
+        const statusMessages: Record<string, { title: string; message: string; type: 'info' | 'success' | 'warning' | 'alert' }> = {
+            approved: {
+                title: '✅ Orçamento Aprovado',
+                message: `O orçamento para ${quote.client_name} foi aprovado!`,
+                type: 'success'
+            },
+            rejected: {
+                title: '❌ Orçamento Recusado',
+                message: `O orçamento para ${quote.client_name} foi recusado.`,
+                type: 'alert'
+            },
+            in_progress: {
+                title: '🚀 Orçamento Em Execução',
+                message: `O orçamento para ${quote.client_name} entrou em fase de execução.`,
+                type: 'info'
+            },
+            completed: {
+                title: '🏆 Orçamento Concluído',
+                message: `O orçamento para ${quote.client_name} foi concluído com sucesso!`,
+                type: 'success'
+            }
+        }
+
+        const msg = statusMessages[status]
+        if (msg) {
+            await createNotification(quote.user_id, msg.title, msg.message, `/quotes/${id}`, msg.type)
+        }
+    }
+
     revalidatePath(`/quotes/${id}`)
     return { success: true }
 }

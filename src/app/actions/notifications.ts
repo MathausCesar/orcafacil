@@ -11,6 +11,8 @@ export async function getNotifications() {
 
     // Check for inactive quotes first (Lazy Trigger)
     await checkInactiveQuotes(user.id)
+    // Check for expiring quotes (Lazy Trigger)
+    await checkExpiringQuotes(user.id)
 
     const { data } = await supabase
         .from('notifications')
@@ -96,6 +98,67 @@ async function checkInactiveQuotes(userId: string) {
                     })
                 }
             }
+        }
+    }
+}
+
+async function checkExpiringQuotes(userId: string) {
+    const supabase = await createClient()
+
+    // Get quotes in analysis with a valid_until date
+    const { data: quotes } = await supabase
+        .from('quotes')
+        .select('id, client_name, valid_until')
+        .in('status', ['pending', 'sent', 'draft'])
+        .not('valid_until', 'is', null)
+        .eq('user_id', userId)
+
+    if (!quotes) return
+
+    const now = new Date()
+
+    for (const quote of quotes) {
+        if (!quote.valid_until) continue
+
+        const expiryDate = new Date(quote.valid_until)
+        const diffTime = expiryDate.getTime() - now.getTime()
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+        let titleKey = ''
+        let message = ''
+        let type: 'warning' | 'alert' = 'warning'
+
+        if (diffDays <= 0) {
+            titleKey = 'Orçamento vencido'
+            message = `O orçamento para ${quote.client_name} venceu! Considere entrar em contato com o cliente.`
+            type = 'alert'
+        } else if (diffDays <= 1) {
+            titleKey = 'Orçamento vence amanhã'
+            message = `O orçamento para ${quote.client_name} vence amanhã.`
+            type = 'alert'
+        } else if (diffDays <= 3) {
+            titleKey = 'Orçamento vence em breve'
+            message = `O orçamento para ${quote.client_name} vence em ${diffDays} dias.`
+        } else {
+            continue
+        }
+
+        // Dedup: check if we already notified for this quote + this specific alert
+        const { count } = await supabase
+            .from('notifications')
+            .select('id', { count: 'exact', head: true })
+            .eq('link', `/quotes/${quote.id}`)
+            .ilike('title', `%${titleKey}%`)
+            .eq('user_id', userId)
+
+        if (count === 0) {
+            await supabase.from('notifications').insert({
+                user_id: userId,
+                title: `⏰ ${titleKey}`,
+                message,
+                link: `/quotes/${quote.id}`,
+                type
+            })
         }
     }
 }

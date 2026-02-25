@@ -14,6 +14,12 @@ export default function manifest(): MetadataRoute.Manifest {
                 src: '/logo/zacly_icone.png',
                 sizes: 'any',
                 type: 'image/png',
+            },
+            {
+                src: '/logo/zacly_maskable_icone.png',
+                sizes: '512x512',
+                type: 'image/png',
+                purpose: 'maskable'
             }
         ],
     }

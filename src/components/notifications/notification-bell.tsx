@@ -43,13 +43,14 @@ export function NotificationBell() {
 
     const handleMarkRead = async (id: string) => {
         await markAsRead(id)
-        setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n))
-        setHasUnread(notifications.some(n => n.id !== id && !n.read))
+        const updated = notifications.filter(n => n.id !== id)
+        setNotifications(updated)
+        setHasUnread(updated.some(n => !n.read))
     }
 
     const handleMarkAllRead = async () => {
         await markAllAsRead()
-        setNotifications(notifications.map(n => ({ ...n, read: true })))
+        setNotifications([])
         setHasUnread(false)
     }
 

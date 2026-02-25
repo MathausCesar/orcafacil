@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { DashboardHeader } from '@/components/dashboard/header'
+import { DashboardStats } from '@/components/dashboard/dashboard-stats'
 import { QuoteStatusBadge } from '@/components/quotes/quote-status-badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Plus, FileText, ArrowUpRight, Wallet } from 'lucide-react'
+import { Plus, FileText, ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -28,33 +29,12 @@ export default async function Dashboard() {
     redirect('/onboarding')
   }
 
-  // Fetch Stats (Real Data)
-  const { count: quotesCount } = await supabase
-    .from('quotes')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-    .eq('status', 'approved')
-
-  const { count: pendingCount } = await supabase
-    .from('quotes')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-    .in('status', ['pending', 'draft'])
-
   const { data: recentQuotes } = await supabase
     .from('quotes')
     .select('*, quote_items(description)')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(5)
-
-  const { data: allQuotes } = await supabase
-    .from('quotes')
-    .select('total')
-    .eq('user_id', user.id)
-    .eq('status', 'approved')
-
-  const totalRevenue = allQuotes?.reduce((acc, q) => acc + (q.total || 0), 0) || 0
 
   return (
     <div className="space-y-8 p-4 md:p-8 max-w-7xl mx-auto">
@@ -80,48 +60,8 @@ export default async function Dashboard() {
         </div>
       </section>
 
-      {/* Stats Grid - Soft & Airy */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Revenue Card - Clean White */}
-        <Card className="col-span-1 md:col-span-2 border-none shadow-md bg-card rounded-2xl overflow-hidden relative group">
-          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-            <Wallet className="h-32 w-32 -rotate-12" />
-          </div>
-          <CardContent className="p-8 flex flex-col justify-between h-48">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary/10 rounded-xl">
-                <Wallet className="h-6 w-6 text-primary" />
-              </div>
-              <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Receita Aprovada</p>
-            </div>
-            <div>
-              <h3 className="text-5xl font-bold tracking-tighter text-foreground">
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalRevenue)}
-              </h3>
-              <p className="text-sm text-muted-foreground mt-2 font-medium">Total acumulado em caixa</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Quotes Count - Minimalist */}
-        <Card className="border-none shadow-md bg-card rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
-          <CardContent className="p-8 flex flex-col justify-between h-48">
-            <div className="flex justify-between items-start">
-              <div className="p-3 bg-blue-500/10 rounded-xl">
-                <FileText className="h-6 w-6 text-blue-500" />
-              </div>
-              <div className="text-right">
-                <p className="text-xs font-bold uppercase text-muted-foreground mb-1">Aprovados</p>
-                <h3 className="text-4xl font-bold text-foreground">{quotesCount || 0}</h3>
-              </div>
-            </div>
-            <div className="mt-auto pt-6 border-t border-border flex justify-between items-center">
-              <span className="text-sm font-medium text-muted-foreground">Em análise</span>
-              <span className="font-bold text-xl text-foreground bg-muted px-3 py-1 rounded-lg">{pendingCount || 0}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
+      {/* Stats Grid with Period Filter */}
+      <DashboardStats />
 
       {/* Recent Activity List - Clean Table Style */}
       <section className="space-y-6">

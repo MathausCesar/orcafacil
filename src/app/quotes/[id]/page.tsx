@@ -262,6 +262,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     <TimelineSection
                                         themeColor={themeColor}
                                         estimatedDays={quote.estimated_days ?? undefined}
+                                        quoteStatus={quote.status}
                                     />
                                 )}
 

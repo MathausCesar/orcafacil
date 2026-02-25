@@ -5,6 +5,8 @@ const statusMap = {
     sent: { label: 'Enviado', color: 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100' },
     approved: { label: 'Aprovado', color: 'bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-100' },
     rejected: { label: 'Recusado', color: 'bg-red-100 text-red-800 border-red-200 hover:bg-red-100' },
+    in_progress: { label: 'Em Execução', color: 'bg-violet-100 text-violet-800 border-violet-200 hover:bg-violet-100' },
+    completed: { label: 'Concluído', color: 'bg-teal-100 text-teal-800 border-teal-200 hover:bg-teal-100' },
     // Tratar legacy budgets
     draft: { label: 'Em Análise', color: 'bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-100' }
 }

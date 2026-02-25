@@ -209,7 +209,7 @@ export async function deleteQuote(id: string) {
     return { success: true }
 }
 
-export async function updateQuoteStatus(id: string, status: 'approved' | 'rejected') {
+export async function updateQuoteStatus(id: string, status: 'approved' | 'rejected' | 'in_progress' | 'completed') {
     const supabase = await createClient()
 
     // Calls the security definer RPC function to allow public updates

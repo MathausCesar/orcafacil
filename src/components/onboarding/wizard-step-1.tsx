@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Car, Hammer, Zap, Scissors, GraduationCap, Briefcase, Utensils } from "lucide-react";
+import { Car, Hammer, Zap, Scissors, GraduationCap, Briefcase, Utensils, Palette } from "lucide-react";
 import { useOnboarding } from "@/components/onboarding/onboarding-context";
 import { getOnboardingCategories, OnboardingCategory } from "@/app/actions/onboarding";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ const ICONS: Record<string, any> = {
     "graduation-cap": GraduationCap,
     briefcase: Briefcase,
     utensils: Utensils,
+    palette: Palette,
 };
 
 export function WizardStep1() {

@@ -49,6 +49,18 @@ const SPECIALTIES_BY_CATEGORY: Record<string, { label: string; value: string }[]
         { label: "Serviços Extras (Garçom, Copeira)", value: "servicos" },
         { label: "Decoração de Eventos", value: "decoracao" },
     ],
+    design: [
+        { label: "Fachadas e Letreiros", value: "fachadas" },
+        { label: "Adesivos e Envelopamento", value: "adesivos" },
+        { label: "Placas e ACM", value: "acm" },
+        { label: "Letras Caixa e Luminosos", value: "letreiros" },
+        { label: "Banners e Impressão Digital", value: "banners" },
+        { label: "Identidade Visual e Logotipos", value: "identidade_visual" },
+        { label: "Artes Digitais e Redes Sociais", value: "digital" },
+        { label: "Sinalização e Totens", value: "sinalizacao" },
+        { label: "Envelopamento de Frotas", value: "frotas" },
+        { label: "Impressos (Flyers, Cardápios)", value: "impressos" },
+    ],
 };
 
 export function WizardStep2() {

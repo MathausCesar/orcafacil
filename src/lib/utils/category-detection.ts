@@ -173,6 +173,38 @@ export function detectItemCategory(description: string): CategoryInfo {
         }
     }
 
+    // Design Gráfico / Comunicação Visual
+    if (
+        desc.includes('fachada') ||
+        desc.includes('adesivo') ||
+        desc.includes('acm') ||
+        desc.includes('placa') ||
+        desc.includes('banner') ||
+        desc.includes('letreiro') ||
+        desc.includes('letra caixa') ||
+        desc.includes('envelopamento') ||
+        desc.includes('vinil') ||
+        desc.includes('lona') ||
+        desc.includes('totem') ||
+        desc.includes('sinalização') ||
+        desc.includes('logotipo') ||
+        desc.includes('identidade visual') ||
+        desc.includes('testeira') ||
+        desc.includes('luminoso') ||
+        desc.includes('wind banner') ||
+        desc.includes('backdrop') ||
+        desc.includes('cavalete') ||
+        desc.includes('flyer') ||
+        desc.includes('panfleto') ||
+        desc.includes('cardápio')
+    ) {
+        return {
+            icon: Paintbrush,
+            color: '#14B8A6',
+            name: 'Design & Comunicação Visual',
+        }
+    }
+
     // Default
     return {
         icon: Package,

@@ -111,8 +111,8 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
         }
     );
 
-    // Use detected layout or fallback to user's preference
-    const layout = profile?.layout_style || detectedProfile.layout;
+    // Use quote's own layout first, fallback to profile setting, then auto-detect
+    const layout = quote.layout_style || profile?.layout_style || detectedProfile.layout;
     const toneClasses = getToneClasses(detectedProfile.tone);
     const densityClasses = getDensityClasses(detectedProfile.density);
 
@@ -315,266 +315,257 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                     </Card>
                 )}
 
-                {/* PROFESSIONAL LAYOUT (Grid based, clean lines) */}
+                {/* PROFESSIONAL LAYOUT — Corporate, structured, premium */}
                 {layout === 'professional' && (
-                    <Card className="shadow-lg print:shadow-none print:border-none rounded-none border border-slate-300">
-                        <CardContent className="p-8 md:p-12 space-y-10">
-                            {/* Pro Header */}
-                            <div className="grid grid-cols-2 gap-8 border-b-4 border-[var(--theme-color)] pb-8">
-                                <div>
-                                    <div className="h-4 w-12 bg-[var(--theme-color)] mb-4"></div>
-                                    <h1 className="text-3xl font-bold uppercase tracking-wide text-foreground">{profile?.business_name || 'EMPRESA'}</h1>
-                                    <div className="mt-2 text-sm text-muted-foreground space-y-0.5">
-                                        {profile?.cnpj && <p>CNPJ: {profile.cnpj}</p>}
-                                        {profile?.phone && <p>{profile.phone}</p>}
-                                        {profile?.email && <p>{profile.email}</p>}
-                                    </div>
-                                </div>
-                                <div className="text-right flex flex-col items-end">
-                                    {profile?.logo_url && (
-                                        <div className="relative h-20 w-32 mb-4">
-                                            <Image src={profile.logo_url} alt="Logo" fill className="object-contain object-right" unoptimized />
+                    <Card className="shadow-lg print:shadow-none print:border-none rounded-xl overflow-hidden border border-slate-200">
+                        <CardContent className="p-0">
+                            {/* Header — Split with accent bar */}
+                            <div className="flex">
+                                <div className="w-2 bg-[var(--theme-color)]" />
+                                <div className="flex-1 p-8 md:p-10 flex justify-between items-start">
+                                    <div>
+                                        {profile?.logo_url && (
+                                            <div className="relative h-16 w-28 mb-4">
+                                                <Image src={profile.logo_url} alt="Logo" fill className="object-contain object-left" unoptimized />
+                                            </div>
+                                        )}
+                                        <h1 className="text-xl font-bold text-slate-900 tracking-tight">{profile?.business_name || 'Empresa'}</h1>
+                                        <div className="text-sm text-slate-500 mt-1 space-y-0.5">
+                                            {profile?.cnpj && <p>CNPJ: {profile.cnpj}</p>}
+                                            <p>{[profile?.phone, profile?.email].filter(Boolean).join(' · ')}</p>
                                         </div>
-                                    )}
-                                    <div className="mt-auto">
-                                        <h2 className="text-xl font-semibold text-foreground">ORÇAMENTO</h2>
-                                        <p className="text-lg font-light text-muted-foreground">#{quote.id.substring(0, 8)}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Proposta</p>
+                                        <p className="text-2xl font-bold text-slate-900 mt-1">#{quote.id.substring(0, 8).toUpperCase()}</p>
+                                        <p className="text-sm text-slate-500 mt-2">{format(new Date(quote.created_at), "dd/MM/yyyy")}</p>
+                                        {quote.valid_until && (
+                                            <p className="text-sm font-medium mt-1" style={{ color: themeColor }}>
+                                                Válido até {format(new Date(quote.valid_until), "dd/MM/yyyy")}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-12">
-                                <div>
-                                    <h3 className="text-sm font-bold text-[var(--theme-color)] uppercase mb-2">Cliente</h3>
-                                    <p className="text-lg font-medium">{quote.client_name}</p>
-                                    <p className="text-muted-foreground">{quote.client_phone}</p>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <h3 className="text-sm font-bold text-[var(--theme-color)] uppercase mb-1">Data</h3>
-                                        <p>{format(new Date(quote.created_at), "dd/MM/yyyy")}</p>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-sm font-bold text-[var(--theme-color)] uppercase mb-1">Validade</h3>
-                                        <p>{quote.valid_until ? format(new Date(quote.valid_until), "dd/MM/yyyy") : 'Indefinido'}</p>
+                            <div className="px-8 md:px-10 pb-10 space-y-8">
+                                {/* Client Card */}
+                                <div className="flex border border-slate-200 rounded-lg overflow-hidden">
+                                    <div className="w-1.5 bg-[var(--theme-color)]" />
+                                    <div className="p-5 flex-1">
+                                        <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: themeColor }}>Cliente</p>
+                                        <p className="text-lg font-semibold text-slate-900">{quote.client_name}</p>
+                                        {quote.client_phone && <p className="text-sm text-slate-500 mt-0.5">{quote.client_phone}</p>}
                                     </div>
                                 </div>
-                            </div>
 
-                            <table className="w-full">
-                                <thead className="bg-slate-100 border-y border-slate-200">
-                                    <tr>
-                                        <th className="py-2 pl-4 text-left font-semibold text-xs uppercase text-slate-600">Descrição</th>
-                                        <th className="py-2 text-center font-semibold text-xs uppercase text-slate-600">Qtd</th>
-                                        <th className="py-2 text-right font-semibold text-xs uppercase text-slate-600 w-32">Preço Unit.</th>
-                                        <th className="py-2 text-right font-semibold text-xs uppercase text-slate-600 pr-4 w-32">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {quote.quote_items.map((item: any) => (
-                                        <tr key={item.id}>
-                                            <td className="py-3 pl-4 text-sm font-medium">
-                                                <div>{item.description}</div>
-                                                {quote.show_detailed_items && item.details && (
-                                                    <div className="text-xs text-slate-500 mt-1 whitespace-pre-wrap font-normal leading-relaxed">{item.details}</div>
-                                                )}
-                                            </td>
-                                            <td className="py-3 text-center text-sm text-slate-500">{item.quantity}</td>
-                                            <td className="py-3 text-right text-sm text-slate-500">
-                                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_price)}
-                                            </td>
-                                            <td className="py-3 text-right pr-4 text-sm font-semibold">
-                                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.quantity * item.unit_price)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-
-                            <div className="flex justify-end">
-                                <div className="w-64 border-t-2 border-[var(--theme-color)] pt-4">
-                                    <div className="flex justify-between items-center text-xl font-bold">
-                                        <span>TOTAL</span>
+                                {/* Items Table */}
+                                <div className="rounded-lg overflow-hidden border border-slate-200">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr style={{ backgroundColor: themeColor }}>
+                                                <th className="py-3 pl-5 text-left font-semibold text-white text-xs uppercase tracking-wider">Descrição</th>
+                                                <th className="py-3 text-center font-semibold text-white text-xs uppercase tracking-wider w-16">Qtd</th>
+                                                <th className="py-3 text-right font-semibold text-white text-xs uppercase tracking-wider w-28">Unitário</th>
+                                                <th className="py-3 pr-5 text-right font-semibold text-white text-xs uppercase tracking-wider w-28">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {quote.quote_items.map((item: any, idx: number) => (
+                                                <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                                                    <td className="py-3.5 pl-5 font-medium text-slate-800">
+                                                        <div>{item.description}</div>
+                                                        {quote.show_detailed_items && item.details && (
+                                                            <div className="text-xs text-slate-500 mt-1 whitespace-pre-wrap font-normal leading-relaxed">{item.details}</div>
+                                                        )}
+                                                    </td>
+                                                    <td className="py-3.5 text-center text-slate-600">{item.quantity}</td>
+                                                    <td className="py-3.5 text-right text-slate-600">
+                                                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_price)}
+                                                    </td>
+                                                    <td className="py-3.5 pr-5 text-right font-semibold text-slate-900">
+                                                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.quantity * item.unit_price)}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                    {/* Total Bar */}
+                                    <div className="flex justify-between items-center px-5 py-4 text-white font-bold text-lg" style={{ backgroundColor: themeColor }}>
+                                        <span className="uppercase text-sm tracking-wider">Total</span>
                                         <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}</span>
                                     </div>
                                 </div>
+
+                                {/* Notes */}
+                                {(quote.notes || quote.payment_terms) && (
+                                    <div className="flex border border-slate-200 rounded-lg overflow-hidden">
+                                        <div className="w-1.5 bg-[var(--theme-color)]" />
+                                        <div className="p-5 flex-1 text-sm space-y-2">
+                                            {quote.payment_terms && <p><span className="font-semibold text-slate-900">Pagamento:</span> {quote.payment_terms}</p>}
+                                            {quote.notes && <p className="italic text-slate-600">{quote.notes}</p>}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Timeline */}
+                                {quote.show_timeline && (
+                                    <TimelineSection themeColor={themeColor} estimatedDays={quote.estimated_days ?? undefined} quoteStatus={quote.status} />
+                                )}
+
+                                {/* Payment Options */}
+                                {quote.show_payment_options && (
+                                    <PaymentOptions
+                                        themeColor={themeColor}
+                                        showCashDiscount={(quote.cash_discount_percent ?? 0) > 0}
+                                        cashDiscountPercent={quote.cash_discount_percent ?? 0}
+                                        installmentCount={quote.installment_count}
+                                    />
+                                )}
+
+                                {/* Footer */}
+                                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-slate-200 text-xs text-slate-400">
+                                    <p>Orçamento gerado via Zacly</p>
+                                    <QRCodeGenerator quoteId={quote.id} size={80} />
+                                </div>
                             </div>
-
-                            {(quote.notes || quote.payment_terms) && (
-                                <div className="bg-slate-50 p-6 rounded-none border-l-4 border-[var(--theme-color)] text-sm">
-                                    {quote.payment_terms && <p className="mb-2"><strong>Pagamento:</strong> {quote.payment_terms}</p>}
-                                    {quote.notes && <p className="italic text-slate-600">{quote.notes}</p>}
-                                </div>
-                            )}
-
-                            {/* Cronograma - Layout Professional */}
-                            {quote.show_timeline && (
-                                <div className="border border-slate-200 p-6">
-                                    <h3 className="text-sm font-bold text-[var(--theme-color)] uppercase tracking-wider mb-4">Cronograma de Execução</h3>
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <div className="text-center border border-slate-200 p-3">
-                                            <p className="text-xs text-slate-500 uppercase mb-1">Aprovação</p>
-                                            <p className="font-bold text-sm">1–2 dias</p>
-                                        </div>
-                                        <div className="text-center border border-[var(--theme-color)] p-3 bg-[var(--theme-color)]/5">
-                                            <p className="text-xs text-slate-500 uppercase mb-1">Execução</p>
-                                            <p className="font-bold text-sm">{quote.estimated_days ? `${quote.estimated_days} dias` : '3–5 dias'}</p>
-                                        </div>
-                                        <div className="text-center border border-slate-200 p-3">
-                                            <p className="text-xs text-slate-500 uppercase mb-1">Entrega</p>
-                                            <p className="font-bold text-sm">1 dia</p>
-                                        </div>
-                                    </div>
-                                    <p className="text-xs text-slate-500 mt-3">
-                                        Prazo total estimado: {quote.estimated_days ? `${quote.estimated_days + 3} dias úteis` : '5–8 dias úteis'}
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Formas de Pagamento - Layout Professional */}
-                            {quote.show_payment_options && (
-                                <div className="border border-slate-200 p-6">
-                                    <h3 className="text-sm font-bold text-[var(--theme-color)] uppercase tracking-wider mb-4">Formas de Pagamento</h3>
-                                    <div className="flex flex-wrap gap-3">
-                                        {(quote.payment_methods?.length ? quote.payment_methods : ['pix', 'card', 'cash', 'installment']).map((m: string) => (
-                                            <span key={m} className="px-4 py-2 border border-slate-300 text-sm font-medium">
-                                                {m === 'pix' ? '📱 PIX' : m === 'cash' ? '💵 Dinheiro' : m === 'card' ? '💳 Cartão' : `📅 Parcelado${quote.installment_count ? ` em até ${quote.installment_count}x` : ''}`}
-                                            </span>
-                                        ))}
-                                    </div>
-                                    {(quote.cash_discount_percent ?? 0) > 0 && (
-                                        <p className="mt-3 text-sm font-semibold" style={{ color: themeColor }}>
-                                            ✓ {quote.cash_discount_percent}% de desconto para pagamento à vista (PIX ou Dinheiro)
-                                        </p>
-                                    )}
-                                </div>
-                            )}
-
                         </CardContent>
                     </Card>
                 )}
 
-                {/* CLASSIC LAYOUT (Paper like, serif logic approx) */}
+                {/* CLASSIC LAYOUT — Elegant formal document */}
                 {layout === 'classic' && (
-                    <Card className="shadow-lg print:shadow-none print:border-none rounded-none">
-                        <CardContent className="p-12 font-serif space-y-8">
-                            <div className="text-center space-y-4 border-b pb-8 border-black">
+                    <Card className="shadow-lg print:shadow-none print:border-none rounded-none border border-slate-300">
+                        <CardContent className="p-10 md:p-14 space-y-8" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+                            {/* Ornamental Header */}
+                            <div className="text-center space-y-5">
+                                <div className="border-t-2 border-b border-slate-800 py-1">
+                                    <div className="border-t border-slate-800" />
+                                </div>
+
                                 {profile?.logo_url && (
-                                    <div className="relative h-24 w-40 mx-auto">
+                                    <div className="relative h-20 w-36 mx-auto">
                                         <Image src={profile.logo_url} alt="Logo" fill className="object-contain" unoptimized />
                                     </div>
                                 )}
-                                <h1 className="text-4xl font-normal text-black tracking-widest uppercase">{profile?.business_name}</h1>
-
-                                <div className="text-sm italic space-y-1">
+                                <h1 className="text-3xl font-normal text-slate-900 tracking-[0.2em] uppercase">{profile?.business_name}</h1>
+                                <div className="text-sm text-slate-500 space-y-0.5 italic">
                                     {profile?.cnpj && <p>CNPJ: {profile.cnpj}</p>}
-                                    <p>
-                                        {[profile?.phone, profile?.email].filter(Boolean).join(' • ')}
-                                    </p>
+                                    <p>{[profile?.phone, profile?.email].filter(Boolean).join(' · ')}</p>
+                                </div>
+
+                                <div className="border-t-2 border-b border-slate-800 py-1">
+                                    <div className="border-t border-slate-800" />
                                 </div>
                             </div>
 
-                            <div className="flex justify-between items-baseline pt-4">
-                                <div className="text-lg">
-                                    <span className="font-bold">Cliente:</span> {quote.client_name}
-                                </div>
-                                <div className="text-right">
-                                    <p>Orçamento Nº <strong>{quote.id.substring(0, 6)}</strong></p>
-                                    <p className="text-sm">{format(new Date(quote.created_at), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}</p>
-                                </div>
+                            {/* Title Banner */}
+                            <div className="text-center py-3 border border-slate-400">
+                                <h2 className="text-lg font-bold uppercase tracking-[0.25em] text-slate-800">Proposta Comercial</h2>
                             </div>
 
-                            <div className="py-4">
-                                <div className="border-t border-b border-black py-1 mb-1">
-                                    <div className="grid grid-cols-12 gap-4 font-bold text-sm uppercase px-2">
-                                        <div className="col-span-6">Descrição</div>
-                                        <div className="col-span-2 text-center">Qtd</div>
-                                        <div className="col-span-2 text-right">Unitário</div>
-                                        <div className="col-span-2 text-right">Total</div>
-                                    </div>
+                            {/* Client & Quote Info */}
+                            <div className="grid grid-cols-2 gap-8 text-sm">
+                                <div className="space-y-2">
+                                    <p className="text-xs uppercase tracking-wider text-slate-500 font-bold">Cliente</p>
+                                    <p className="text-lg text-slate-900">{quote.client_name}</p>
+                                    {quote.client_phone && <p className="text-slate-600">{quote.client_phone}</p>}
                                 </div>
-                                <div className="divide-y divide-dotted divide-gray-300">
-                                    {quote.quote_items.map((item: any) => (
-                                        <div key={item.id} className="grid grid-cols-12 gap-4 py-3 px-2 text-sm">
-                                            <div className="col-span-6">
-                                                <div>{item.description}</div>
-                                                {quote.show_detailed_items && item.details && (
-                                                    <div className="text-xs italic text-gray-600 mt-1 whitespace-pre-wrap leading-relaxed">{item.details}</div>
-                                                )}
-                                            </div>
-                                            <div className="col-span-2 text-center">{item.quantity}</div>
-                                            <div className="col-span-2 text-right">
-                                                {new Intl.NumberFormat('pt-BR', { style: 'decimal', minimumFractionDigits: 2 }).format(item.unit_price)}
-                                            </div>
-                                            <div className="col-span-2 text-right">
-                                                {new Intl.NumberFormat('pt-BR', { style: 'decimal', minimumFractionDigits: 2 }).format(item.quantity * item.unit_price)}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="border-t border-black mt-1 pt-4 flex justify-end">
-                                    <div className="text-2xl font-bold">
-                                        <span className="mr-8 text-base font-normal uppercase">Total a Pagar</span>
-                                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Rodapé com assinaturas */}
-                            <div className="text-center pt-16 pb-8 space-y-12">
-                                <div className="grid grid-cols-2 gap-16">
-                                    <div className="border-t border-black pt-2">
-                                        <p className="text-sm">Assinatura do Responsável</p>
-                                    </div>
-                                    <div className="border-t border-black pt-2">
-                                        <p className="text-sm">Aprovação do Cliente</p>
-                                    </div>
-                                </div>
-                                <p className="text-xs uppercase tracking-widest">Orçamento válido por {quote.valid_until ? format(new Date(quote.valid_until), "dd/MM/yyyy") : '15 dias'}</p>
-                            </div>
-
-                            {/* Cronograma - Layout Classic */}
-                            {quote.show_timeline && (
-                                <div className="border-t border-black pt-8 mt-4">
-                                    <h3 className="text-base font-bold uppercase tracking-widest text-center mb-6">Cronograma de Execução</h3>
-                                    <div className="grid grid-cols-3 gap-0 border border-black">
-                                        <div className="p-4 text-center border-r border-black">
-                                            <p className="text-xs uppercase tracking-wider mb-1">Aprovação</p>
-                                            <p className="font-bold">1–2 dias</p>
-                                        </div>
-                                        <div className="p-4 text-center border-r border-black bg-gray-50">
-                                            <p className="text-xs uppercase tracking-wider mb-1">Execução</p>
-                                            <p className="font-bold">{quote.estimated_days ? `${quote.estimated_days} dias` : '3–5 dias'}</p>
-                                        </div>
-                                        <div className="p-4 text-center">
-                                            <p className="text-xs uppercase tracking-wider mb-1">Entrega</p>
-                                            <p className="font-bold">1 dia</p>
-                                        </div>
-                                    </div>
-                                    <p className="text-xs text-center mt-3 italic">
-                                        Prazo total estimado: {quote.estimated_days ? `${quote.estimated_days + 3} dias úteis` : '5–8 dias úteis'}
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Formas de Pagamento - Layout Classic */}
-                            {quote.show_payment_options && (
-                                <div className="border-t border-black pt-8 mt-4">
-                                    <h3 className="text-base font-bold uppercase tracking-widest text-center mb-6">Formas de Pagamento</h3>
-                                    <div className="flex flex-wrap justify-center gap-4">
-                                        {(quote.payment_methods?.length ? quote.payment_methods : ['pix', 'card', 'cash', 'installment']).map((m: string) => (
-                                            <span key={m} className="px-6 py-3 border border-black text-sm uppercase tracking-wider">
-                                                {m === 'pix' ? 'PIX' : m === 'cash' ? 'Dinheiro' : m === 'card' ? 'Cartão' : `Parcelado${quote.installment_count ? ` em até ${quote.installment_count}x` : ''}`}
-                                            </span>
-                                        ))}
-                                    </div>
-                                    {(quote.cash_discount_percent ?? 0) > 0 && (
-                                        <p className="text-center mt-4 text-sm font-bold">
-                                            {quote.cash_discount_percent}% de desconto para pagamento à vista
-                                        </p>
+                                <div className="text-right space-y-2">
+                                    <p className="text-xs uppercase tracking-wider text-slate-500 font-bold">Referência</p>
+                                    <p className="text-lg text-slate-900">Nº {quote.id.substring(0, 6).toUpperCase()}</p>
+                                    <p className="text-slate-600">{format(new Date(quote.created_at), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}</p>
+                                    {quote.valid_until && (
+                                        <p className="text-slate-600 italic">Válido até {format(new Date(quote.valid_until), "dd/MM/yyyy")}</p>
                                     )}
                                 </div>
+                            </div>
+
+                            {/* Items Table */}
+                            <div>
+                                <table className="w-full text-sm border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-800 text-white">
+                                            <th className="py-2.5 pl-4 text-left font-semibold text-xs uppercase tracking-wider">Descrição</th>
+                                            <th className="py-2.5 text-center font-semibold text-xs uppercase tracking-wider w-16">Qtd</th>
+                                            <th className="py-2.5 text-right font-semibold text-xs uppercase tracking-wider w-28">Unitário</th>
+                                            <th className="py-2.5 pr-4 text-right font-semibold text-xs uppercase tracking-wider w-28">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {quote.quote_items.map((item: any, idx: number) => (
+                                            <tr key={item.id} className="border-b border-slate-200">
+                                                <td className="py-3 pl-4">
+                                                    <div className="font-medium text-slate-800">{item.description}</div>
+                                                    {quote.show_detailed_items && item.details && (
+                                                        <div className="text-xs italic text-slate-500 mt-1 whitespace-pre-wrap leading-relaxed">{item.details}</div>
+                                                    )}
+                                                </td>
+                                                <td className="py-3 text-center text-slate-600">{item.quantity}</td>
+                                                <td className="py-3 text-right text-slate-600">
+                                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_price)}
+                                                </td>
+                                                <td className="py-3 pr-4 text-right font-semibold text-slate-900">
+                                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.quantity * item.unit_price)}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+
+                                {/* Total — Double border formal block */}
+                                <div className="flex justify-end mt-4">
+                                    <div className="border-2 border-slate-800 px-8 py-4 text-right">
+                                        <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Total a Pagar</p>
+                                        <p className="text-2xl font-bold text-slate-900">
+                                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Notes */}
+                            {(quote.notes || quote.payment_terms) && (
+                                <div className="border border-slate-300 p-6 text-sm space-y-2">
+                                    <p className="text-xs uppercase tracking-wider text-slate-500 font-bold mb-2">Observações</p>
+                                    {quote.payment_terms && <p className="text-slate-800"><span className="font-semibold">Pagamento:</span> {quote.payment_terms}</p>}
+                                    {quote.notes && <p className="italic text-slate-600">{quote.notes}</p>}
+                                </div>
                             )}
+
+                            {/* Timeline */}
+                            {quote.show_timeline && (
+                                <TimelineSection themeColor="#1e293b" estimatedDays={quote.estimated_days ?? undefined} quoteStatus={quote.status} />
+                            )}
+
+                            {/* Payment Options */}
+                            {quote.show_payment_options && (
+                                <PaymentOptions
+                                    themeColor="#1e293b"
+                                    showCashDiscount={(quote.cash_discount_percent ?? 0) > 0}
+                                    cashDiscountPercent={quote.cash_discount_percent ?? 0}
+                                    installmentCount={quote.installment_count}
+                                />
+                            )}
+
+                            {/* Signatures */}
+                            <div className="text-center pt-12 pb-4 space-y-10">
+                                <div className="grid grid-cols-2 gap-20 px-8">
+                                    <div className="pt-2">
+                                        <div className="border-b border-dashed border-slate-400 mb-2 h-12" />
+                                        <p className="text-xs uppercase tracking-wider text-slate-500">Assinatura do Responsável</p>
+                                    </div>
+                                    <div className="pt-2">
+                                        <div className="border-b border-dashed border-slate-400 mb-2 h-12" />
+                                        <p className="text-xs uppercase tracking-wider text-slate-500">Aprovação do Cliente</p>
+                                    </div>
+                                </div>
+                                <div className="border-t border-slate-300 pt-4">
+                                    <p className="text-xs uppercase tracking-[0.15em] text-slate-400">
+                                        Orçamento válido por {quote.valid_until ? format(new Date(quote.valid_until), "dd/MM/yyyy") : '15 dias'}
+                                    </p>
+                                </div>
+                            </div>
 
                         </CardContent>
                     </Card>

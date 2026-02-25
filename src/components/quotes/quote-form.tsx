@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
-import { Trash2, Save, ArrowLeft, Calendar as CalendarIcon, FileText, Loader2, Settings2, Wallet, Clock, CheckCircle2, AlignLeft } from 'lucide-react'
+import { Trash2, Save, ArrowLeft, Calendar as CalendarIcon, FileText, Loader2, Settings2, Wallet, Clock, CheckCircle2, AlignLeft, LayoutTemplate, Check } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { ClientAutocomplete } from '@/components/clients/client-autocomplete'
@@ -52,6 +52,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
     const [cashDiscount, setCashDiscount] = useState('')
     const [paymentMethods, setPaymentMethods] = useState<string[]>([])
     const [installmentCount, setInstallmentCount] = useState('')
+    const [layoutStyle, setLayoutStyle] = useState('modern')
 
     const router = useRouter()
 
@@ -116,6 +117,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                 formData.set('installment_count', installmentCount)
             }
         }
+        formData.set('layout_style', layoutStyle)
         if (initialData?.notes) formData.set('notes', initialData.notes) // Persist existing if not changed, form gets it from textarea
 
         try {
@@ -337,6 +339,36 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="divide-y divide-border">
+                                    {/* Layout Style Selector */}
+                                    <div className="p-4 space-y-3">
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className="p-2 bg-primary/10 text-primary rounded-lg">
+                                                <LayoutTemplate className="h-4 w-4" />
+                                            </div>
+                                            <Label className="font-medium">Estilo da Proposta</Label>
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {[
+                                                { id: 'modern', name: 'Moderno' },
+                                                { id: 'professional', name: 'Profissional' },
+                                                { id: 'classic', name: 'Clássico' },
+                                            ].map((l) => (
+                                                <button
+                                                    key={l.id}
+                                                    type="button"
+                                                    onClick={() => setLayoutStyle(l.id)}
+                                                    className={`relative p-3 rounded-xl border-2 text-center transition-all text-xs font-semibold ${layoutStyle === l.id
+                                                            ? 'border-primary bg-primary/5 text-primary'
+                                                            : 'border-border bg-card text-muted-foreground hover:border-primary/30'
+                                                        }`}
+                                                >
+                                                    {layoutStyle === l.id && <Check className="absolute top-1.5 right-1.5 h-3 w-3 text-primary" />}
+                                                    {l.name}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <p className="text-xs text-muted-foreground leading-snug">Cada orçamento salva o layout escolhido no momento da criação.</p>
+                                    </div>
                                     {/* Detailed Items Toggle */}
                                     <div className="p-4 space-y-3">
                                         <div className="flex items-center gap-3">

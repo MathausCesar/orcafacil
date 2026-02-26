@@ -12,12 +12,10 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
     return (
-        <div className="container relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-1 lg:px-0 bg-gradient-to-b from-primary/5 via-background to-background">
-            <div className="lg:p-8">
-                <Suspense fallback={<div className="flex h-full items-center justify-center">Carregando...</div>}>
-                    <LoginForm />
-                </Suspense>
-            </div>
+        <div className="flex min-h-screen w-full bg-background overflow-hidden relative">
+            <Suspense fallback={<div className="flex h-full w-full items-center justify-center absolute inset-0 text-primary">Carregando...</div>}>
+                <LoginForm />
+            </Suspense>
         </div>
     )
 }

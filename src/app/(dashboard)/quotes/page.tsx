@@ -3,15 +3,21 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Plus, Search, FileText } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { FileText } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { QuoteStatusBadge } from '@/components/quotes/quote-status-badge'
+import { QuoteFilters } from '@/components/quotes/quote-filters'
 
-export default async function QuotesListPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-    const { q } = await searchParams
+interface SearchParams {
+    q?: string
+    status?: string
+    from?: string
+    to?: string
+    sort?: string
+}
+
+export default async function QuotesListPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+    const params = await searchParams
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -20,14 +26,50 @@ export default async function QuotesListPage({ searchParams }: { searchParams: P
         redirect('/login')
     }
 
+    // Build query with filters
     let query = supabase
         .from('quotes')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
 
-    if (q) {
-        query = query.ilike('client_name', `%${q}%`)
+    // Text search
+    if (params.q) {
+        query = query.ilike('client_name', `%${params.q}%`)
+    }
+
+    // Status filter
+    if (params.status) {
+        query = query.eq('status', params.status)
+    }
+
+    // Date range
+    if (params.from) {
+        query = query.gte('created_at', `${params.from}T00:00:00`)
+    }
+    if (params.to) {
+        query = query.lte('created_at', `${params.to}T23:59:59`)
+    }
+
+    // Sort
+    const sort = params.sort || 'recent'
+    switch (sort) {
+        case 'oldest':
+            query = query.order('created_at', { ascending: true })
+            break
+        case 'highest':
+            query = query.order('total', { ascending: false })
+            break
+        case 'lowest':
+            query = query.order('total', { ascending: true })
+            break
+        case 'name_asc':
+            query = query.order('client_name', { ascending: true })
+            break
+        case 'name_desc':
+            query = query.order('client_name', { ascending: false })
+            break
+        default: // 'recent'
+            query = query.order('created_at', { ascending: false })
     }
 
     const { data: quotes } = await query
@@ -36,29 +78,24 @@ export default async function QuotesListPage({ searchParams }: { searchParams: P
         <div className="space-y-6 pb-20">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-foreground">Meus Orçamentos</h1>
-                <Link href="/new">
-                    <Button size="icon" className="rounded-full shadow-lg shadow-primary/25 bg-gradient-to-br from-primary to-emerald-600 hover:from-primary/90 hover:to-emerald-600/90">
-                        <Plus className="h-6 w-6" />
-                    </Button>
-                </Link>
+                {quotes && quotes.length > 0 && (
+                    <span className="text-sm text-muted-foreground">
+                        {quotes.length} {quotes.length === 1 ? 'orçamento' : 'orçamentos'}
+                    </span>
+                )}
             </div>
 
-            {/* Search */}
-            <form className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                    name="q"
-                    placeholder="Buscar por cliente..."
-                    className="pl-10 h-10 bg-card border-primary/10 focus-visible:ring-primary"
-                    defaultValue={q}
-                />
-            </form>
+            {/* Filters */}
+            <QuoteFilters />
 
             <div className="space-y-3">
                 {quotes?.length === 0 ? (
                     <div className="text-center py-10 text-muted-foreground bg-primary/5 rounded-xl border border-dashed border-primary/20">
                         <FileText className="h-12 w-12 mx-auto mb-3 text-primary/25" />
                         <p>Nenhum orçamento encontrado.</p>
+                        {(params.q || params.status || params.from || params.to) && (
+                            <p className="text-sm mt-1">Tente ajustar os filtros.</p>
+                        )}
                     </div>
                 ) : (
                     quotes?.map((quote) => (

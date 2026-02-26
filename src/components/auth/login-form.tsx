@@ -69,14 +69,16 @@ export function LoginForm() {
     }
 
     return (
-        <div className="flex min-h-[85vh] w-full max-w-[1100px] overflow-hidden rounded-3xl bg-card text-card-foreground shadow-2xl ring-1 ring-border/50">
-            {/* Left Column: Abstract Visual */}
-            <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-teal-900 via-zinc-900 to-black p-12 text-white lg:flex">
+        <div className="flex min-h-[90vh] w-full max-w-[1100px] overflow-hidden rounded-3xl bg-card text-card-foreground shadow-2xl ring-1 ring-border/50">
+            {/* Left Column: Brand Visual */}
+            <div className="relative hidden w-1/2 flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-teal-900 via-zinc-900 to-black p-12 text-white lg:flex">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-teal-700/20 via-transparent to-transparent"></div>
                 <div className="absolute bottom-0 left-0 h-96 w-96 -mb-20 -ml-20 rounded-full bg-primary/20 blur-3xl"></div>
+                <div className="absolute top-0 right-0 h-64 w-64 -mt-10 -mr-10 rounded-full bg-teal-500/10 blur-3xl"></div>
 
-                <div className="relative z-10 flex items-center justify-start">
-                    <div className="relative h-20 w-48 overflow-hidden rounded-2xl bg-white/10 backdrop-blur-md ring-1 ring-white/20 p-3 flex items-center justify-center">
+                <div className="relative z-10 flex flex-col items-center text-center space-y-10">
+                    {/* Large Logo */}
+                    <div className="relative h-28 w-72 overflow-hidden rounded-2xl bg-white/10 backdrop-blur-md ring-1 ring-white/20 p-4 flex items-center justify-center shadow-lg shadow-black/20">
                         <div className="relative h-full w-full">
                             <Image
                                 src="/logo/logo.png"
@@ -87,30 +89,36 @@ export function LoginForm() {
                             />
                         </div>
                     </div>
-                </div>
 
-                <div className="relative z-10 space-y-6">
-                    <h1 className="text-4xl font-bold leading-tight tracking-tight text-white">
-                        A simplicidade que <br />
-                        <span className="text-accent">seu negócio merece.</span>
-                    </h1>
-                    <p className="max-w-md text-lg text-zinc-400 font-light">
-                        Orçamentos profissionais, gestão de clientes e controle financeiro. Tudo em um só lugar.
-                    </p>
-                </div>
+                    {/* Tagline */}
+                    <div className="space-y-4 max-w-sm">
+                        <h1 className="text-3xl font-bold leading-tight tracking-tight text-white">
+                            A simplicidade que <br />
+                            <span className="text-accent">seu negócio merece.</span>
+                        </h1>
+                        <p className="text-base text-zinc-400 font-light leading-relaxed">
+                            Orçamentos profissionais, gestão de clientes e controle financeiro. Tudo em um só lugar.
+                        </p>
+                    </div>
 
-                <div className="relative z-10 grid grid-cols-2 gap-4 text-sm text-zinc-400/80">
-                    <div className="flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-accent" />
-                        <span>Gestão Simplificada</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-accent" />
-                        <span>Orçamentos PDF</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-accent" />
-                        <span>Relatórios Financeiros</span>
+                    {/* Features */}
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm text-zinc-400/80">
+                        <div className="flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-accent flex-shrink-0" />
+                            <span>Gestão Simplificada</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-accent flex-shrink-0" />
+                            <span>Orçamentos PDF</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-accent flex-shrink-0" />
+                            <span>Relatórios Financeiros</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-accent flex-shrink-0" />
+                            <span>Aprovação Online</span>
+                        </div>
                     </div>
                 </div>
             </div>

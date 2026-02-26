@@ -72,13 +72,18 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
     const businessName = profile?.business_name || 'nossa empresa';
     const itemCount = quote.quote_items?.length ?? 0;
 
+    const itemNames = quote.quote_items
+        ?.map((item: any) => `  ▫️ ${item.description}`)
+        .join('\n') || '';
+
     const whatsappLines = [
         `Olá, ${quote.client_name}! 👋`,
         ``,
         `Aqui é a ${businessName}. Preparamos com cuidado a proposta que você solicitou e estamos prontos para começar! 🚀`,
         ``,
         `📋 *Resumo do Orçamento*`,
-        `• ${itemCount} ${itemCount === 1 ? 'item incluído' : 'itens incluídos'}`,
+        `• ${itemCount} ${itemCount === 1 ? 'item incluído' : 'itens incluídos'}${itemCount > 0 ? ':' : ''}`,
+        ...(itemCount > 0 ? [itemNames] : []),
         `• Valor total: *${totalFormatted}*`,
         ...(quote.valid_until ? [`• Válido até: ${new Intl.DateTimeFormat('pt-BR').format(new Date(quote.valid_until))}`] : []),
         ``,

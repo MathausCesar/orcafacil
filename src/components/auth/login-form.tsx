@@ -71,14 +71,14 @@ export function LoginForm() {
     return (
         <div className="flex min-h-[90vh] w-full max-w-[1100px] overflow-hidden rounded-3xl bg-card text-card-foreground shadow-2xl ring-1 ring-border/50">
             {/* Left Column: Brand Visual */}
-            <div className="relative hidden w-1/2 flex-col justify-center overflow-hidden bg-gradient-to-br from-teal-900 via-zinc-900 to-black px-14 py-16 text-white lg:flex">
+            <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-teal-900 via-zinc-900 to-black px-14 py-14 text-white lg:flex">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-teal-700/20 via-transparent to-transparent"></div>
                 <div className="absolute bottom-0 left-0 h-80 w-80 -mb-16 -ml-16 rounded-full bg-emerald-500/15 blur-3xl"></div>
                 <div className="absolute top-0 right-0 h-48 w-48 -mt-8 -mr-8 rounded-full bg-teal-500/10 blur-3xl"></div>
 
                 <div className="relative z-10 flex flex-col space-y-8">
-                    {/* Logo — sem container, direta e grande */}
-                    <div className="relative h-16 w-56">
+                    {/* Logo — grande, preenchendo a largura */}
+                    <div className="relative h-24 w-full">
                         <Image
                             src="/logo/logo.png"
                             alt="Zacly Logo"

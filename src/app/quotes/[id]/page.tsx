@@ -130,7 +130,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                         <Button variant="ghost" size="icon" className="hover:bg-primary/10 hover:text-primary"><ArrowLeft className="h-5 w-5" /></Button>
                     </Link>
                     {/* Owner Actions (Delete, Edit) */}
-                    {isOwner && <QuoteOwnerActions quoteId={quote.id} />}
+                    {isOwner && <QuoteOwnerActions quoteId={quote.id} status={quote.status} />}
                 </div>
 
                 <div className="flex gap-2">

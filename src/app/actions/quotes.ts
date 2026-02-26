@@ -105,6 +105,25 @@ export async function updateQuote(id: string, formData: FormData) {
         return { error: 'Unauthorized', redirect: '/login' }
     }
 
+    // Check current status — block locked quotes
+    const { data: currentQuote } = await supabase
+        .from('quotes')
+        .select('status')
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .single()
+
+    if (!currentQuote) {
+        return { error: 'Quote not found' }
+    }
+
+    if (['in_progress', 'completed'].includes(currentQuote.status)) {
+        return { error: 'Orçamentos em execução ou concluídos não podem ser editados.' }
+    }
+
+    // If approved, reset to pending for re-approval
+    const shouldResetStatus = currentQuote.status === 'approved'
+
     const clientName = formData.get('clientName') as string
     const clientPhone = formData.get('clientPhone') as string
     const expirationDate = formData.get('expirationDate') as string || null
@@ -127,25 +146,32 @@ export async function updateQuote(id: string, formData: FormData) {
     const total = items.reduce((acc: number, item: any) => acc + (item.quantity * item.unitPrice), 0)
 
     // 1. Update Quote Info
+    const updateData: any = {
+        client_name: clientName,
+        client_phone: clientPhone,
+        expiration_date: expirationDate,
+        payment_terms: paymentTerms,
+        notes: notes,
+        total: total,
+        updated_at: new Date().toISOString(),
+        show_timeline: showTimeline,
+        show_payment_options: showPaymentOptions,
+        show_detailed_items: showDetailedItems,
+        estimated_days: estimatedDays,
+        cash_discount_percent: cashDiscountPercent,
+        payment_methods: paymentMethods,
+        installment_count: installmentCount,
+        layout_style: layoutStyle
+    }
+
+    // Reset approved quotes back to pending for re-approval
+    if (shouldResetStatus) {
+        updateData.status = 'pending'
+    }
+
     const { error: updateError } = await supabase
         .from('quotes')
-        .update({
-            client_name: clientName,
-            client_phone: clientPhone,
-            expiration_date: expirationDate,
-            payment_terms: paymentTerms,
-            notes: notes,
-            total: total,
-            updated_at: new Date().toISOString(),
-            show_timeline: showTimeline,
-            show_payment_options: showPaymentOptions,
-            show_detailed_items: showDetailedItems,
-            estimated_days: estimatedDays,
-            cash_discount_percent: cashDiscountPercent,
-            payment_methods: paymentMethods,
-            installment_count: installmentCount,
-            layout_style: layoutStyle
-        })
+        .update(updateData)
         .eq('id', id)
         .eq('user_id', user.id)
 

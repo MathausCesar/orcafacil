@@ -33,6 +33,11 @@ export default async function EditQuotePage(props: PageProps) {
         redirect('/') // Unauthorized
     }
 
+    // Block editing for in_progress and completed quotes
+    if (['in_progress', 'completed'].includes(quote.status)) {
+        redirect(`/quotes/${id}`)
+    }
+
     // Transform data for QuoteForm
     const initialData = {
         id: quote.id,

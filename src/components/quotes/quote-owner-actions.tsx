@@ -21,9 +21,11 @@ import {
 
 interface QuoteOwnerActionsProps {
     quoteId: string
+    status: string
 }
 
-export function QuoteOwnerActions({ quoteId }: QuoteOwnerActionsProps) {
+export function QuoteOwnerActions({ quoteId, status }: QuoteOwnerActionsProps) {
+    const canEdit = !['in_progress', 'completed'].includes(status)
     const [loading, setLoading] = useState(false)
     const router = useRouter()
 
@@ -41,12 +43,14 @@ export function QuoteOwnerActions({ quoteId }: QuoteOwnerActionsProps) {
 
     return (
         <div className="flex gap-2 print:hidden">
-            {/* Edit Button */}
-            <Link href={`/quotes/${quoteId}/edit`}>
-                <Button variant="outline" size="sm" className="hidden sm:flex">
-                    <Edit className="h-4 w-4 mr-2" /> Editar
-                </Button>
-            </Link>
+            {/* Edit Button — hidden for in_progress/completed */}
+            {canEdit && (
+                <Link href={`/quotes/${quoteId}/edit`}>
+                    <Button variant="outline" size="sm" className="hidden sm:flex">
+                        <Edit className="h-4 w-4 mr-2" /> Editar
+                    </Button>
+                </Link>
+            )}
 
             <AlertDialog>
                 <AlertDialogTrigger asChild>

@@ -312,10 +312,10 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
 
                 {/* Sidebar Column (Right) - Sticky */}
                 <div className="lg:col-span-1 space-y-6">
-                    <div className="sticky top-6 space-y-6">
+                    <div className="lg:sticky lg:top-6 flex flex-col gap-6">
 
                         {/* Summary & Save */}
-                        <Card className="hidden lg:block border-0 shadow-lg ring-1 ring-border bg-slate-900 dark:bg-card text-white dark:text-card-foreground overflow-hidden">
+                        <Card className="order-last lg:order-first border-0 shadow-lg ring-1 ring-border bg-slate-900 dark:bg-card text-white dark:text-card-foreground overflow-hidden">
                             <CardContent className="p-6">
                                 <div className="space-y-1 mb-6">
                                     <p className="text-slate-400 dark:text-muted-foreground text-sm font-medium uppercase tracking-wider">Valor Total</p>

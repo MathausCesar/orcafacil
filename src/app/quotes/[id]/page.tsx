@@ -67,7 +67,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
     const isOwner = user?.id === quote.user_id
 
     const total = quote.total || 0;
-    const approvalUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://zacly.com.br'}/quotes/${id}/approve`;
+    const approvalUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://zacly.com.br'}/quotes/${id}`;
     const totalFormatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total);
     const businessName = profile?.business_name || 'nossa empresa';
     const itemCount = quote.quote_items?.length ?? 0;
@@ -82,10 +82,12 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
         `• Valor total: *${totalFormatted}*`,
         ...(quote.valid_until ? [`• Válido até: ${new Intl.DateTimeFormat('pt-BR').format(new Date(quote.valid_until))}`] : []),
         ``,
-        `✅ *Aprovar a proposta com um clique:*`,
+        `✅ *Veja a proposta completa e aprove com um clique:*`,
         approvalUrl,
         ``,
-        `📄 Para salvar o PDF da proposta, acesse o link acima e use o botão de impressão (🖨️) → "Salvar como PDF".`,
+        `📄 Para salvar o PDF, acesse o link acima e use o botão de impressão (🖨️) → \"Salvar como PDF\".`,
+        ``,
+        `Por esse mesmo link você acompanha o andamento do serviço em tempo real! 📊`,
         ``,
         `Qualquer dúvida, estou à disposição! 😊`,
     ];
@@ -132,11 +134,13 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                 </div>
 
                 <div className="flex gap-2">
-                    <Link href={whatsappLink} target="_blank">
-                        <Button variant="outline" size="sm" className="gap-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50">
-                            <Share2 className="h-4 w-4" /> <span className="hidden sm:inline">WhatsApp</span>
-                        </Button>
-                    </Link>
+                    {isOwner && (
+                        <Link href={whatsappLink} target="_blank">
+                            <Button variant="outline" size="sm" className="gap-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50">
+                                <Share2 className="h-4 w-4" /> <span className="hidden sm:inline">WhatsApp</span>
+                            </Button>
+                        </Link>
+                    )}
                     <PrintButton />
                 </div>
             </div>

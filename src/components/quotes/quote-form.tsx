@@ -315,7 +315,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                     <div className="sticky top-6 space-y-6">
 
                         {/* Summary & Save */}
-                        <Card className="border-0 shadow-lg ring-1 ring-border bg-slate-900 dark:bg-card text-white dark:text-card-foreground overflow-hidden">
+                        <Card className="hidden lg:block border-0 shadow-lg ring-1 ring-border bg-slate-900 dark:bg-card text-white dark:text-card-foreground overflow-hidden">
                             <CardContent className="p-6">
                                 <div className="space-y-1 mb-6">
                                     <p className="text-slate-400 dark:text-muted-foreground text-sm font-medium uppercase tracking-wider">Valor Total</p>
@@ -358,8 +358,8 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                                                     type="button"
                                                     onClick={() => setLayoutStyle(l.id)}
                                                     className={`relative p-3 rounded-xl border-2 text-center transition-all text-xs font-semibold ${layoutStyle === l.id
-                                                            ? 'border-primary bg-primary/5 text-primary'
-                                                            : 'border-border bg-card text-muted-foreground hover:border-primary/30'
+                                                        ? 'border-primary bg-primary/5 text-primary'
+                                                        : 'border-border bg-card text-muted-foreground hover:border-primary/30'
                                                         }`}
                                                 >
                                                     {layoutStyle === l.id && <Check className="absolute top-1.5 right-1.5 h-3 w-3 text-primary" />}

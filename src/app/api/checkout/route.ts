@@ -40,6 +40,12 @@ export async function POST(req: NextRequest) {
             return new NextResponse(`Erro: O Preço do Stripe não está configurado nas Variáveis de Ambiente. (STRIPE_PRICE_MONTHLY ou STRIPE_PRICE_YEARLY)`, { status: 500 });
         }
 
+        // Detecta a URL base pela origem da requisição para garantir domínio correto
+        const origin = req.headers.get('origin') || req.headers.get('referer')?.split('/').slice(0, 3).join('/')
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes('localhost')
+            ? process.env.NEXT_PUBLIC_APP_URL
+            : origin || 'https://app.zacly.com.br'
+
         // Criar a Sessão de Checkout
         const sessionPayload: any = {
             payment_method_types: ["card"],
@@ -50,8 +56,8 @@ export async function POST(req: NextRequest) {
                 },
             ],
             mode: "subscription",
-            success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/?success=true`,
-            cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/pricing?canceled=true`,
+            success_url: `${baseUrl}/?success=true`,
+            cancel_url: `${baseUrl}/pricing?canceled=true`,
             client_reference_id: user.id, // Fundamental para o nosso Webhook saber de quem é
             metadata: {
                 userId: user.id,

@@ -152,54 +152,62 @@ export function TeamManager({ initialMembers }: { initialMembers: TeamMember[] }
 
             <CardContent className="p-0">
                 <div className="divide-y divide-border/50">
-                    {members.map((member) => (
-                        <div key={member.user_id} className="flex items-center justify-between p-4 sm:p-6 transition-colors hover:bg-muted/30">
-                            <div className="flex items-center gap-4">
-                                <Avatar className="h-10 w-10 border border-border">
-                                    <AvatarImage src={member.profiles.logo_url || ''} />
-                                    <AvatarFallback className="bg-primary/10 text-primary">
-                                        {(member.profiles.business_name || member.profiles.email).substring(0, 2).toUpperCase()}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="font-semibold text-sm text-foreground">
-                                        {member.profiles.business_name || member.profiles.email}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 max-w-[150px] sm:max-w-none truncate">
-                                        <Mail className="h-3 w-3" /> {member.profiles.email}
-                                    </p>
+                    {members.map((member) => {
+                        // Supabase might return an array or an object depending on FK inference
+                        const profileData = Array.isArray(member.profiles) ? member.profiles[0] : member.profiles;
+                        const email = profileData?.email || 'Email pendente';
+                        const name = profileData?.business_name || email;
+                        const logoUrl = profileData?.logo_url || '';
+
+                        return (
+                            <div key={member.user_id} className="flex items-center justify-between p-4 sm:p-6 transition-colors hover:bg-muted/30">
+                                <div className="flex items-center gap-4">
+                                    <Avatar className="h-10 w-10 border border-border">
+                                        <AvatarImage src={logoUrl} />
+                                        <AvatarFallback className="bg-primary/10 text-primary">
+                                            {name.substring(0, 2).toUpperCase()}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <p className="font-semibold text-sm text-foreground">
+                                            {name}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 max-w-[150px] sm:max-w-none truncate">
+                                            <Mail className="h-3 w-3" /> {email}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 sm:gap-4">
+                                    <Select
+                                        value={member.role}
+                                        onValueChange={(val) => handleRoleChange(member.user_id, val)}
+                                    >
+                                        <SelectTrigger className="w-[110px] sm:w-[130px] h-8 text-xs border-primary/20 bg-background">
+                                            <div className="flex items-center gap-1.5 truncate">
+                                                <Settings2 className="h-3 w-3 sm:hidden" />
+                                                <SelectValue />
+                                            </div>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="admin">Admin</SelectItem>
+                                            <SelectItem value="member">Membro</SelectItem>
+                                            <SelectItem value="viewer">Ver</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                        onClick={() => handleRemove(member.user_id)}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
                                 </div>
                             </div>
-
-                            <div className="flex items-center gap-2 sm:gap-4">
-                                <Select
-                                    value={member.role}
-                                    onValueChange={(val) => handleRoleChange(member.user_id, val)}
-                                >
-                                    <SelectTrigger className="w-[110px] sm:w-[130px] h-8 text-xs border-primary/20 bg-background">
-                                        <div className="flex items-center gap-1.5 truncate">
-                                            <Settings2 className="h-3 w-3 sm:hidden" />
-                                            <SelectValue />
-                                        </div>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="admin">Admin</SelectItem>
-                                        <SelectItem value="member">Membro</SelectItem>
-                                        <SelectItem value="viewer">Ver</SelectItem>
-                                    </SelectContent>
-                                </Select>
-
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                    onClick={() => handleRemove(member.user_id)}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-                    ))}
+                        )
+                    })}
                     {members.length === 0 && (
                         <div className="p-8 text-center text-muted-foreground">
                             Nenhum membro na equipe ainda.

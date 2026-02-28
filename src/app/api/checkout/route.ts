@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
         // Criar a Sessão de Checkout
         const sessionPayload: any = {
-            payment_method_types: ["card", "boleto"],
+            automatic_payment_methods: { enabled: true }, // Stripe decide os métodos disponíveis
             line_items: [
                 {
                     price: priceId,

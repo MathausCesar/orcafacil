@@ -175,40 +175,52 @@ export function DashboardStats() {
                         </Button>
 
                         {showPicker && (
-                            <div className="absolute right-0 top-10 z-50 bg-popover border border-border rounded-xl p-4 shadow-xl space-y-3 min-w-[260px]">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-semibold text-foreground">Período personalizado</span>
-                                    <button onClick={() => setShowPicker(false)} className="text-muted-foreground hover:text-foreground">
-                                        <X className="h-4 w-4" />
-                                    </button>
+                            <>
+                                {/* Overlay — fecha ao tocar fora */}
+                                <div
+                                    className="fixed inset-0 z-40 bg-black/20"
+                                    onClick={() => setShowPicker(false)}
+                                />
+                                {/* Dropdown: modal sheet centralizado em mobile, absolute em desktop */}
+                                <div className="
+                                    fixed left-4 right-4 top-1/2 -translate-y-1/2 z-50
+                                    sm:absolute sm:left-auto sm:right-0 sm:top-10 sm:translate-y-0 sm:w-72
+                                    bg-popover border border-border rounded-xl p-4 shadow-xl space-y-3
+                                ">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm font-semibold text-foreground">Período personalizado</span>
+                                        <button onClick={() => setShowPicker(false)} className="text-muted-foreground hover:text-foreground">
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs text-muted-foreground font-medium">De</label>
+                                        <Input
+                                            type="date"
+                                            value={customFrom}
+                                            onChange={(e) => setCustomFrom(e.target.value)}
+                                            className="h-9 text-sm bg-card w-full"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs text-muted-foreground font-medium">Até</label>
+                                        <Input
+                                            type="date"
+                                            value={customTo}
+                                            onChange={(e) => setCustomTo(e.target.value)}
+                                            className="h-9 text-sm bg-card w-full"
+                                        />
+                                    </div>
+                                    <Button
+                                        size="sm"
+                                        onClick={handleCustomApply}
+                                        disabled={!customFrom || !customTo}
+                                        className="w-full h-9 text-sm bg-primary text-primary-foreground"
+                                    >
+                                        Aplicar
+                                    </Button>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs text-muted-foreground font-medium">De</label>
-                                    <Input
-                                        type="date"
-                                        value={customFrom}
-                                        onChange={(e) => setCustomFrom(e.target.value)}
-                                        className="h-9 text-sm bg-card"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs text-muted-foreground font-medium">Até</label>
-                                    <Input
-                                        type="date"
-                                        value={customTo}
-                                        onChange={(e) => setCustomTo(e.target.value)}
-                                        className="h-9 text-sm bg-card"
-                                    />
-                                </div>
-                                <Button
-                                    size="sm"
-                                    onClick={handleCustomApply}
-                                    disabled={!customFrom || !customTo}
-                                    className="w-full h-9 text-sm bg-primary text-primary-foreground"
-                                >
-                                    Aplicar
-                                </Button>
-                            </div>
+                            </>
                         )}
                     </div>
                 </div>

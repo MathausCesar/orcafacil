@@ -91,9 +91,17 @@ export function PricingSection() {
                             <p className="text-emerald-400 text-sm font-medium">Economize R$ 240 por ano</p>
                         </div>
 
-                        <div className="mb-8 flex justify-center items-end gap-1">
-                            <span className="text-xl font-bold text-zinc-400 mb-2">12x de R$</span>
-                            <span className="font-black text-6xl text-white">29<span className="text-3xl text-zinc-400">,90</span></span>
+                        <div className="mb-8 flex flex-col items-center">
+                            <div className="flex items-end gap-1 mb-1">
+                                <span className="font-black text-6xl text-white">29<span className="text-3xl text-zinc-400">,90</span></span>
+                                <span className="text-zinc-400 text-sm mb-2">/mês</span>
+                            </div>
+                            <p className="text-sm text-zinc-400">
+                                R$ <span className="font-bold text-white">358,80</span> cobrado à vista
+                            </p>
+                            <p className="text-xs text-emerald-400 font-semibold mt-1">
+                                vs R$ <span className="line-through text-zinc-500">598,80</span> pagando todo mês — economia de R$ 240,00
+                            </p>
                         </div>
 
                         <ul className="space-y-4 mb-8 flex-1">
@@ -119,7 +127,7 @@ export function PricingSection() {
                         <Link href="https://app.zacly.com.br/pricing">
                             <button className="relative group w-full py-4 rounded-xl bg-emerald-500 text-black font-black uppercase tracking-wide overflow-hidden hover:scale-[1.02] transition-transform">
                                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-                                <span className="relative z-10">Assinar Anual</span>
+                                <span className="relative z-10">Assinar Anual — R$ 358,80 à vista</span>
                             </button>
                         </Link>
                     </motion.div>
@@ -137,10 +145,12 @@ export function PricingSection() {
                             <p className="text-zinc-500 text-sm">Flexibilidade mês a mês.</p>
                         </div>
 
-                        <div className="mb-8 flex items-end gap-1">
-                            <span className="text-lg font-bold text-zinc-500 mb-1">R$</span>
-                            <span className="font-black text-4xl text-white">49<span className="text-2xl text-zinc-500">,90</span></span>
-                            <span className="text-sm text-zinc-500 mb-1">/mês</span>
+                        <div className="mb-8">
+                            <div className="flex items-end gap-1">
+                                <span className="text-lg font-bold text-zinc-500 mb-1">R$</span>
+                                <span className="font-black text-4xl text-white">49<span className="text-2xl text-zinc-500">,90</span></span>
+                            </div>
+                            <p className="text-xs text-zinc-500 mt-1">Pagamento avulso • sem renovação automática</p>
                         </div>
 
                         <ul className="space-y-4 mb-8 flex-1">

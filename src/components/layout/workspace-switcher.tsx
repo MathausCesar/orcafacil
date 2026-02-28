@@ -103,7 +103,9 @@ export function WorkspaceSwitcher() {
                             <CommandItem
                                 onSelect={() => {
                                     setOpen(false)
-                                    // router.push('/settings/workspaces/new') // TODO: Mapear para página de criação
+                                    import('sonner').then((mod) => {
+                                        mod.toast.info('Criação de múltiplos espaços de trabalho estará disponível em breve!');
+                                    })
                                 }}
                                 className="gap-2 cursor-pointer text-primary"
                             >

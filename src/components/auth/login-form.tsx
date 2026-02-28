@@ -21,11 +21,11 @@ import { Mail, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
-export function LoginForm() {
+export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | 'register' }) {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [loading, setLoading] = useState(false)
-    const [mode, setMode] = useState<'login' | 'register'>('login')
+    const [mode, setMode] = useState<'login' | 'register'>(defaultMode)
     const [showSuccessDialog, setShowSuccessDialog] = useState(false)
     const [emailSent, setEmailSent] = useState('')
 

@@ -1,9 +1,9 @@
-# Zacly - Application Manual
+# OrçaFácil - Application Manual
 
 > Quote and proposal management system featuring intuitive onboarding, robust client management, and a service catalog.
 
 ## 1. Overview
-**Zacly** is a modern web application built to streamline the creation, customization, and management of quotes/estimates. The system covers the entire user journey from an introductory onboarding wizard to the final approval of a quote by the client, offering features like flexible payment options, warranties, and a structured service catalog.
+**OrçaFácil** is a modern web application built to streamline the creation, customization, and management of quotes/estimates. The system covers the entire user journey from an introductory onboarding wizard to the final approval of a quote by the client, offering features like flexible payment options, warranties, and a structured service catalog.
 
 ## 2. Tech Stack
 
@@ -41,30 +41,26 @@ The application follows the component-oriented architecture of the Next.js App R
 ## 4. Main Features
 
 ### Authentication and Onboarding
-- **Login/Registration:** Secure authentication via Supabase, featuring a newly redesigned professional interface (asymmetric full bleed) focused on brand aesthetics and usability.
-- **Onboarding Wizard:** Guided setup for new accounts, automatically seeding database with initial user company details, default services (including specialized support for Graphic Designers), and templates.
+- **Login/Registration:** Secure authentication via Supabase.
+- **Onboarding Wizard:** Guided setup for new accounts, automatically seeding database with initial user company details, default services, and templates.
 
 ### Quote Management
 - **Creation and Editing:** Comprehensive interface for drafting detailed quotes.
-- **Editing Control:** Editing is blocked for executing/completed quotes, and the status automatically resets to "Pending" upon modifications.
 - **Payment Options:** Flexible payment methods and installment configurations.
 - **Warranty Box:** Warranty declarations for provided services or products.
-- **Visual Customization:** Editing quote layouts and custom fields (\`quote_customization_fields\`), featuring "Professional" and "Classic" layout options.
-- **Approval and Tracking:** Streamlined status update workflow. The shared client link displays the complete proposal with a per-quote layout, visual timeline, and real-time status.
-- **WhatsApp Summary:** Generation of a structured message with a detailed item list to share quotes directly via WhatsApp.
-- **Advanced Filters:** Search, status, date, and sorting filters within the Quotes list.
+- **Visual Customization:** Editing quote layouts and custom fields (\`quote_customization_fields\`).
+- **Quote Approval:** Streamlined status update workflow upon client approval.
 - **Service Catalog:** Structured product/service library with folders (\`catalog_folders\`).
 
 ### Client Management
 - **Client Profiles:** Registration and management of B2C (individual) and B2B (company) clients.
 - **Corporate Fields:** Built-in support for company registration numbers (e.g., CNPJ) and associated business data.
-- **CEP Auto-lookup:** Automatic address autofill via ViaCEP integration during client creation and editing.
 
 ### User Dashboard & Profile
-- **Dashboard:** Main business overview featuring detailed statistics (4 status cards), period filters (this month, 7 days, 30 days, custom), and global search.
-- **Profile:** Manage user and company registration data. Also includes **Subscription Management**, tracking the user's plan, Stripe integration ID, and active status.
+- **Dashboard:** Main business overview (metrics, quick links, global search).
+- **Profile:** Manage user and company registration data.
 - **Support:** Integrated support ticketing system (\`support_tickets\`).
-- **Notifications:** Dynamic platform alerts for status changes (approved/executing/completed), expiring quotes warnings, and new messages.
+- **Notifications:** Platform alerts (e.g., quote approvals, new messages).
 
 ---
 

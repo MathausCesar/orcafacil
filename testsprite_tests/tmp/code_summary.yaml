@@ -1,0 +1,15 @@
+tech_stack:
+  framework: Next.js 15 (App Router)
+  language: TypeScript
+  styling: Tailwind CSS
+  components: shadcn/ui, Radix UI
+  database: Supabase (Auth, Postgres)
+  forms: React Hook Form, Zod
+
+features:
+  - Auth: Login, Signup, Password Reset
+  - Dashboard: Main overview and statistics
+  - Clients: Client management (CRUD)
+  - Quotes: Orçamentos creation, editing, pdf generation
+  - Profile & Onboarding: User settings and setup
+  - Notifications & Support: Support widget and in-app notifications

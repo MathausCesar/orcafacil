@@ -13,6 +13,27 @@ export async function createQuote(formData: FormData) {
         return { error: 'Unauthorized', redirect: '/login' }
     }
 
+    // --- FREEMIUM CHECK ---
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', user.id)
+        .single()
+
+    const userPlan = profile?.plan || 'free'
+
+    if (userPlan === 'free') {
+        const { count, error: countError } = await supabase
+            .from('quotes')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+
+        if (!countError && count !== null && count >= 5) {
+            return { error: 'LIMIT_REACHED', message: 'Você atingiu o limite de 5 orçamentos grátis.' }
+        }
+    }
+    // ----------------------
+
     const clientName = formData.get('clientName') as string
     const clientPhone = formData.get('clientPhone') as string
     const expirationDate = formData.get('expirationDate') as string || null

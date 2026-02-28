@@ -1,9 +1,9 @@
-# OrçaFácil - Manual da Aplicação
+# Zacly - Manual da Aplicação
 
 > Sistema de gestão e emissão de orçamentos (Quotes) com onboarding intuitivo, gestão de clientes e catálogo de serviços.
 
 ## 1. Visão Geral
-O **OrçaFácil** é uma aplicação web moderna construída para facilitar a criação, personalização e gestão de orçamentos e clientes. O sistema oferece desde o cadastro inicial (onboarding) até a aprovação final do orçamento pelo cliente, suportando opções de pagamento, garantias e catálogos de serviços.
+O **Zacly** é uma aplicação web moderna construída para facilitar a criação, personalização e gestão de orçamentos e clientes. O sistema oferece desde o cadastro inicial (onboarding) até a aprovação final do orçamento pelo cliente, suportando opções de pagamento, garantias e catálogos de serviços.
 
 ## 2. Stack Tecnológico
 
@@ -41,26 +41,30 @@ A aplicação segue a arquitetura orientada a componentes do Next.js App Router:
 ## 4. Funcionalidades Principais (Features)
 
 ### Autenticação e Onboarding
-- **Login/Registro:** Autenticação segura via Supabase.
-- **Wizard de Onboarding:** Configuração guiada da conta, permitindo que novos usuários cadastrem rapidamente os detalhes da sua empresa, serviços iniciais e templates.
+- **Login/Registro:** Autenticação segura via Supabase, com interface recém remodelada (asymmetric full bleed) focada na estética da marca e usabilidade.
+- **Wizard de Onboarding:** Configuração guiada da conta, permitindo que novos usuários cadastrem rapidamente os detalhes da sua empresa, serviços iniciais (incluindo suporte especializado para Designers Gráficos) e templates.
 
 ### Gestão de Orçamentos (Quotes)
 - **Criação e Edição:** Interface completa para elaborar orçamentos detalhados.
+- **Controle de Edição:** Bloqueio de edição para orçamentos em execução/concluídos e reset automático para "Pendente" ao realizar alterações.
 - **Opções de Pagamento:** Configuração flexível de opções de pagamento e parcelamento (installment count).
 - **Caixa de Garantia (Warranty):** Especificação de garantias para serviços/produtos oferecidos.
-- **Customização visual:** Edição do layout e campos customizados (\`quote_customization_fields\`).
-- **Aprovação de Orçamento:** Fluxo de atualização de status do orçamento (\`approve_quote\`).
+- **Customização visual:** Edição do layout e campos customizados (\`quote_customization_fields\`), com opções de layout "Profissional" e "Clássico".
+- **Aprovação e Acompanhamento:** Fluxo de atualização de status (\`approve_quote\`). O link compartilhado com o cliente exibe a proposta com design per-quote, linha do tempo e status em tempo real.
+- **Resumo no WhatsApp:** Geração de mensagem estruturada com lista detalhada de itens para envio no WhatsApp.
+- **Filtros Avançados:** Busca, filtros por status, data e ordenação na listagem de orçamentos.
 - **Catálogo de Serviços:** Organização dos serviços/produtos em pastas (\`catalog_folders\`).
 
 ### Gestão de Clientes
 - **Perfis de Clientes:** Cadastro e gestão de dados de clientes Pessoa Física e Jurídica.
 - **Campos Empresariais:** Suporte a CNPJ, Inscrição Estadual e outros dados corporativos (\`company_fields\`).
+- **Busca de CEP:** Preenchimento automático de endereço via integração com ViaCEP durante o cadastro e edição.
 
 ### Área do Usuário
-- **Dashboard:** Visão geral do negócio (indicadores, atalhos contextuais, busca global).
-- **Perfil (Profile):** Gestão de dados do usuário e do próprio CNPJ da sua empresa.
+- **Dashboard:** Visão geral do negócio com estatísticas detalhadas (4 cards de status) e filtros de período (este mês, 7 dias, 30 dias, personalizado), além de busca global.
+- **Perfil (Profile):** Gestão de dados do usuário e de sua empresa. Inclui também o gerenciamento do **Plano de Assinatura**, integração com gateway (Stripe) e status da conta.
 - **Suporte:** Sistema integrado de tickets de suporte (\`support_tickets\`).
-- **Notificações:** Alertas do sistema (aprovação de orçamentos, novas mensagens).
+- **Notificações:** Alertas dinâmicos no sistema para aprovação/execução/conclusão de orçamentos, alertas de orçamentos a vencer e novas mensagens.
 
 ---
 

@@ -1,0 +1,19 @@
+{
+  "status": "commited",
+  "type": "backend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "loginUser": "mathauscesar@gmail.com",
+  "loginPassword": "741852963",
+  "executionArgs": {
+    "projectName": "orcafacil",
+    "projectPath": "c:\\Users\\Matha\\aplicativos\\orcafacil",
+    "testIds": [],
+    "additionalInstruction": "",
+    "envs": {
+      "API_KEY": "sk-user-BCCd8xHe1PM0pjvITh5yJBCE9ieBWIO5_DZ8tv-qjhx2NkGqav1Zqny01dDNKGPLvmgo3le8D1DGNq-tps3F8RRwzVHf3Vf2uEOWZLuJasADNPl-W6SeurodCIcC0PZkCrA"
+    }
+  },
+  "serverPort": 52857,
+  "proxy": "http://5b297271-88de-48e6-99ff-6b0f9603730c:N2r4gdCnmMHpuQtH8VNbV7hs1xPhbDg1@tun.testsprite.com:8080"
+}

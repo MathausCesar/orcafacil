@@ -1,0 +1,37 @@
+[
+  {
+    "id": "TC001",
+    "title": "authentication login signup password reset",
+    "description": "Test secure account creation, login, and password recovery flows including client-side validation and server-side actions for valid and invalid inputs."
+  },
+  {
+    "id": "TC002",
+    "title": "onboarding wizard guided multi step setup",
+    "description": "Verify the onboarding wizard multi-step process for seeding company details, default services, and templates, including validation and error handling."
+  },
+  {
+    "id": "TC003",
+    "title": "dashboard main overview and quick actions",
+    "description": "Validate the dashboard displays business metrics, recent activity, and supports quick actions like creating new quotes and global search functionality."
+  },
+  {
+    "id": "TC004",
+    "title": "clients crud operations including validation",
+    "description": "Test client management CRUD operations for both individual and corporate clients, including duplicate registration validation and deletion confirmation."
+  },
+  {
+    "id": "TC005",
+    "title": "quotes creation editing and pdf generation",
+    "description": "Verify full quote lifecycle including creation with itemized services, editing, payment options, warranty toggling, validation, and PDF export with error handling."
+  },
+  {
+    "id": "TC006",
+    "title": "profile and settings management",
+    "description": "Test user and company profile updates including address, registration number validation, and company logo upload with UI updates."
+  },
+  {
+    "id": "TC007",
+    "title": "notifications and support widget functionality",
+    "description": "Validate in-app notifications for quote events and support widget ticket submission with success and failure scenarios."
+  }
+]

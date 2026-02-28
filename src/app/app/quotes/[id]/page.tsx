@@ -19,6 +19,7 @@ import { UrgencyBadge } from '@/components/quotes/urgency-badge'
 import { PaymentOptions } from '@/components/quotes/payment-options'
 import { detectItemCategory, adjustColorBrightness } from '@/lib/utils/category-detection'
 import { detectClientProfile, getToneClasses, getDensityClasses, shouldShowExtra } from '@/lib/utils/profile-detection'
+import { Watermark } from '@/components/quotes/watermark'
 import { Metadata } from 'next'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -160,13 +161,15 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                 {/* Status Actions (Approve/Reject) - Visible to everyone, but context matters */}
                 {/* Normally only client approves, but for simplicity showing to all if not pending? Or show always? */}
                 {/* Let's show it prominently if status is pending or sent */}
-                <div className="print:hidden">
+                <div className="print:hidden relative z-30">
                     <QuoteStatusActions quoteId={quote.id} currentStatus={quote.status} isOwner={isOwner} />
                 </div>
 
+                {(!profile?.plan || profile?.plan === 'free') && <Watermark />}
+
                 {/* MODERN LAYOUT */}
                 {layout === 'modern' && (
-                    <Card className="shadow-lg print:shadow-none print:border-none border-t-8 border-[var(--theme-color)] overflow-hidden">
+                    <Card className="relative shadow-lg print:shadow-none print:border-none border-t-8 border-[var(--theme-color)] overflow-hidden">
                         <CardContent className="p-0">
                             {/* Modern Header */}
                             <div className="bg-[var(--theme-color)]/5 p-8 flex justify-between items-start">
@@ -327,7 +330,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
 
                 {/* PROFESSIONAL LAYOUT — Executive, subdued, sophisticated */}
                 {layout === 'professional' && (
-                    <Card className="shadow-lg print:shadow-none print:border-none rounded-none overflow-hidden border border-slate-200">
+                    <Card className="relative shadow-lg print:shadow-none print:border-none rounded-none overflow-hidden border border-slate-200">
                         <CardContent className="p-0">
                             {/* Executive Header — Dark, authoritative */}
                             <div className="bg-slate-900 text-white p-8 md:p-10">
@@ -452,7 +455,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
 
                 {/* CLASSIC LAYOUT — Elegant formal document */}
                 {layout === 'classic' && (
-                    <Card className="shadow-lg print:shadow-none print:border-none rounded-none border border-slate-300">
+                    <Card className="relative shadow-lg print:shadow-none print:border-none rounded-none border border-slate-300">
                         <CardContent className="p-10 md:p-14 space-y-8" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
                             {/* Ornamental Header */}
                             <div className="text-center space-y-5">

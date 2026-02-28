@@ -128,7 +128,18 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                 result = await createQuote(formData)
             }
 
-            if (result?.error) {
+            if (result?.error === 'LIMIT_REACHED') {
+                const limitMessage = (result as any).message || 'Limite de orçamentos atingido.'
+                toast.error(limitMessage, {
+                    action: {
+                        label: 'Ver Planos',
+                        onClick: () => router.push('/pricing')
+                    },
+                    duration: 10000,
+                })
+                router.push('/pricing')
+                return
+            } else if (result?.error) {
                 toast.error(result.error)
             } else if (result?.success) {
                 toast.success(initialData?.id ? 'Orçamento atualizado!' : 'Orçamento criado!')

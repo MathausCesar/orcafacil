@@ -68,6 +68,12 @@ export async function middleware(request: NextRequest) {
         const url = request.nextUrl
         const hostname = request.headers.get('host') || ''
 
+        // --- PREVENÇÃO DE LOOPS DE REWRITE ---
+        // Ignora requests que já passaram por rewrite ou são chamadas internas do App Router (/app ou /marketing visível no path)
+        if (url.pathname.startsWith('/app') || url.pathname.startsWith('/marketing') || url.pathname.includes('_next')) {
+            return response;
+        }
+
         // Definindo os URLs base da Vercel para ambiente de preview/dev e o de prod
         const isAppDomain = hostname.startsWith('app.') || hostname.includes('app-zacly'); // app-zacly no preview da vercel
         const isMarketingDomain = !isAppDomain && (hostname.includes('zacly.com.br') || hostname.includes('localhost'));
@@ -106,11 +112,6 @@ export async function middleware(request: NextRequest) {
         }
 
         // --- ROTEAMENTO MULTI-DOMÍNIO ---
-
-        // Se já está acessando diretamente as pastas internas, deixamos passar (evita loops se houver)
-        if (path.startsWith('/app') || path.startsWith('/marketing')) {
-            return response;
-        }
 
         // Se for o domínio do App
         if (isAppDomain) {

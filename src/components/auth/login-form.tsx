@@ -28,6 +28,7 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
     const [mode, setMode] = useState<'login' | 'register'>(defaultMode)
     const [showSuccessDialog, setShowSuccessDialog] = useState(false)
     const [emailSent, setEmailSent] = useState('')
+    const [acceptedTerms, setAcceptedTerms] = useState(false)
 
     useEffect(() => {
         const message = searchParams.get('message')
@@ -226,10 +227,52 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                                     className="h-12 rounded-xl border-zinc-800 bg-zinc-900/50 px-4 text-white placeholder:text-zinc-600 focus:border-emerald-500/50 focus:bg-zinc-900 focus:ring-4 focus:ring-emerald-500/10 transition-all"
                                 />
                             </div>
+                            {/* Aceite de Termos — somente no registro */}
+                            {mode === 'register' && (
+                                <div className="flex items-start gap-3 py-1">
+                                    <button
+                                        type="button"
+                                        role="checkbox"
+                                        aria-checked={acceptedTerms}
+                                        onClick={() => setAcceptedTerms((v) => !v)}
+                                        className={`mt-0.5 h-5 w-5 shrink-0 rounded border-2 transition-all ${acceptedTerms
+                                                ? 'bg-emerald-500 border-emerald-500'
+                                                : 'border-zinc-600 bg-transparent hover:border-zinc-400'
+                                            } flex items-center justify-center`}
+                                    >
+                                        {acceptedTerms && (
+                                            <svg className="h-3 w-3 text-white" viewBox="0 0 12 10" fill="none">
+                                                <path d="M1 5l3.5 3.5L11 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        )}
+                                    </button>
+                                    <p className="text-xs text-zinc-400 leading-relaxed">
+                                        Li e concordo com os{' '}
+                                        <a
+                                            href="https://zacly.com.br/termos-de-uso"
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-emerald-400 hover:underline font-medium"
+                                        >
+                                            Termos de Uso
+                                        </a>{' '}e com a{' '}
+                                        <a
+                                            href="https://zacly.com.br/politica-de-privacidade"
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-emerald-400 hover:underline font-medium"
+                                        >
+                                            Política de Privacidade
+                                        </a>
+                                        , incluindo o tratamento dos meus dados pessoais conforme a LGPD.
+                                    </p>
+                                </div>
+                            )}
+
                             <Button
-                                className="group h-12 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold text-base shadow-lg shadow-emerald-500/20 transition-all hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98] border border-white/10"
+                                className="group h-12 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold text-base shadow-lg shadow-emerald-500/20 transition-all hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98] border border-white/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                                 type="submit"
-                                disabled={loading}
+                                disabled={loading || (mode === 'register' && !acceptedTerms)}
                             >
                                 <span className="mr-2">{loading ? 'Processando...' : (mode === 'login' ? 'Acessar Painel' : 'Criar Conta Grátis')}</span>
                                 {!loading && <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" />}

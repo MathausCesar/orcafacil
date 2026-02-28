@@ -14,15 +14,19 @@ async function redirectToCheckout(plan: "monthly" | "yearly") {
         body: formData,
     })
 
-    if (response.redirected) {
-        window.location.href = response.url
-        return
-    }
-
     if (!response.ok) {
         const error = await response.text()
         throw new Error(error || "Erro ao iniciar checkout.")
     }
+
+    const data = await response.json()
+
+    if (data.url) {
+        window.location.href = data.url
+        return
+    }
+
+    throw new Error(data.error || "URL de checkout não retornada.")
 }
 
 export default function PricingPage() {

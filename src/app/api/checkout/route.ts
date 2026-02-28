@@ -75,7 +75,9 @@ export async function POST(req: NextRequest) {
         const stripeSession = await stripe.checkout.sessions.create(sessionPayload);
 
         if (stripeSession.url) {
-            return NextResponse.redirect(stripeSession.url, 303);
+            // Retorna JSON com a URL — o cliente faz o redirecionamento
+            // (fetch não consegue seguir redirects cross-origin para o Stripe)
+            return NextResponse.json({ url: stripeSession.url });
         }
 
         return NextResponse.json({ error: "Não foi possível criar a sessão do checkout" }, { status: 500 });

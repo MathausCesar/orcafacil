@@ -76,12 +76,19 @@ export async function middleware(request: NextRequest) {
         const path = url.pathname;
 
         // --- PROTEÇÃO DE ROTAS (Autenticação) ---
-        const isProtectedRoute =
+        // Apenas listamos as rotas que dependem de auth na nossa app
+        const isProtectedRoute = isAppDomain && (
+            path === '/' ||
+            path === '/quotes' || // A listagem é protegida
+            path.startsWith('/new') ||
+            path.startsWith('/clients') ||
+            path.startsWith('/profile') ||
+            path.startsWith('/pricing') ||
             path.startsWith('/dashboard') ||
             path.startsWith('/onboarding') ||
             path.startsWith('/orcamentos') ||
-            path.startsWith('/quotes') ||
-            path.startsWith('/update-password');
+            path.startsWith('/update-password')
+        );
 
         const isAuthRoute =
             path.startsWith('/login') ||
@@ -90,40 +97,51 @@ export async function middleware(request: NextRequest) {
 
         // Se a rota for protegida e o usuário não estiver logado
         if (isProtectedRoute && !user) {
-            // Mandamos para a tela de login. Como login está no app, mantemos no domínio atual ou forçamos o app subdomínio (depende da estratégia, vamos manter na url atual)
             return NextResponse.redirect(new URL('/login', request.url))
         }
 
         // Se tentar acessar rota de autenticação já logado, vai pro dashboard
         if (isAuthRoute && user) {
-            return NextResponse.redirect(new URL('/dashboard', request.url))
+            return NextResponse.redirect(new URL('/', request.url))
         }
 
         // --- ROTEAMENTO MULTI-DOMÍNIO ---
 
-        // Se já está acessando diretamente as pastas internas (não deveria, mas protege), deixamos passar
+        // Se já está acessando diretamente as pastas internas, deixamos passar (evita loops se houver)
         if (path.startsWith('/app') || path.startsWith('/marketing')) {
             return response;
         }
 
         // Se for o domínio do App
         if (isAppDomain) {
-            // Injetamos o cabeçalho "noindex"
-            response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+            // Fazemos o rewrite invisível para a pasta /app (path === '/' vira /app, não /app/dashboard)
+            const appPath = path === '/' ? '' : path;
+            const appUrl = new URL(`/app${appPath}`, request.url);
 
-            // Fazemos o rewrite invisível para a pasta /app
-            const appUrl = new URL(`/app${path === '/' ? '/dashboard' : path}`, request.url);
-
-            // Repassamos os cookies da resosta atual pro novo rewrite
             const rewriteResponse = NextResponse.rewrite(appUrl);
+
+            // Repassamos os cookies da sessão atualizados pelo supabase
+            response.cookies.getAll().forEach(cookie => {
+                rewriteResponse.cookies.set(cookie.name, cookie.value);
+            });
+
+            // Injetamos o cabeçalho "noindex"
             rewriteResponse.headers.set('X-Robots-Tag', 'noindex, nofollow');
+
             return rewriteResponse;
         }
 
         // Se for o domínio de Marketing (ou localhost base)
         if (isMarketingDomain) {
             const marketingUrl = new URL(`/marketing${path === '/' ? '' : path}`, request.url);
-            return NextResponse.rewrite(marketingUrl);
+            const rewriteResponse = NextResponse.rewrite(marketingUrl);
+
+            // Repassamos os cookies da sessão atualizados pelo supabase
+            response.cookies.getAll().forEach(cookie => {
+                rewriteResponse.cookies.set(cookie.name, cookie.value);
+            });
+
+            return rewriteResponse;
         }
 
         return response

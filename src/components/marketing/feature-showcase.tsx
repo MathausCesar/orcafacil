@@ -1,134 +1,127 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle2, ChevronRight, Zap } from "lucide-react";
+import { CheckCircle2, CopyPlus, LayoutTemplate, Send, Activity, Settings2 } from "lucide-react";
 
 const features = [
     {
-        title: "Monte Seu Orçamento em 1 Minuto",
-        description: "Adicione seus serviços e materiais no app. O Zacly calcula o total e a sua margem de lucro, sem erro de matemática.",
-        image: "/logo/zacly_icone.png" // Placeholder to simulate the UI
+        title: "Onboarding Mágico",
+        description: "Você faz o cadastro e o Zacly importa seus produtos e serviços automaticamente. Suba sua logo e o sistema faz o resto.",
+        icon: CopyPlus,
+        highlight: "Segundos, não horas."
     },
     {
-        title: "Envie um PDF Profissional",
-        description: "Compartilhe direto no WhatsApp do cliente um PDF impecável com sua logo, cores e descrição clara do serviço.",
-        image: "/logo/zacly_icone.png"
+        title: "3 Layouts Premium com sua Logo",
+        description: "Esqueça perder tempo formatando PDFs. O app gera instantaneamente propostas com a cara da sua empresa, prontas para impressionar.",
+        icon: LayoutTemplate,
+        highlight: "Pareça 10x maior."
     },
     {
-        title: "Acompanhe e Feche Vendas",
-        description: "Saiba quem visualizou, quem aprovou e organize os pagamentos em um painel que funciona direto no celular.",
-        image: "/logo/zacly_icone.png"
+        title: "Envio em 2 Cliques",
+        description: "Com o orçamento pronto, clique em enviar e um resumo perfeito, com link de aprovação, é gerado direto para o WhatsApp do seu cliente.",
+        icon: Send,
+        highlight: "Integração direta."
+    },
+    {
+        title: "Tracking em Tempo Real",
+        description: "O link que o cliente recebe tem uma Linha do Tempo ao vivo. Saiba quando ele abriu, aprovação instantânea e atualize os passos (Ex: \"Em Execução\", \"Concluído\").",
+        icon: Activity,
+        highlight: "Fim do vácuo."
+    },
+    {
+        title: "Dashboard de Controle",
+        description: "Gerencie tudo num pipeline estilo Kanban. Saiba exatamente quanto dinheiro está em propostas, quanto foi aprovado e seja notificado a cada passo.",
+        icon: Settings2,
+        highlight: "Visão de negócio."
     }
 ];
 
 export function FeatureShowcase() {
     return (
-        <section className="py-32 bg-background relative border-b border-border">
-            <div className="container px-4 md:px-6 max-w-7xl">
+        <section className="py-32 bg-zinc-950 relative border-b border-white/5 overflow-hidden">
+            {/* Ambient Background */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-[600px] bg-emerald-900/10 blur-[120px] rounded-full pointer-events-none" />
+
+            <div className="container relative z-10 px-4 md:px-6 max-w-[1200px] mx-auto">
 
                 {/* Section Header */}
-                <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-8">
-                    <div className="max-w-3xl">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "-100px" }}
-                            className="inline-flex items-center gap-2 mb-6"
-                        >
-                            <Zap className="h-6 w-6 text-primary fill-primary/20" />
-                            <span className="text-primary font-bold tracking-widest uppercase text-sm">O FLUXO DE VENDAS ZACLY</span>
-                        </motion.div>
-                        <motion.h2
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "-100px" }}
-                            transition={{ delay: 0.1 }}
-                            className="text-5xl md:text-7xl font-black uppercase text-foreground leading-[0.9]"
-                        >
-                            Profissionalismo que<br /> <span className="text-secondary-foreground italic">justifica seu preço.</span>
-                        </motion.h2>
-                    </div>
+                <div className="flex flex-col items-center text-center mb-24 max-w-4xl mx-auto">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-100px" }}
+                        className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 font-bold tracking-widest uppercase text-xs"
+                    >
+                        O LOOP DE FECHAMENTO
+                    </motion.div>
+
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-100px" }}
+                        transition={{ delay: 0.1 }}
+                        className="text-4xl md:text-6xl font-black text-white leading-[1.1] tracking-tight mb-8"
+                    >
+                        Como o Zacly transforma orçamentos em <span className="text-emerald-500">dinheiro no bolso.</span>
+                    </motion.h2>
 
                     <motion.p
-                        initial={{ opacity: 0, x: 20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true, margin: "-100px" }}
                         transition={{ delay: 0.2 }}
-                        className="text-muted-foreground text-lg max-w-sm"
+                        className="text-zinc-400 text-lg md:text-xl font-light leading-relaxed max-w-3xl"
                     >
-                        Não perca mais tempo. O fluxo do Zacly é construído para quem trabalha na rua e precisa de agilidade.
+                        Nós desenhamos a trilha exata para você sair do "vou pensar" para o "pode começar amanhã". Sem fricção. Sem planilhas confusas.
                     </motion.p>
                 </div>
 
-                {/* Features Flow */}
-                <div className="space-y-32">
-                    {features.map((feature, index) => (
-                        <div key={index} className={`flex flex-col lg:flex-row gap-12 lg:gap-24 items-center ${index % 2 !== 0 ? 'lg:flex-row-reverse' : ''}`}>
+                {/* Features Flow - Steps Timeline */}
+                <div className="relative max-w-5xl mx-auto">
+                    {/* Continuous vertical line */}
+                    <div className="absolute left-[28px] md:left-[50%] top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-emerald-500/20 to-transparent -translate-x-1/2" />
 
-                            {/* Text Content */}
-                            <motion.div
-                                initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-                                whileInView={{ opacity: 1, x: 0 }}
-                                viewport={{ once: true, margin: "-100px" }}
-                                transition={{ duration: 0.6, type: "spring", stiffness: 50 }}
-                                className="flex-1 space-y-8"
-                            >
-                                <div className="text-8xl font-black text-secondary/30 -mb-10 pointer-events-none">
-                                    0{index + 1}
-                                </div>
-                                <h3 className="text-4xl md:text-5xl font-bold text-foreground">
-                                    {feature.title}
-                                </h3>
-                                <p className="text-xl text-muted-foreground leading-relaxed">
-                                    {feature.description}
-                                </p>
+                    <div className="space-y-16 lg:space-y-24">
+                        {features.map((feature, index) => {
+                            const isEven = index % 2 === 0;
+                            return (
+                                <div key={index} className="relative flex flex-col md:flex-row items-start md:items-center w-full group">
 
-                                <ul className="space-y-4 pt-4">
-                                    <li className="flex items-center gap-3 text-foreground font-medium">
-                                        <CheckCircle2 className="h-6 w-6 text-primary" />
-                                        Feito para celular
-                                    </li>
-                                    <li className="flex items-center gap-3 text-foreground font-medium">
-                                        <CheckCircle2 className="h-6 w-6 text-primary" />
-                                        Design impressionante
-                                    </li>
-                                </ul>
-                            </motion.div>
-
-                            {/* Visual Asset (Simulated UI) */}
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.9, rotate: index % 2 === 0 ? 5 : -5 }}
-                                whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
-                                viewport={{ once: true, margin: "-100px" }}
-                                transition={{ duration: 0.8, type: "spring" }}
-                                className="flex-1 w-full max-w-lg aspect-[4/5] bg-card border border-border shadow-2xl relative flex items-center justify-center p-8 group"
-                            >
-                                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-primary/10 to-transparent pointer-events-none" />
-
-                                {/* Placeholder App Visual */}
-                                <div className="absolute inset-4 border border-border/50 bg-background/50 flex flex-col p-6 overflow-hidden">
-                                    <div className="flex items-center justify-between mb-8 opacity-50">
-                                        <div className="h-4 w-1/3 bg-muted rounded" />
-                                        <div className="h-8 w-8 bg-muted rounded-full" />
+                                    {/* Left Content (or right on mobile) */}
+                                    <div className={`w-full md:w-1/2 flex pl-16 md:pl-0 ${isEven ? 'md:justify-end md:pr-16 text-left md:text-right' : 'md:justify-start md:pl-16 md:order-last'}`}>
+                                        <motion.div
+                                            initial={{ opacity: 0, x: isEven ? -20 : 20 }}
+                                            whileInView={{ opacity: 1, x: 0 }}
+                                            viewport={{ once: true, margin: "-100px" }}
+                                            transition={{ duration: 0.6 }}
+                                            className="max-w-md w-full relative"
+                                        >
+                                            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-xl rounded-full -z-10" />
+                                            <span className="text-emerald-500 text-sm font-bold uppercase tracking-wider mb-2 block">{feature.highlight}</span>
+                                            <h3 className="text-2xl md:text-3xl font-black text-white mb-4">
+                                                {feature.title}
+                                            </h3>
+                                            <p className="text-zinc-400 leading-relaxed font-light text-sm md:text-base">
+                                                {feature.description}
+                                            </p>
+                                        </motion.div>
                                     </div>
-                                    <div className="space-y-4">
-                                        {[1, 2, 3].map((i) => (
-                                            <div key={i} className="h-16 w-full bg-card border border-border rounded flex items-center px-4 justify-between transform transition-transform group-hover:translate-y-[-5px]" style={{ transitionDelay: `${i * 100}ms` }}>
-                                                <div className="space-y-2">
-                                                    <div className="h-3 w-24 bg-muted rounded" />
-                                                    <div className="h-2 w-16 bg-muted/50 rounded" />
-                                                </div>
-                                                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                                            </div>
-                                        ))}
+
+                                    {/* Center Node */}
+                                    <div className="absolute left-[28px] md:left-1/2 top-4 md:top-1/2 -translate-x-1/2 -translate-y-1/2 md:translate-y-0 w-14 h-14 rounded-full bg-zinc-950 border border-white/10 flex items-center justify-center z-10 transition-colors duration-500 group-hover:border-emerald-500/50 group-hover:bg-emerald-950/30">
+                                        <div className="absolute inset-0 rounded-full bg-emerald-500/20 scale-0 group-hover:scale-150 transition-transform duration-500 blur-md opacity-0 group-hover:opacity-100" />
+                                        <div className="bg-zinc-900 w-10 h-10 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                                            <feature.icon className="w-5 h-5 text-zinc-400 group-hover:text-emerald-400 transition-colors" />
+                                        </div>
                                     </div>
+
+                                    {/* Empty structural div for alternating layout */}
+                                    <div className={`hidden md:block w-1/2 ${isEven ? 'order-last' : ''}`} />
+
                                 </div>
-
-                                <img src={feature.image} alt={feature.title} className="h-32 w-32 drop-shadow-2xl z-10 brightness-0 invert opacity-10 group-hover:opacity-100 group-hover:invert-0 transition-all duration-500" />
-                            </motion.div>
-
-                        </div>
-                    ))}
+                            );
+                        })}
+                    </div>
                 </div>
 
             </div>

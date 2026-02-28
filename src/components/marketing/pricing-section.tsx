@@ -67,7 +67,7 @@ export function PricingSection() {
                                 <span className="text-zinc-500 text-sm">Marca d'água Zacly mantida</span>
                             </li>
                         </ul>
-                        <Link href="/register">
+                        <Link href="https://app.zacly.com.br/register">
                             <button className="w-full py-4 rounded-xl border border-zinc-700 text-white font-bold hover:bg-zinc-800 transition-colors">
                                 Criar Conta Grátis
                             </button>
@@ -115,7 +115,7 @@ export function PricingSection() {
                             </li>
                         </ul>
 
-                        <Link href="/register?plan=annual">
+                        <Link href="https://app.zacly.com.br/register?plan=annual">
                             <button className="relative group w-full py-4 rounded-xl bg-emerald-500 text-black font-black uppercase tracking-wide overflow-hidden hover:scale-[1.02] transition-transform">
                                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
                                 <span className="relative z-10">Assinar Anual</span>
@@ -157,7 +157,7 @@ export function PricingSection() {
                             </li>
                         </ul>
 
-                        <Link href="/register?plan=monthly">
+                        <Link href="https://app.zacly.com.br/register?plan=monthly">
                             <button className="w-full py-4 rounded-xl border border-zinc-700 bg-zinc-800 text-white font-bold hover:bg-zinc-700 transition-colors">
                                 Assinar Mensal
                             </button>

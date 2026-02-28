@@ -60,7 +60,7 @@ export function HeroSection() {
                     {/* Glow behind button */}
                     <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full scale-110"></div>
 
-                    <Link href="/register" className="w-full sm:w-auto relative z-10">
+                    <Link href="https://app.zacly.com.br/register" className="w-full sm:w-auto relative z-10">
                         <button className="group relative h-16 px-10 rounded-full bg-white text-black font-bold text-lg flex items-center justify-center gap-3 overflow-hidden transition-transform hover:scale-105 active:scale-95 w-full sm:w-auto">
                             <span>Testar Gratuitamente</span>
                             <div className="bg-black/10 rounded-full p-1.5 transition-transform group-hover:translate-x-1">

@@ -27,10 +27,10 @@ export default function MarketingPage() {
                     />
                 </Link>
                 <div className="flex items-center gap-4">
-                    <Link href="/login" className="text-sm font-medium text-zinc-300 hover:text-white transition-colors">
+                    <Link href="https://app.zacly.com.br/login" className="text-sm font-medium text-zinc-300 hover:text-white transition-colors">
                         Entrar
                     </Link>
-                    <Link href="/register">
+                    <Link href="https://app.zacly.com.br/register">
                         <span className="text-sm font-bold bg-white text-black px-4 py-2 rounded-full hover:bg-zinc-200 transition-colors">
                             Começar Grátis
                         </span>

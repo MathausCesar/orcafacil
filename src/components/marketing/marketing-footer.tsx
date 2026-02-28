@@ -40,8 +40,8 @@ export function MarketingFooter() {
                     <div className="space-y-4 pt-4 lg:pt-0">
                         <h4 className="text-sm font-bold text-white tracking-widest uppercase">Produto</h4>
                         <ul className="space-y-3">
-                            <li><Link href="/register" className="text-zinc-400 hover:text-emerald-400 transition-colors text-sm flex items-center gap-1 group">Criar Conta Grátis <ArrowUpRight className="h-3 w-3 opacity-0 -translate-y-1 translate-x-1 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all font-bold" /></Link></li>
-                            <li><Link href="/login" className="text-zinc-400 hover:text-emerald-400 transition-colors text-sm flex items-center gap-1 group">Acessar Painel <ArrowUpRight className="h-3 w-3 opacity-0 -translate-y-1 translate-x-1 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all font-bold" /></Link></li>
+                            <li><Link href="https://app.zacly.com.br/register" className="text-zinc-400 hover:text-emerald-400 transition-colors text-sm flex items-center gap-1 group">Criar Conta Grátis <ArrowUpRight className="h-3 w-3 opacity-0 -translate-y-1 translate-x-1 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all font-bold" /></Link></li>
+                            <li><Link href="https://app.zacly.com.br/login" className="text-zinc-400 hover:text-emerald-400 transition-colors text-sm flex items-center gap-1 group">Acessar Painel <ArrowUpRight className="h-3 w-3 opacity-0 -translate-y-1 translate-x-1 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all font-bold" /></Link></li>
                         </ul>
                     </div>
                 </div>

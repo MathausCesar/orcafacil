@@ -51,10 +51,10 @@ export function MarketingFooter() {
                         © {new Date().getFullYear()} Zacly. Todos os direitos reservados.
                     </p>
                     <div className="flex gap-6">
-                        <Link href="/termos" className="text-xs text-zinc-600 hover:text-white transition-colors">
+                        <Link href="/termos-de-uso" className="text-xs text-zinc-600 hover:text-white transition-colors">
                             Termos de Uso
                         </Link>
-                        <Link href="/privacidade" className="text-xs text-zinc-600 hover:text-white transition-colors">
+                        <Link href="/politica-de-privacidade" className="text-xs text-zinc-600 hover:text-white transition-colors">
                             Políticas de Privacidade
                         </Link>
                     </div>

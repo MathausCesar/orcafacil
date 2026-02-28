@@ -77,7 +77,7 @@ export default async function ProfilePage() {
 
             {/* Team Manager */}
             {orgId && (
-                <TeamManager initialMembers={members as unknown as TeamMember[]} />
+                <TeamManager initialMembers={(members || []) as unknown as TeamMember[]} />
             )}
 
             {/* Services Catalog */}

@@ -7,6 +7,7 @@ import { FileText } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { QuoteStatusBadge } from '@/components/quotes/quote-status-badge'
 import { QuoteFilters } from '@/components/quotes/quote-filters'
+import { getActiveOrganizationId } from '@/lib/get-active-organization'
 
 interface SearchParams {
     q?: string
@@ -26,11 +27,17 @@ export default async function QuotesListPage({ searchParams }: { searchParams: P
         redirect('/login')
     }
 
+    const orgId = await getActiveOrganizationId()
+
+    if (!orgId) {
+        return <div className="p-8 text-center text-muted-foreground">Nenhuma organização encontrada. Crie ou entre em uma organização para ver os orçamentos.</div>
+    }
+
     // Build query with filters
     let query = supabase
         .from('quotes')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('organization_id', orgId)
 
     // Text search
     if (params.q) {

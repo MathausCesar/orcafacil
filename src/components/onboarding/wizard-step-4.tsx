@@ -6,6 +6,7 @@ import { useOnboarding } from "@/components/onboarding/onboarding-context";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { LogoUpload } from "@/components/profile/logo-upload";
 
@@ -20,7 +21,8 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
     // Initialize state from context, but if context is empty, use default overrides
     const [businessName, setBusinessName] = useState(data.businessName || "");
     const [phone, setPhone] = useState(data.phone || "");
-    const [cnpj, setCnpj] = useState(data.cnpj || "");
+    const [documentType, setDocumentType] = useState<"cpf" | "cnpj">(data.documentType || "cpf");
+    const [document, setDocument] = useState(data.document || "");
     const [email, setEmail] = useState(data.email || initialEmail);
     const [logoUrl, setLogoUrl] = useState(data.logoUrl || null);
 
@@ -32,7 +34,8 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
         updateData({
             businessName,
             phone,
-            cnpj,
+            documentType,
+            document,
             email,
             logoUrl
         });
@@ -63,13 +66,31 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
                     </div>
 
                     <div className="w-full md:w-2/3 space-y-4">
+                        <div className="space-y-4 pt-2">
+                            <Label>Como você atua?</Label>
+                            <RadioGroup
+                                defaultValue={documentType}
+                                onValueChange={(val) => setDocumentType(val as "cpf" | "cnpj")}
+                                className="flex gap-4"
+                            >
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="cpf" id="cpf" />
+                                    <Label htmlFor="cpf" className="cursor-pointer">Pessoa Física (CPF)</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="cnpj" id="cnpj" />
+                                    <Label htmlFor="cnpj" className="cursor-pointer">Pessoa Jurídica (CNPJ)</Label>
+                                </div>
+                            </RadioGroup>
+                        </div>
+
                         <div className="space-y-2">
-                            <Label htmlFor="businessName">Nome do Negócio</Label>
+                            <Label htmlFor="businessName">{documentType === 'cpf' ? 'Seu Nome ou Nome Fantasia' : 'Nome da Empresa'}</Label>
                             <Input
                                 id="businessName"
                                 value={businessName}
                                 onChange={(e) => setBusinessName(e.target.value)}
-                                placeholder="Boutique Arquitetura"
+                                placeholder={documentType === 'cpf' ? 'João Silva' : 'Empresa Exemplo LTDA'}
                                 className="h-10 border-primary/20 focus-visible:ring-primary"
                             />
                         </div>
@@ -87,12 +108,12 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="cnpj">CNPJ (Opcional)</Label>
+                                <Label htmlFor="document">{documentType === 'cpf' ? 'CPF' : 'CNPJ'} (Opcional)</Label>
                                 <Input
-                                    id="cnpj"
-                                    value={cnpj}
-                                    onChange={(e) => setCnpj(e.target.value)}
-                                    placeholder="00.000.000/0000-00"
+                                    id="document"
+                                    value={document}
+                                    onChange={(e) => setDocument(e.target.value)}
+                                    placeholder={documentType === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'}
                                     className="h-10 font-mono border-primary/20 focus-visible:ring-primary"
                                 />
                             </div>

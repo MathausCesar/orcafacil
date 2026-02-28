@@ -9,6 +9,7 @@ import { Plus, FileText, ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { getActiveOrganizationId } from '@/lib/get-active-organization'
 
 export default async function Dashboard() {
   const supabase = await createClient()
@@ -29,10 +30,12 @@ export default async function Dashboard() {
     redirect('/onboarding')
   }
 
+  const orgId = await getActiveOrganizationId()
+
   const { data: recentQuotes } = await supabase
     .from('quotes')
     .select('*, quote_items(description)')
-    .eq('user_id', user.id)
+    .eq('organization_id', orgId || '')
     .order('created_at', { ascending: false })
     .limit(5)
 

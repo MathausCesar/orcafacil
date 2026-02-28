@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { getActiveOrganizationId } from '@/lib/get-active-organization'
 
 export async function createService(formData: FormData) {
     const supabase = await createClient()
@@ -9,6 +10,12 @@ export async function createService(formData: FormData) {
 
     if (!user) {
         return { error: 'Unauthorized' }
+    }
+
+    const orgId = await getActiveOrganizationId()
+
+    if (!orgId) {
+        return { error: 'No active organization found' }
     }
 
     const description = formData.get('description') as string
@@ -26,7 +33,8 @@ export async function createService(formData: FormData) {
     const { error } = await supabase
         .from('services')
         .insert({
-            user_id: user.id,
+            user_id: user.id, // Keeping user_id for original creator reference
+            organization_id: orgId,
             description: description.trim(),
             default_price: price,
             type,
@@ -51,6 +59,12 @@ export async function updateService(id: string, formData: FormData) {
         return { error: 'Unauthorized' }
     }
 
+    const orgId = await getActiveOrganizationId()
+
+    if (!orgId) {
+        return { error: 'No active organization found' }
+    }
+
     const description = formData.get('description') as string
     const priceRaw = formData.get('price') as string
     const price = parseFloat(priceRaw.replace(',', '.'))
@@ -73,7 +87,7 @@ export async function updateService(id: string, formData: FormData) {
             folder_id
         })
         .eq('id', id)
-        .eq('user_id', user.id) // Security check
+        .eq('organization_id', orgId) // Security check
 
     if (error) {
         console.error('Error updating service:', error)
@@ -92,11 +106,17 @@ export async function deleteService(id: string) {
         return { error: 'Unauthorized' }
     }
 
+    const orgId = await getActiveOrganizationId()
+
+    if (!orgId) {
+        return { error: 'No active organization found' }
+    }
+
     const { error } = await supabase
         .from('services')
         .delete()
         .eq('id', id)
-        .eq('user_id', user.id)
+        .eq('organization_id', orgId)
 
     if (error) {
         console.error('Error deleting service:', error)

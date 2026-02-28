@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { getActiveOrganizationId } from '@/lib/get-active-organization'
 
 export async function createClientAction(formData: FormData) {
     const supabase = await createClient()
@@ -10,6 +11,12 @@ export async function createClientAction(formData: FormData) {
 
     if (!user) {
         return { error: 'Unauthorized', redirect: '/login' }
+    }
+
+    const orgId = await getActiveOrganizationId()
+
+    if (!orgId) {
+        return { error: 'No active organization found' }
     }
 
     const name = formData.get('name') as string
@@ -25,6 +32,7 @@ export async function createClientAction(formData: FormData) {
         .from('clients')
         .insert({
             user_id: user.id,
+            organization_id: orgId,
             name,
             phone,
             email,
@@ -47,10 +55,14 @@ export async function createClientAction(formData: FormData) {
 
 export async function getClients(query?: string) {
     const supabase = await createClient()
+    const orgId = await getActiveOrganizationId()
+
+    if (!orgId) return []
 
     let dbQuery = supabase
         .from('clients')
         .select('*')
+        .eq('organization_id', orgId)
         .order('name')
 
     if (query) {
@@ -75,14 +87,16 @@ export async function updateClient(id: string, formData: FormData) {
         return { error: 'Unauthorized', redirect: '/login' }
     }
 
-    // Verify ownership
+    const orgId = await getActiveOrganizationId()
+
+    // Verify ownership via organization
     const { data: existingClient } = await supabase
         .from('clients')
-        .select('user_id')
+        .select('organization_id')
         .eq('id', id)
         .single()
 
-    if (!existingClient || existingClient.user_id !== user.id) {
+    if (!existingClient || existingClient.organization_id !== orgId) {
         return { error: 'Unauthorized' }
     }
 
@@ -127,14 +141,16 @@ export async function deleteClient(id: string) {
         redirect('/login')
     }
 
-    // Verify ownership
+    const orgId = await getActiveOrganizationId()
+
+    // Verify ownership via organization
     const { data: existingClient } = await supabase
         .from('clients')
-        .select('user_id')
+        .select('organization_id')
         .eq('id', id)
         .single()
 
-    if (!existingClient || existingClient.user_id !== user.id) {
+    if (!existingClient || existingClient.organization_id !== orgId) {
         return { error: 'Unauthorized' }
     }
 

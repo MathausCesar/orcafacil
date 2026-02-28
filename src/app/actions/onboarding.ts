@@ -43,7 +43,8 @@ const OnboardingSchema = z.object({
     businessProfile: z.object({
         businessName: z.string().optional(),
         phone: z.string().optional(),
-        cnpj: z.string().optional(),
+        documentType: z.enum(["cpf", "cnpj"]).optional(),
+        document: z.string().optional(),
         email: z.string().optional(),
         logoUrl: z.string().nullable().optional()
     }).optional()
@@ -53,9 +54,10 @@ export async function applyOnboardingKit(
     categoryId: string,
     specialties: string[],
     pricingTier: PricingTier,
-    businessProfile?: { businessName?: string; phone?: string; cnpj?: string; email?: string; logoUrl?: string | null }
+    businessProfile?: { businessName?: string; phone?: string; documentType?: "cpf" | "cnpj"; document?: string; email?: string; logoUrl?: string | null }
 ) {
     const supabase = await createClient()
+
 
     // Securely get user ID from session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -152,7 +154,7 @@ export async function applyOnboardingKit(
         if (businessProfile) {
             if (businessProfile.businessName) profileDataToUpsert.business_name = businessProfile.businessName;
             if (businessProfile.phone) profileDataToUpsert.phone = businessProfile.phone;
-            if (businessProfile.cnpj) profileDataToUpsert.cnpj = businessProfile.cnpj;
+            if (businessProfile.document) profileDataToUpsert.cnpj = businessProfile.document; // Still maps to profile cnpj (legacy) 
             if (businessProfile.email) profileDataToUpsert.email = businessProfile.email;
             if (businessProfile.logoUrl) profileDataToUpsert.logo_url = businessProfile.logoUrl;
         }
@@ -168,7 +170,26 @@ export async function applyOnboardingKit(
             throw upsertError
         }
 
-        console.log('Successfully applied onboarding kit and updated profile.')
+        // 6. Update Primary Organization automatically created by trigger
+        if (businessProfile) {
+            const { data: orgData } = await supabase
+                .from('organization_members')
+                .select('organization_id')
+                .eq('user_id', userId)
+                .limit(1)
+                .single()
+
+            if (orgData?.organization_id) {
+                await supabase.from('organizations').update({
+                    name: businessProfile.businessName || 'Meu Workspace',
+                    document_type: businessProfile.documentType || 'cpf',
+                    document: businessProfile.document || null,
+                    logo_url: businessProfile.logoUrl || null
+                }).eq('id', orgData.organization_id)
+            }
+        }
+
+        console.log('Successfully applied onboarding kit and updated profile/org.')
 
         revalidatePath('/', 'layout')
         revalidatePath('/dashboard')

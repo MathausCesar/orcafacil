@@ -63,6 +63,8 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
+import { OrganizationProvider } from "@/contexts/organization-context";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -102,8 +104,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <Toaster />
+          <OrganizationProvider>
+            {children}
+            <Toaster />
+          </OrganizationProvider>
         </ThemeProvider>
       </body>
     </html>

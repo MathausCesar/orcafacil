@@ -9,6 +9,7 @@ import {
     Clock, CheckCircle, PlayCircle, Trophy,
     Calendar, ChevronDown, X
 } from 'lucide-react'
+import { useOrganization } from '@/contexts/organization-context'
 
 type Period = '7d' | '30d' | 'month' | 'custom'
 
@@ -33,6 +34,7 @@ export function DashboardStats() {
     const [customTo, setCustomTo] = useState('')
     const [stats, setStats] = useState<Stats>({ pending: 0, approved: 0, in_progress: 0, completed: 0 })
     const [loading, setLoading] = useState(true)
+    const { organization, isLoading: isOrgLoading } = useOrganization()
 
     const getDateRange = useCallback((): { from: string; to: string } => {
         const now = new Date()
@@ -63,6 +65,12 @@ export function DashboardStats() {
 
     useEffect(() => {
         async function fetchStats() {
+            if (!organization?.id) {
+                setStats({ pending: 0, approved: 0, in_progress: 0, completed: 0 })
+                setLoading(false)
+                return
+            }
+
             setLoading(true)
             const supabase = createClient()
             const { from, to } = getDateRange()
@@ -75,6 +83,7 @@ export function DashboardStats() {
                         .from('quotes')
                         .select('*', { count: 'exact', head: true })
                         .in('status', status === 'pending' ? ['pending', 'draft', 'sent'] : [status])
+                        .eq('organization_id', organization.id)
                         .gte('created_at', from)
                         .lte('created_at', to)
                 )
@@ -89,10 +98,10 @@ export function DashboardStats() {
             setLoading(false)
         }
 
-        if (period !== 'custom' || (customFrom && customTo)) {
+        if (!isOrgLoading && (period !== 'custom' || (customFrom && customTo))) {
             fetchStats()
         }
-    }, [period, customFrom, customTo, getDateRange])
+    }, [period, customFrom, customTo, getDateRange, organization?.id, isOrgLoading])
 
     const handleCustomApply = () => {
         if (customFrom && customTo) {

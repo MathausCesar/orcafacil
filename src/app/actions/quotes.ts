@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { createNotification } from './notifications'
+import { getActiveOrganizationId } from '@/lib/get-active-organization'
 
 export async function createQuote(formData: FormData) {
     const supabase = await createClient()
@@ -11,6 +12,12 @@ export async function createQuote(formData: FormData) {
 
     if (!user) {
         return { error: 'Unauthorized', redirect: '/login' }
+    }
+
+    const orgId = await getActiveOrganizationId()
+
+    if (!orgId) {
+        return { error: 'No active organization found' }
     }
 
     // --- FREEMIUM CHECK ---
@@ -26,7 +33,7 @@ export async function createQuote(formData: FormData) {
         const { count, error: countError } = await supabase
             .from('quotes')
             .select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id)
+            .eq('organization_id', orgId)
 
         if (!countError && count !== null && count >= 5) {
             return { error: 'LIMIT_REACHED', message: 'Você atingiu o limite de 5 orçamentos grátis.' }
@@ -61,7 +68,8 @@ export async function createQuote(formData: FormData) {
     const { data: quote, error: quoteError } = await supabase
         .from('quotes')
         .insert({
-            user_id: user.id,
+            user_id: user.id, // Keeping user_id for original creator reference
+            organization_id: orgId,
             client_name: clientName,
             client_phone: clientPhone,
             expiration_date: expirationDate,
@@ -126,13 +134,18 @@ export async function updateQuote(id: string, formData: FormData) {
         return { error: 'Unauthorized', redirect: '/login' }
     }
 
+    const orgId = await getActiveOrganizationId()
+
     // Check current status — block locked quotes
     const { data: currentQuote } = await supabase
         .from('quotes')
-        .select('status')
+        .select('status, organization_id')
         .eq('id', id)
-        .eq('user_id', user.id)
         .single()
+
+    if (!currentQuote || currentQuote.organization_id !== orgId) {
+        return { error: 'Quote not found or Unauthorized' }
+    }
 
     if (!currentQuote) {
         return { error: 'Quote not found' }
@@ -194,7 +207,7 @@ export async function updateQuote(id: string, formData: FormData) {
         .from('quotes')
         .update(updateData)
         .eq('id', id)
-        .eq('user_id', user.id)
+        .eq('organization_id', orgId)
 
     if (updateError) {
         console.error('Error updating quote:', updateError)
@@ -244,11 +257,13 @@ export async function deleteQuote(id: string) {
         throw new Error('Unauthorized')
     }
 
+    const orgId = await getActiveOrganizationId()
+
     const { error } = await supabase
         .from('quotes')
         .delete()
         .eq('id', id)
-        .eq('user_id', user.id)
+        .eq('organization_id', orgId || '')
 
     if (error) {
         console.error('Error deleting quote:', error)

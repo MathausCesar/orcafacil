@@ -8,6 +8,19 @@ import { ServicesCatalog } from '@/components/profile/services-catalog'
 import { ProfileForm } from '@/components/profile/profile-form'
 import { LogoutButton } from '@/components/auth/logout-button'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { TeamManager } from '@/components/profile/team-manager'
+import { getActiveOrganizationId } from '@/lib/get-active-organization'
+
+// Type that matches the prop needed by TeamManager
+interface TeamMember {
+    user_id: string
+    role: string
+    profiles: {
+        email: string
+        business_name: string | null
+        logo_url: string | null
+    }
+}
 
 export default async function ProfilePage() {
     const supabase = await createClient()
@@ -23,17 +36,32 @@ export default async function ProfilePage() {
         .eq('id', user.id)
         .single()
 
+    const orgId = await getActiveOrganizationId()
+
     const { data: services } = await supabase
         .from('services')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('organization_id', orgId || '')
         .order('created_at', { ascending: false })
 
     const { data: folders } = await supabase
         .from('item_folders')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('organization_id', orgId || '')
         .order('name', { ascending: true })
+
+    const { data: members } = await supabase
+        .from('organization_members')
+        .select(`
+            user_id,
+            role,
+            profiles (
+                email,
+                business_name,
+                logo_url
+            )
+        `)
+        .eq('organization_id', orgId || '')
 
     return (
         <div className="space-y-6 pb-20">
@@ -41,11 +69,16 @@ export default async function ProfilePage() {
                 <Link href="/">
                     <Button variant="ghost" size="icon" className="hover:bg-primary/10 hover:text-primary"><ArrowLeft className="h-5 w-5" /></Button>
                 </Link>
-                <h1 className="text-xl font-bold text-foreground">Meu Perfil</h1>
+                <h1 className="text-xl font-bold text-foreground">Configurações</h1>
             </div>
 
             {/* Profile Form with Client-Side Logic (Colors, Layouts) */}
             <ProfileForm initialProfile={profile} userId={user.id} />
+
+            {/* Team Manager */}
+            {orgId && (
+                <TeamManager initialMembers={members as unknown as TeamMember[]} />
+            )}
 
             {/* Services Catalog */}
             <Card className="border-primary/10">

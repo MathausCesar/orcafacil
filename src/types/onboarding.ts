@@ -4,7 +4,8 @@ export type OnboardingData = {
     pricingTier: "autonomous" | "standard" | "premium" | null;
     businessName: string;
     phone: string;
-    cnpj: string;
+    documentType: "cpf" | "cnpj";
+    document: string;
     email: string;
     logoUrl: string | null;
 };
@@ -15,7 +16,8 @@ export const INITIAL_ONBOARDING_DATA: OnboardingData = {
     pricingTier: null,
     businessName: "",
     phone: "",
-    cnpj: "",
+    documentType: "cpf",
+    document: "",
     email: "",
     logoUrl: null,
 };

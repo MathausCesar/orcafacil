@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { getActiveOrganizationId } from '@/lib/get-active-organization'
 
 export interface ItemFolder {
     id: string
@@ -19,10 +20,16 @@ export async function getFolders() {
         return { error: 'Usuário não autenticado' }
     }
 
+    const orgId = await getActiveOrganizationId()
+
+    if (!orgId) {
+        return { error: 'No active organization found' }
+    }
+
     const { data, error } = await supabase
         .from('item_folders')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('organization_id', orgId)
         .order('created_at', { ascending: false })
 
     if (error) {
@@ -47,10 +54,17 @@ export async function createFolder(formData: FormData) {
         return { error: 'Nome da pasta é obrigatório' }
     }
 
+    const orgId = await getActiveOrganizationId()
+
+    if (!orgId) {
+        return { error: 'No active organization found' }
+    }
+
     const { data, error } = await supabase
         .from('item_folders')
         .insert({
-            user_id: user.id,
+            user_id: user.id, // Keeping user_id for original creator reference
+            organization_id: orgId,
             name,
             color
         })
@@ -80,6 +94,12 @@ export async function updateFolder(id: string, formData: FormData) {
         return { error: 'Nome da pasta é obrigatório' }
     }
 
+    const orgId = await getActiveOrganizationId()
+
+    if (!orgId) {
+        return { error: 'No active organization found' }
+    }
+
     const { data, error } = await supabase
         .from('item_folders')
         .update({
@@ -87,7 +107,7 @@ export async function updateFolder(id: string, formData: FormData) {
             color
         })
         .eq('id', id)
-        .eq('user_id', user.id)
+        .eq('organization_id', orgId)
         .select()
         .single()
 
@@ -107,11 +127,17 @@ export async function deleteFolder(id: string) {
         return { error: 'Usuário não autenticado' }
     }
 
+    const orgId = await getActiveOrganizationId()
+
+    if (!orgId) {
+        return { error: 'No active organization found' }
+    }
+
     const { error } = await supabase
         .from('item_folders')
         .delete()
         .eq('id', id)
-        .eq('user_id', user.id)
+        .eq('organization_id', orgId)
 
     if (error) {
         return { error: error.message }

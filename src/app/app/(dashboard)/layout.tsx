@@ -6,6 +6,7 @@ import { SupportWidget } from '@/components/support/support-widget'
 import { createClient } from '@/lib/supabase/server'
 import { UpgradeBanner } from '@/components/upgrade-banner'
 import { PwaInstallPrompt } from '@/components/pwa-install-prompt'
+import { getActiveOrganizationId } from '@/lib/get-active-organization'
 
 export default async function DashboardLayout({
     children,
@@ -34,13 +35,15 @@ export default async function DashboardLayout({
 
     const isFree = !profile?.plan || profile.plan === 'free'
 
+    const orgId = await getActiveOrganizationId()
+
     // Contagem de orçamentos para o gatilho de escassez no Banner
     let quotesUsed = 0
-    if (isFree) {
+    if (isFree && orgId) {
         const { count } = await supabase
             .from('quotes')
             .select('id', { count: 'exact', head: true })
-            .eq('user_id', user.id)
+            .eq('organization_id', orgId)
         quotesUsed = count || 0
     }
 

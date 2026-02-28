@@ -47,7 +47,8 @@ export function LoadingSuccess() {
                 {
                     businessName: data.businessName,
                     phone: data.phone,
-                    cnpj: data.cnpj,
+                    documentType: data.documentType,
+                    document: data.document,
                     email: data.email,
                     logoUrl: data.logoUrl
                 }

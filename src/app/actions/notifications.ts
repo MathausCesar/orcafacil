@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { getActiveOrganizationId } from '@/lib/get-active-organization'
 
 export async function getNotifications() {
     const supabase = await createClient()
@@ -9,15 +10,19 @@ export async function getNotifications() {
 
     if (!user) return []
 
+    const orgId = await getActiveOrganizationId()
+
+    if (!orgId) return []
+
     // Check for inactive quotes first (Lazy Trigger)
-    await checkInactiveQuotes(user.id)
+    await checkInactiveQuotes(user.id, orgId)
     // Check for expiring quotes (Lazy Trigger)
-    await checkExpiringQuotes(user.id)
+    await checkExpiringQuotes(user.id, orgId)
 
     const { data } = await supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('organization_id', orgId)
         .order('created_at', { ascending: false })
         .limit(20)
 
@@ -39,16 +44,20 @@ export async function markAllAsRead() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
+    const orgId = await getActiveOrganizationId()
+
+    if (!orgId) return
+
     await supabase
         .from('notifications')
         .update({ read: true })
-        .eq('user_id', user.id)
+        .eq('organization_id', orgId)
         .eq('read', false)
 
     revalidatePath('/')
 }
 
-async function checkInactiveQuotes(userId: string) {
+async function checkInactiveQuotes(userId: string, orgId: string) {
     const supabase = await createClient()
 
     // 1. Get active quotes (pending or sent)
@@ -56,7 +65,7 @@ async function checkInactiveQuotes(userId: string) {
         .from('quotes')
         .select('id, client_name, updated_at, created_at, status')
         .in('status', ['pending', 'sent'])
-        .eq('user_id', userId)
+        .eq('organization_id', orgId)
 
     if (!quotes) return
 
@@ -85,12 +94,13 @@ async function checkInactiveQuotes(userId: string) {
                     .select('id', { count: 'exact', head: true })
                     .eq('link', `/quotes/${quote.id}`)
                     .ilike('title', `%${titleKey}%`)
-                    .eq('user_id', userId)
+                    .eq('organization_id', orgId)
 
                 if (count === 0) {
                     // Create notification
                     await supabase.from('notifications').insert({
-                        user_id: userId,
+                        user_id: userId, // Keep explicit target user
+                        organization_id: orgId,
                         title: `Alerta: ${titleKey}`,
                         message: `O orçamento para ${quote.client_name} não é atualizado há ${diffDays} dias.`,
                         link: `/quotes/${quote.id}`,
@@ -102,7 +112,7 @@ async function checkInactiveQuotes(userId: string) {
     }
 }
 
-async function checkExpiringQuotes(userId: string) {
+async function checkExpiringQuotes(userId: string, orgId: string) {
     const supabase = await createClient()
 
     // Get quotes in analysis with a valid_until date
@@ -111,7 +121,7 @@ async function checkExpiringQuotes(userId: string) {
         .select('id, client_name, valid_until')
         .in('status', ['pending', 'sent', 'draft'])
         .not('valid_until', 'is', null)
-        .eq('user_id', userId)
+        .eq('organization_id', orgId)
 
     if (!quotes) return
 
@@ -149,11 +159,12 @@ async function checkExpiringQuotes(userId: string) {
             .select('id', { count: 'exact', head: true })
             .eq('link', `/quotes/${quote.id}`)
             .ilike('title', `%${titleKey}%`)
-            .eq('user_id', userId)
+            .eq('organization_id', orgId)
 
         if (count === 0) {
             await supabase.from('notifications').insert({
                 user_id: userId,
+                organization_id: orgId,
                 title: `⏰ ${titleKey}`,
                 message,
                 link: `/quotes/${quote.id}`,
@@ -165,8 +176,11 @@ async function checkExpiringQuotes(userId: string) {
 
 export async function createNotification(userId: string, title: string, message: string, link: string, type: 'info' | 'success' | 'warning' | 'alert' = 'info') {
     const supabase = await createClient()
+    const orgId = await getActiveOrganizationId()
+
     await supabase.from('notifications').insert({
         user_id: userId,
+        organization_id: orgId || null,
         title,
         message,
         link,

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CreateClientDialog } from '@/components/clients/create-client-dialog'
 import { ClientCardExpandable } from '@/components/clients/client-card-expandable'
+import { getActiveOrganizationId } from '@/lib/get-active-organization'
 
 export default async function ClientsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
     const { q } = await searchParams
@@ -16,10 +17,17 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
         redirect('/login')
     }
 
+    const orgId = await getActiveOrganizationId()
+
+    if (!orgId) {
+        // Fallback to error state or auto creation
+        return <div className="p-8 text-center">Nenhuma organização encontrada.</div>
+    }
+
     let query = supabase
         .from('clients')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('organization_id', orgId)
         .order('name')
 
     if (q) {

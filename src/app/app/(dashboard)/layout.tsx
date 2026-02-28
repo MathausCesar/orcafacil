@@ -5,6 +5,7 @@ import { DesktopSidebar } from '@/components/layout/desktop-sidebar'
 import { SupportWidget } from '@/components/support/support-widget'
 import { createClient } from '@/lib/supabase/server'
 import { UpgradeBanner } from '@/components/upgrade-banner'
+import { PwaInstallPrompt } from '@/components/pwa-install-prompt'
 
 export default async function DashboardLayout({
     children,
@@ -67,8 +68,11 @@ export default async function DashboardLayout({
                 <BottomNav />
             </div>
 
-            {/* Floating Support Widget - Rendered globally for logged in providers */}
+            {/* Floating Support Widget */}
             <SupportWidget />
+
+            {/* PWA Install Prompt — aparece no celular, fora do app instalado */}
+            <PwaInstallPrompt />
         </div>
     )
 }

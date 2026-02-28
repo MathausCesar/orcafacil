@@ -56,7 +56,7 @@ export function PricingSection() {
                             </li>
                             <li className="flex items-start gap-3">
                                 <Check className="h-5 w-5 text-emerald-500 shrink-0" />
-                                <span className="text-zinc-300 text-sm">Painel Kanban padrão</span>
+                                <span className="text-zinc-300 text-sm">Dashboard de Controle</span>
                             </li>
                             <li className="flex items-start gap-3 opacity-40">
                                 <X className="h-5 w-5 text-zinc-500 shrink-0" />

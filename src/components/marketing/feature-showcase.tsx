@@ -30,7 +30,7 @@ const features = [
     },
     {
         title: "Dashboard de Controle",
-        description: "Gerencie tudo num pipeline estilo Kanban. Saiba exatamente quanto dinheiro está em propostas, quanto foi aprovado e seja notificado a cada passo.",
+        description: "Dashboard inteligente com cards de resumo. Acompanhe em tempo real: propostas em análise, serviços aprovados, em execução e concluídos.",
         icon: Settings2,
         highlight: "Visão de negócio."
     }

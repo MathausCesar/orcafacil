@@ -18,7 +18,7 @@ export default function MarketingPage() {
         <main className="min-h-screen bg-zinc-950 flex flex-col antialiased selection:bg-emerald-500 selection:text-white font-sans text-zinc-50">
             {/* Minimalist Sticky Nav */}
             <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-zinc-950/80 backdrop-blur-md border-b border-white/5">
-                <Link href="/" className="relative h-8 w-32 flex items-center">
+                <Link href="/" className="relative h-12 w-48 flex items-center">
                     <Image
                         src="/logo/logo.png"
                         alt="Zacly"

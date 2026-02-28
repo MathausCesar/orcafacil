@@ -106,8 +106,8 @@ export function QuoteFilters() {
                                     type="button"
                                     onClick={() => apply({ status: opt.value })}
                                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${currentStatus === opt.value
-                                            ? 'bg-primary text-primary-foreground border-primary'
-                                            : 'bg-muted/50 text-muted-foreground border-transparent hover:border-primary/30 hover:text-foreground'
+                                        ? 'bg-primary text-primary-foreground border-primary'
+                                        : 'bg-muted/50 text-muted-foreground border-transparent hover:border-primary/30 hover:text-foreground'
                                         }`}
                                 >
                                     {opt.label}
@@ -119,23 +119,23 @@ export function QuoteFilters() {
                     {/* Date Range */}
                     <div className="space-y-2">
                         <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Período</Label>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="min-w-0">
                                 <Label className="text-xs text-muted-foreground mb-1 block">De</Label>
                                 <Input
                                     type="date"
                                     value={currentFrom}
                                     onChange={(e) => apply({ from: e.target.value })}
-                                    className="h-9 text-sm"
+                                    className="h-9 text-sm w-full"
                                 />
                             </div>
-                            <div>
+                            <div className="min-w-0">
                                 <Label className="text-xs text-muted-foreground mb-1 block">Até</Label>
                                 <Input
                                     type="date"
                                     value={currentTo}
                                     onChange={(e) => apply({ to: e.target.value })}
-                                    className="h-9 text-sm"
+                                    className="h-9 text-sm w-full"
                                 />
                             </div>
                         </div>
@@ -153,8 +153,8 @@ export function QuoteFilters() {
                                     type="button"
                                     onClick={() => apply({ sort: opt.value })}
                                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${currentSort === opt.value
-                                            ? 'bg-primary text-primary-foreground border-primary'
-                                            : 'bg-muted/50 text-muted-foreground border-transparent hover:border-primary/30 hover:text-foreground'
+                                        ? 'bg-primary text-primary-foreground border-primary'
+                                        : 'bg-muted/50 text-muted-foreground border-transparent hover:border-primary/30 hover:text-foreground'
                                         }`}
                                 >
                                     {opt.label}

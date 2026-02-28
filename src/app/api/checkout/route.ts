@@ -46,6 +46,11 @@ export async function POST(req: NextRequest) {
             ? process.env.NEXT_PUBLIC_APP_URL
             : origin || 'https://app.zacly.com.br'
 
+        // Mensal = pagamento avulso (sem renovação automática)
+        // Anual  = assinatura recorrente anual
+        const isMonthly = plan === "monthly"
+        const checkoutMode = isMonthly ? "payment" : "subscription"
+
         // Criar a Sessão de Checkout
         const sessionPayload: any = {
             payment_method_types: ["card"],
@@ -55,12 +60,13 @@ export async function POST(req: NextRequest) {
                     quantity: 1,
                 },
             ],
-            mode: "subscription",
+            mode: checkoutMode,
             success_url: `${baseUrl}/?success=true`,
             cancel_url: `${baseUrl}/pricing?canceled=true`,
-            client_reference_id: user.id, // Fundamental para o nosso Webhook saber de quem é
+            client_reference_id: user.id,
             metadata: {
                 userId: user.id,
+                plan_type: isMonthly ? "pro_monthly" : "pro_yearly",
             },
         };
 

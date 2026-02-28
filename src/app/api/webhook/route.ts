@@ -43,10 +43,13 @@ export async function POST(req: Request) {
             case "checkout.session.completed": {
                 const customerId = session.customer as string;
                 const userId = session.client_reference_id || session.metadata?.userId;
+                // Lê o plan_type que definimos no metadata durante o checkout
+                const planType = session.metadata?.plan_type as "pro_monthly" | "pro_yearly" | undefined;
 
-                // Buscar a subscription para saber qual priceId foi assinado
-                let plan: "pro_monthly" | "pro_yearly" = "pro_monthly";
-                if (session.subscription) {
+                let plan: "pro_monthly" | "pro_yearly" = planType || "pro_monthly";
+
+                // Para assinaturas (anual), confirmar pelo price_id como fallback
+                if (!planType && session.subscription) {
                     const subscription = await stripe.subscriptions.retrieve(session.subscription);
                     const priceId = subscription.items.data[0]?.price?.id || "";
                     plan = getPlanFromPriceId(priceId);

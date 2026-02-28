@@ -17,78 +17,104 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f9f9ef;
-            color: #27272a;
+            background-color: #09090b;
+            color: #fafafa;
             line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .wrapper {
+            padding: 40px 20px;
         }
 
         .container {
             max-width: 600px;
-            margin: 40px auto;
-            background-color: #ffffff;
-            border-radius: 16px;
+            margin: 0 auto;
+            background-color: #18181b;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 10px 25px rgba(22, 89, 82, 0.05);
-            border: 1px solid #f4f4f5;
+            border: 1px solid #27272a;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
         .header {
-            background-color: #165952;
-            padding: 40px 30px;
+            padding: 40px 30px 20px;
             text-align: center;
         }
 
+        .logo-text {
+            color: #fafafa;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin: 0;
+        }
+
+        .accent-dot {
+            color: #36cba5;
+        }
+
         .content {
-            padding: 40px 30px;
+            padding: 20px 40px 40px;
         }
 
         .title {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 700;
-            color: #165952;
+            color: #fafafa;
             margin-bottom: 16px;
             letter-spacing: -0.02em;
         }
 
         .text {
             font-size: 16px;
-            color: #52525b;
+            color: #a1a1aa;
             margin-bottom: 24px;
+        }
+
+        .highlight {
+            color: #e4e4e7;
+            font-weight: 600;
         }
 
         .cta-container {
             text-align: center;
-            margin: 32px 0;
+            margin: 36px 0;
         }
 
         .btn {
             display: inline-block;
-            background-color: #165952;
-            color: #ffffff;
+            background-color: #fafafa;
+            color: #09090b;
             text-decoration: none;
             font-weight: 600;
-            font-size: 16px;
-            padding: 16px 32px;
+            font-size: 15px;
+            padding: 14px 28px;
             border-radius: 8px;
             transition: background-color 0.2s;
-            box-shadow: 0 4px 12px rgba(22, 89, 82, 0.2);
         }
 
         .btn:hover {
-            background-color: #0f403b;
+            background-color: #e4e4e7;
         }
 
         .divider {
             height: 1px;
-            background-color: #f4f4f5;
+            background-color: #27272a;
             margin: 32px 0;
+        }
+
+        .slogan {
+            font-weight: 600;
+            color: #e4e4e7;
+            font-size: 15px;
         }
 
         .footer {
             text-align: center;
-            padding: 0 30px 40px;
-            color: #a1a1aa;
-            font-size: 14px;
+            padding: 0 40px 40px;
+            color: #71717a;
+            font-size: 13px;
         }
 
         .footer a {
@@ -100,33 +126,34 @@
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <h1 style="color: #ffffff; font-size: 32px; margin: 0; letter-spacing: -0.02em;">Zacly</h1>
-        </div>
-
-        <div class="content">
-            <h2 class="title">Recuperação de Senha</h2>
-            <p class="text">Olá,</p>
-            <p class="text">Recebemos uma solicitação para redefinir a senha da sua conta na <strong>Zacly</strong>.</p>
-            <p class="text">Para criar uma nova senha, clique no botão abaixo:</p>
-
-            <div class="cta-container">
-                <!-- A variável {{ .ConfirmationURL }} é utilizada nativamente pelo Supabase para reset de senha -->
-                <a href="{{ .ConfirmationURL }}" class="btn">Redefinir minha senha</a>
+    <div class="wrapper">
+        <div class="container">
+            <div class="header">
+                <h1 class="logo-text">Zacly<span class="accent-dot">.</span></h1>
             </div>
+            <div class="content">
+                <h2 class="title">Recuperação de Senha</h2>
+                <p class="text">Olá,</p>
+                <p class="text">Recebemos uma solicitação para redefinir a senha da sua conta na <span
+                        class="highlight">Zacly</span>.</p>
+                <p class="text">Para criar uma nova senha de forma segura, clique no botão abaixo e você será
+                    redirecionado para o aplicativo:</p>
 
-            <p class="text" style="font-size: 14px; margin-bottom: 0;">Se você não fez essa solicitação, pode ignorar
-                este e-mail. Sua senha atual continuará a mesma.</p>
+                <div class="cta-container">
+                    <a href="https://app.zacly.com.br/auth/callback?token_hash={{ .TokenHash }}&type=recovery"
+                        class="btn">Redefinir minha senha</a>
+                </div>
 
-            <div class="divider"></div>
+                <p class="text" style="font-size: 13px; margin-bottom: 0; color: #71717a;">Se você não solicitou isso,
+                    você pode ignorar este e-mail. A sua senha atual permanecerá a mesma.</p>
 
-            <p class="text" style="font-weight: 600; color: #165952;">A simplicidade que seu negócio merece.</p>
-        </div>
-
-        <div class="footer">
-            <p>&copy; 2026 Zacly. Todos os direitos reservados.</p>
-            <p><a href="{{ .SiteURL }}">Acessar a Plataforma</a></p>
+                <div class="divider"></div>
+                <p class="slogan">A simplicidade que seu negócio merece.</p>
+            </div>
+            <div class="footer">
+                <p style="margin-bottom: 8px;">&copy; 2026 Zacly. Todos os direitos reservados.</p>
+                <p><a href="https://app.zacly.com.br">Acessar a Plataforma</a></p>
+            </div>
         </div>
     </div>
 </body>

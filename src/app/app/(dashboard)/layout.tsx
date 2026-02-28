@@ -33,6 +33,16 @@ export default async function DashboardLayout({
 
     const isFree = !profile?.plan || profile.plan === 'free'
 
+    // Contagem de orçamentos para o gatilho de escassez no Banner
+    let quotesUsed = 0
+    if (isFree) {
+        const { count } = await supabase
+            .from('quotes')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+        quotesUsed = count || 0
+    }
+
 
 
     return (
@@ -47,7 +57,7 @@ export default async function DashboardLayout({
             {/* Main Content Area */}
             <main className="flex-1 transition-all duration-300 lg:pl-64">
                 <div className="container mx-auto p-4 md:p-8 max-w-2xl lg:max-w-7xl pb-24 lg:pb-8">
-                    {isFree && <UpgradeBanner />}
+                    {isFree && <UpgradeBanner quotesUsed={quotesUsed} quotesLimit={5} />}
                     {children}
                 </div>
             </main>

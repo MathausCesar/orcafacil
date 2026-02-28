@@ -1,10 +1,43 @@
-import { Button } from "@/components/ui/button"
-import { CheckCircle2, Zap } from "lucide-react"
+"use client"
 
-// ATENÇÃO: Os botões por enquanto não vão realizar o checkout até configurarmos a ação e as chaves do Stripe.
-// Vamos preparar a interface 100% pronta.
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { CheckCircle2, Zap, Loader2 } from "lucide-react"
+import { toast } from "sonner"
+
+async function redirectToCheckout(plan: "monthly" | "yearly") {
+    const formData = new FormData()
+    formData.append("plan", plan)
+
+    const response = await fetch("/api/checkout", {
+        method: "POST",
+        body: formData,
+    })
+
+    if (response.redirected) {
+        window.location.href = response.url
+        return
+    }
+
+    if (!response.ok) {
+        const error = await response.text()
+        throw new Error(error || "Erro ao iniciar checkout.")
+    }
+}
 
 export default function PricingPage() {
+    const [loading, setLoading] = useState<"monthly" | "yearly" | null>(null)
+
+    const handleCheckout = async (plan: "monthly" | "yearly") => {
+        setLoading(plan)
+        try {
+            await redirectToCheckout(plan)
+        } catch (err: any) {
+            toast.error(err.message || "Não foi possível abrir o checkout. Tente novamente.")
+            setLoading(null)
+        }
+    }
+
     return (
         <div className="max-w-5xl mx-auto py-12 px-4 sm:px-6">
             <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
@@ -12,7 +45,7 @@ export default function PricingPage() {
                     Profissionalize suas vendas
                 </h1>
                 <p className="text-lg text-muted-foreground">
-                    Remova nossa marca d'água e libere orçamentos ilimitados para fechar negócios com a melhor apresentação do mercado.
+                    Remova nossa marca d&apos;água e libere orçamentos ilimitados para fechar negócios com a melhor apresentação do mercado.
                 </p>
             </div>
 
@@ -30,7 +63,7 @@ export default function PricingPage() {
 
                     <ul className="space-y-4 mb-8">
                         {[
-                            'Orçamentos criados ilimitados',
+                            'Orçamentos ilimitados',
                             'Remoção da marca d\'água Zacly',
                             'Suporte prioritário no WhatsApp',
                             'Acesso a todas as customizações de Layout',
@@ -42,12 +75,14 @@ export default function PricingPage() {
                         ))}
                     </ul>
 
-                    <form action="/api/checkout" method="POST">
-                        <input type="hidden" name="plan" value="monthly" />
-                        <Button type="button" variant="outline" className="w-full font-bold h-12 border-2 hover:bg-muted">
-                            Assinar Mensal
-                        </Button>
-                    </form>
+                    <Button
+                        onClick={() => handleCheckout("monthly")}
+                        disabled={loading !== null}
+                        variant="outline"
+                        className="w-full font-bold h-12 border-2 hover:bg-muted"
+                    >
+                        {loading === "monthly" ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Abrindo...</> : "Assinar Mensal"}
+                    </Button>
                 </div>
 
                 {/* Plano Anual - Destaque */}
@@ -81,18 +116,19 @@ export default function PricingPage() {
                         ))}
                     </ul>
 
-                    <form action="/api/checkout" method="POST">
-                        <input type="hidden" name="plan" value="yearly" />
-                        <Button type="button" className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold h-12">
-                            Assinar Anual com Desconto
-                        </Button>
-                    </form>
+                    <Button
+                        onClick={() => handleCheckout("yearly")}
+                        disabled={loading !== null}
+                        className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold h-12"
+                    >
+                        {loading === "yearly" ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Abrindo...</> : "Assinar Anual com Desconto"}
+                    </Button>
                 </div>
 
             </div>
 
             <div className="text-center mt-12 text-sm text-muted-foreground">
-                Dúvidas? <a href="#" className="underline font-medium hover:text-foreground">Fale com a gente no WhatsApp</a>. Pagamento 100% seguro via Stripe.
+                Dúvidas? <a href="https://wa.me/55" target="_blank" rel="noreferrer" className="underline font-medium hover:text-foreground">Fale com a gente no WhatsApp</a>. Pagamento 100% seguro via Stripe.
             </div>
         </div>
     )

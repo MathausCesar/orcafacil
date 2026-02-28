@@ -5,6 +5,12 @@ import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = 'force-dynamic';
 
+// Mapeia os Price IDs do Stripe para o nome de plano interno
+function getPlanFromPriceId(priceId: string): "pro_monthly" | "pro_yearly" {
+    if (priceId === process.env.STRIPE_PRICE_YEARLY) return "pro_yearly";
+    return "pro_monthly"; // fallback
+}
+
 export async function POST(req: Request) {
     // Usamos o Service Role Key para ignorar o RLS ao atualizar o BD pelo Webhook
     const supabaseAdmin = createClient(
@@ -25,6 +31,7 @@ export async function POST(req: Request) {
             process.env.STRIPE_WEBHOOK_SECRET!
         );
     } catch (error: any) {
+        console.error("Webhook signature error:", error.message);
         return new NextResponse(`Webhook Error: ${error.message}`, { status: 400 });
     }
 
@@ -32,58 +39,65 @@ export async function POST(req: Request) {
 
     try {
         switch (event.type) {
-            case "checkout.session.completed":
-                // Primeira assinatura concluída!
+
+            case "checkout.session.completed": {
                 const customerId = session.customer as string;
                 const userId = session.client_reference_id || session.metadata?.userId;
 
-                // Precisamos saber se ele comprou mensal ou anual baseando-se no price_id
-                // Para simplificar no checkout.session.completed, podemos olhar a subscription ligada
+                // Buscar a subscription para saber qual priceId foi assinado
+                let plan: "pro_monthly" | "pro_yearly" = "pro_monthly";
+                if (session.subscription) {
+                    const subscription = await stripe.subscriptions.retrieve(session.subscription);
+                    const priceId = subscription.items.data[0]?.price?.id || "";
+                    plan = getPlanFromPriceId(priceId);
+                }
+
                 if (userId) {
                     await supabaseAdmin
                         .from("profiles")
                         .update({
                             stripe_customer_id: customerId,
                             subscription_status: "active",
-                            // Na vida real você cruza o ID do Stripe para saber se é pro_monthly ou pro_yearly. Vamos definir pro_monthly como fallback.
-                            plan: "pro_monthly",
+                            plan,
                         })
                         .eq("id", userId);
                 }
                 break;
+            }
 
-            case "invoice.payment_succeeded":
-                // Pagamento recorrente passou
+            case "invoice.payment_succeeded": {
                 const invoiceCustomerId = session.customer as string;
                 await supabaseAdmin
                     .from("profiles")
                     .update({ subscription_status: "active" })
                     .eq("stripe_customer_id", invoiceCustomerId);
                 break;
+            }
 
-            case "invoice.payment_failed":
-                // Pagamento recorrente falhou
+            case "invoice.payment_failed": {
                 const failedCustomerId = session.customer as string;
                 await supabaseAdmin
                     .from("profiles")
                     .update({ subscription_status: "past_due" })
                     .eq("stripe_customer_id", failedCustomerId);
                 break;
+            }
 
-            case "customer.subscription.deleted":
-                // Assinatura cancelada
+            case "customer.subscription.deleted": {
                 const canceledCustomerId = session.customer as string;
                 await supabaseAdmin
                     .from("profiles")
                     .update({
                         subscription_status: "canceled",
-                        plan: "free" // Volta pra free
+                        plan: "free",
                     })
                     .eq("stripe_customer_id", canceledCustomerId);
                 break;
+            }
 
             default:
-                console.log(`Unhandled event type ${event.type}`);
+                // Eventos não tratados: apenas logar
+                console.log(`Unhandled Stripe event: ${event.type}`);
         }
     } catch (error: any) {
         console.error("Erro ao atualizar banco de dados no Webhook:", error);

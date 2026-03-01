@@ -30,13 +30,17 @@ export async function createQuote(formData: FormData) {
     const userPlan = profile?.plan || 'free'
 
     if (userPlan === 'free') {
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
         const { count, error: countError } = await supabase
             .from('quotes')
             .select('*', { count: 'exact', head: true })
             .eq('organization_id', orgId)
+            .gte('created_at', firstDayOfMonth.toISOString())
 
         if (!countError && count !== null && count >= 5) {
-            return { error: 'LIMIT_REACHED', message: 'Você atingiu o limite de 5 orçamentos grátis.' }
+            return { error: 'LIMIT_REACHED', message: 'Você atingiu o limite de 5 orçamentos grátis neste mês.' }
         }
     }
     // ----------------------

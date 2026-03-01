@@ -40,10 +40,14 @@ export default async function DashboardLayout({
     // Contagem de orçamentos para o gatilho de escassez no Banner
     let quotesUsed = 0
     if (isFree && orgId) {
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
         const { count } = await supabase
             .from('quotes')
             .select('id', { count: 'exact', head: true })
             .eq('organization_id', orgId)
+            .gte('created_at', firstDayOfMonth.toISOString())
         quotesUsed = count || 0
     }
 

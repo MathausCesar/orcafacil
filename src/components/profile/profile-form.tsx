@@ -23,9 +23,19 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
     const [themeColor, setThemeColor] = useState(initialProfile?.theme_color || '#0D9B5C')
     const [layoutStyle, setLayoutStyle] = useState(initialProfile?.layout_style || 'modern')
     const [logoUrl, setLogoUrl] = useState(initialProfile?.logo_url)
-    const [quoteSettings, setQuoteSettings] = useState<QuoteSettingsData | null>(
-        initialProfile?.quote_settings as QuoteSettingsData | null
-    )
+    const getInitialSettings = () => {
+        if (!initialProfile?.quote_settings) return null
+        if (typeof initialProfile.quote_settings === 'string') {
+            try {
+                return JSON.parse(initialProfile.quote_settings) as QuoteSettingsData
+            } catch (e) {
+                return null
+            }
+        }
+        return initialProfile.quote_settings as QuoteSettingsData
+    }
+
+    const [quoteSettings, setQuoteSettings] = useState<QuoteSettingsData | null>(getInitialSettings())
 
     const handleLogoChange = async (newUrl: string) => {
         setLogoUrl(newUrl)

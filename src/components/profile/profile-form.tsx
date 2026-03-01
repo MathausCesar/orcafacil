@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Save, Loader2, Wand2, Building2, LayoutTemplate, Palette, Rocket } from 'lucide-react'
 import { LogoUpload } from '@/components/profile/logo-upload'
 import { LayoutSelector } from '@/components/profile/layout-selector'
+import { QuoteSettings, QuoteSettingsData } from '@/components/profile/quote-settings'
 import { toast } from 'sonner'
 import { extractColors } from 'extract-colors'
 
@@ -22,6 +23,9 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
     const [themeColor, setThemeColor] = useState(initialProfile?.theme_color || '#0D9B5C')
     const [layoutStyle, setLayoutStyle] = useState(initialProfile?.layout_style || 'modern')
     const [logoUrl, setLogoUrl] = useState(initialProfile?.logo_url)
+    const [quoteSettings, setQuoteSettings] = useState<QuoteSettingsData | null>(
+        initialProfile?.quote_settings as QuoteSettingsData | null
+    )
 
     const handleLogoChange = async (newUrl: string) => {
         setLogoUrl(newUrl)
@@ -44,6 +48,9 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
         setLoading(true)
         formData.append('themeColor', themeColor)
         formData.append('layoutStyle', layoutStyle)
+        if (quoteSettings) {
+            formData.append('quoteSettings', JSON.stringify(quoteSettings))
+        }
 
         try {
             const result = await updateProfile(formData)
@@ -170,6 +177,13 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                             />
                         </CardContent>
                     </Card>
+
+                    {/* Componente de Configurações Avançadas de Orçamento */}
+                    <QuoteSettings
+                        settings={quoteSettings}
+                        plan={initialProfile?.plan}
+                        onChange={setQuoteSettings}
+                    />
 
                 </div>
 

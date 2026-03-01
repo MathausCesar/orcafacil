@@ -18,6 +18,7 @@ export async function updateProfile(formData: FormData) {
     const cnpj = formData.get('cnpj') as string
     const themeColor = formData.get('themeColor') as string
     const layoutStyle = formData.get('layoutStyle') as string
+    const quoteSettingsStr = formData.get('quoteSettings') as string
 
     const updateData: any = {
         business_name: businessName,
@@ -29,6 +30,13 @@ export async function updateProfile(formData: FormData) {
 
     if (themeColor) updateData.theme_color = themeColor
     if (layoutStyle) updateData.layout_style = layoutStyle
+    if (quoteSettingsStr) {
+        try {
+            updateData.quote_settings = JSON.parse(quoteSettingsStr)
+        } catch (e) {
+            console.error('Failed to parse quoteSettings', e)
+        }
+    }
 
     const { error } = await supabase
         .from('profiles')

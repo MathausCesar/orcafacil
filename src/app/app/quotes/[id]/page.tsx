@@ -124,6 +124,59 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
     const toneClasses = getToneClasses(detectedProfile.tone);
     const densityClasses = getDensityClasses(detectedProfile.density);
 
+    // Personalização de Orçamento
+    const isFree = !profile?.plan || profile?.plan === 'free';
+    const rawQuoteSettings = profile?.quote_settings as any;
+
+    const quoteSettings = isFree || !rawQuoteSettings ? {
+        logoSize: 'medium',
+        logoPosition: 'header',
+        logoAlignment: 'left',
+        footerText: ''
+    } : {
+        logoSize: rawQuoteSettings.logoSize || 'medium',
+        logoPosition: rawQuoteSettings.logoPosition || 'header',
+        logoAlignment: rawQuoteSettings.logoAlignment || 'left',
+        footerText: rawQuoteSettings.footerText || ''
+    };
+
+    const logoSizeMap: Record<string, string> = {
+        small: 'h-12 w-20',
+        medium: 'h-20 w-32',
+        large: 'h-28 w-48'
+    };
+    const logoSizeClass = logoSizeMap[quoteSettings.logoSize] || logoSizeMap.medium;
+
+    const logoAlignmentClass = quoteSettings.logoAlignment === 'center' ? 'mx-auto'
+        : quoteSettings.logoAlignment === 'right' ? 'ml-auto'
+            : 'mr-auto';
+
+    const imageObjectFitClass = quoteSettings.logoAlignment === 'center' ? 'object-center'
+        : quoteSettings.logoAlignment === 'right' ? 'object-right'
+            : 'object-left';
+
+    const logoConfig = {
+        shouldShowInHeader: quoteSettings.logoPosition === 'header',
+        shouldShowInFooter: quoteSettings.logoPosition === 'footer',
+        wrapperClass: `relative mb-4 ${logoSizeClass} ${logoAlignmentClass}`,
+        imageClass: `object-contain ${imageObjectFitClass}`
+    };
+
+    const FooterLogoAndText = () => (
+        <div className="w-full flex flex-col items-center mt-8 space-y-4">
+            {logoConfig.shouldShowInFooter && profile?.logo_url && (
+                <div className={`relative ${logoSizeClass}`}>
+                    <Image src={profile.logo_url} alt="Logo" fill className="object-contain object-center" unoptimized />
+                </div>
+            )}
+            {quoteSettings.footerText && (
+                <p className="text-sm text-center text-muted-foreground italic max-w-lg mx-auto">
+                    "{quoteSettings.footerText}"
+                </p>
+            )}
+        </div>
+    );
+
     return (
         <div
             className="force-light min-h-screen bg-slate-50 pb-20 print:bg-white print:pb-0"
@@ -174,9 +227,9 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                             {/* Modern Header */}
                             <div className="bg-[var(--theme-color)]/5 p-8 flex justify-between items-start">
                                 <div>
-                                    {profile?.logo_url && (
-                                        <div className="relative h-20 w-32 mb-4">
-                                            <Image src={profile.logo_url} alt="Logo" fill className="object-contain object-left" unoptimized />
+                                    {logoConfig.shouldShowInHeader && profile?.logo_url && (
+                                        <div className={logoConfig.wrapperClass}>
+                                            <Image src={profile.logo_url} alt="Logo" fill className={logoConfig.imageClass} unoptimized />
                                         </div>
                                     )}
                                     {profile?.business_name && <h1 className="text-2xl font-bold text-foreground">{profile.business_name}</h1>}
@@ -315,13 +368,13 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                         </div>
                                     )}
 
-                                    {/* QR Code Footer */}
                                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-slate-100">
                                         <div className="text-center sm:text-left">
                                             <p className="text-xs text-slate-400">Orçamento gerado via Zacly</p>
                                         </div>
                                         <QRCodeGenerator quoteId={quote.id} size={100} />
                                     </div>
+                                    <FooterLogoAndText />
                                 </div>
                             </div>
                         </CardContent>
@@ -335,10 +388,10 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                             {/* Executive Header — Dark, authoritative */}
                             <div className="bg-slate-900 text-white p-8 md:p-10">
                                 <div className="flex justify-between items-start">
-                                    <div>
-                                        {profile?.logo_url && (
-                                            <div className="relative h-14 w-24 mb-4">
-                                                <Image src={profile.logo_url} alt="Logo" fill className="object-contain object-left" unoptimized />
+                                    <div className="flex-1 w-full">
+                                        {logoConfig.shouldShowInHeader && profile?.logo_url && (
+                                            <div className={logoConfig.wrapperClass}>
+                                                <Image src={profile.logo_url} alt="Logo" fill className={logoConfig.imageClass} unoptimized />
                                             </div>
                                         )}
                                         <h1 className="text-lg font-semibold tracking-wide uppercase">{profile?.business_name || 'Empresa'}</h1>
@@ -448,6 +501,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     <p>Orçamento gerado via Zacly</p>
                                     <QRCodeGenerator quoteId={quote.id} size={80} />
                                 </div>
+                                <FooterLogoAndText />
                             </div>
                         </CardContent>
                     </Card>
@@ -458,14 +512,14 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                     <Card className="relative shadow-lg print:shadow-none print:border-none rounded-none border border-slate-300">
                         <CardContent className="p-10 md:p-14 space-y-8" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
                             {/* Ornamental Header */}
-                            <div className="text-center space-y-5">
-                                <div className="border-t-2 border-b border-slate-800 py-1">
+                            <div className="text-center space-y-5 flex flex-col items-center">
+                                <div className="border-t-2 border-b border-slate-800 py-1 w-full">
                                     <div className="border-t border-slate-800" />
                                 </div>
 
-                                {profile?.logo_url && (
-                                    <div className="relative h-20 w-36 mx-auto">
-                                        <Image src={profile.logo_url} alt="Logo" fill className="object-contain" unoptimized />
+                                {logoConfig.shouldShowInHeader && profile?.logo_url && (
+                                    <div className={`relative ${logoSizeClass} mx-auto mb-4`}>
+                                        <Image src={profile.logo_url} alt="Logo" fill className="object-contain object-center" unoptimized />
                                     </div>
                                 )}
                                 <h1 className="text-3xl font-normal text-slate-900 tracking-[0.2em] uppercase">{profile?.business_name}</h1>
@@ -586,6 +640,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                         Orçamento válido por {quote.valid_until ? format(new Date(quote.valid_until), "dd/MM/yyyy") : '15 dias'}
                                     </p>
                                 </div>
+                                <FooterLogoAndText />
                             </div>
 
                         </CardContent>

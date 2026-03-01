@@ -249,6 +249,7 @@ export type Database = {
                     pix_discount_percent: number | null
                     plan: string | null
                     primary_color: string | null
+                    quote_settings: Json | null
                     stripe_customer_id: string | null
                     subscription_status: string | null
                     theme_color: string | null
@@ -268,6 +269,7 @@ export type Database = {
                     pix_discount_percent?: number | null
                     plan?: string | null
                     primary_color?: string | null
+                    quote_settings?: Json | null
                     stripe_customer_id?: string | null
                     subscription_status?: string | null
                     theme_color?: string | null
@@ -287,6 +289,7 @@ export type Database = {
                     pix_discount_percent?: number | null
                     plan?: string | null
                     primary_color?: string | null
+                    quote_settings?: Json | null
                     stripe_customer_id?: string | null
                     subscription_status?: string | null
                     theme_color?: string | null

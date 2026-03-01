@@ -370,7 +370,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
 
                                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-slate-100">
                                         <div className="text-center sm:text-left">
-                                            <p className="text-xs text-slate-400">Orçamento gerado via Zacly</p>
+                                            {isFree && <p className="text-xs text-slate-400">Orçamento gerado via Zacly</p>}
                                         </div>
                                         <QRCodeGenerator quoteId={quote.id} size={100} />
                                     </div>
@@ -498,7 +498,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
 
                                 {/* Footer */}
                                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-slate-200 text-xs text-slate-400">
-                                    <p>Orçamento gerado via Zacly</p>
+                                    {isFree ? <p>Orçamento gerado via Zacly</p> : <div />}
                                     <QRCodeGenerator quoteId={quote.id} size={80} />
                                 </div>
                                 <FooterLogoAndText />

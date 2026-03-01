@@ -22,11 +22,11 @@ interface QuoteSettingsProps {
 
 export function QuoteSettings({ settings, plan, onChange }: QuoteSettingsProps) {
     const isFree = !plan || plan === 'free'
-    const currentSettings = settings || {
-        logoSize: 'medium',
-        logoPosition: 'header',
-        logoAlignment: 'left',
-        footerText: ''
+    const currentSettings: QuoteSettingsData = {
+        logoSize: settings?.logoSize || 'medium',
+        logoPosition: settings?.logoPosition || 'header',
+        logoAlignment: settings?.logoAlignment || 'left',
+        footerText: settings?.footerText || ''
     }
 
     const handleChange = (key: keyof QuoteSettingsData, value: string) => {

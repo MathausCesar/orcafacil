@@ -29,6 +29,14 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
     const [showSuccessDialog, setShowSuccessDialog] = useState(false)
     const [emailSent, setEmailSent] = useState('')
     const [acceptedTerms, setAcceptedTerms] = useState(false)
+    const [countdown, setCountdown] = useState(0)
+
+    useEffect(() => {
+        if (countdown > 0) {
+            const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
+            return () => clearTimeout(timer)
+        }
+    }, [countdown])
 
     useEffect(() => {
         const message = searchParams.get('message')
@@ -46,11 +54,16 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
             const result = await action(formData) as any
 
             if (action === signup) {
+                // Inicia cooldown preventivo de 30s
+                setCountdown(30)
+
                 if (result?.success) {
                     setEmailSent(formData.get('email') as string)
                     setShowSuccessDialog(true)
                 } else if (result?.error) {
-                    toast.error(result.error)
+                    toast.error(result?.error?.includes('rate limit') || result?.error?.includes('many requests')
+                        ? 'Muitas tentativas. Aguarde um minuto antes de tentar novamente.'
+                        : result.error)
                 }
             } else {
                 // Login action
@@ -236,8 +249,8 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                                         aria-checked={acceptedTerms}
                                         onClick={() => setAcceptedTerms((v) => !v)}
                                         className={`mt-0.5 h-5 w-5 shrink-0 rounded border-2 transition-all ${acceptedTerms
-                                                ? 'bg-emerald-500 border-emerald-500'
-                                                : 'border-zinc-600 bg-transparent hover:border-zinc-400'
+                                            ? 'bg-emerald-500 border-emerald-500'
+                                            : 'border-zinc-600 bg-transparent hover:border-zinc-400'
                                             } flex items-center justify-center`}
                                     >
                                         {acceptedTerms && (
@@ -272,10 +285,17 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                             <Button
                                 className="group h-12 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold text-base shadow-lg shadow-emerald-500/20 transition-all hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98] border border-white/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                                 type="submit"
-                                disabled={loading || (mode === 'register' && !acceptedTerms)}
+                                disabled={loading || (mode === 'register' && !acceptedTerms) || countdown > 0}
                             >
-                                <span className="mr-2">{loading ? 'Processando...' : (mode === 'login' ? 'Acessar Painel' : 'Criar Conta Grátis')}</span>
-                                {!loading && <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" />}
+                                <span className="mr-2">
+                                    {loading
+                                        ? 'Processando...'
+                                        : countdown > 0
+                                            ? `Aguarde ${countdown}s`
+                                            : (mode === 'login' ? 'Acessar Painel' : 'Criar Conta Grátis')
+                                    }
+                                </span>
+                                {!loading && countdown === 0 && <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" />}
                             </Button>
                         </form>
                     </div>

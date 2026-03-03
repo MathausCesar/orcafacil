@@ -76,16 +76,36 @@ export async function applyOnboardingKit(
 
     try {
         // 1. Fetch the user's organization_id (required by RLS policy on services table)
-        const { data: memberData, error: memberError } = await supabase
+        let { data: memberData, error: memberError } = await supabase
             .from('organization_members')
             .select('organization_id')
             .eq('user_id', userId)
             .limit(1)
             .single()
 
+        // Fallback: create organization if trigger didn't fire (e.g. old accounts)
         if (memberError || !memberData?.organization_id) {
-            console.error('Failed to find organization for user:', memberError)
-            throw new Error('Organização não encontrada. O perfil do usuário pode estar incompleto.')
+            console.warn('No organization found for user, creating one as fallback...')
+
+            const { data: newOrg, error: orgCreateError } = await supabase
+                .from('organizations')
+                .insert({ name: businessProfile?.businessName || 'Meu Workspace' })
+                .select('id')
+                .single()
+
+            if (orgCreateError || !newOrg) {
+                throw new Error('Falha ao criar organização: ' + (orgCreateError?.message || 'erro desconhecido'))
+            }
+
+            const { error: memberInsertError } = await supabase
+                .from('organization_members')
+                .insert({ user_id: userId, organization_id: newOrg.id })
+
+            if (memberInsertError) {
+                throw new Error('Falha ao vincular organização: ' + memberInsertError.message)
+            }
+
+            memberData = { organization_id: newOrg.id }
         }
 
         const organizationId = memberData.organization_id
@@ -212,6 +232,8 @@ export async function applyOnboardingKit(
 
     } catch (error) {
         console.error("Error applying onboarding kit:", error)
-        return { success: false, error }
+        // Return a serializable error message (Error objects become {} when passed through Server Actions)
+        const message = error instanceof Error ? error.message : JSON.stringify(error)
+        return { success: false, error: message }
     }
 }

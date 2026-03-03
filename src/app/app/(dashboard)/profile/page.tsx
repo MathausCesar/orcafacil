@@ -10,6 +10,7 @@ import { LogoutButton } from '@/components/auth/logout-button'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { TeamManager } from '@/components/profile/team-manager'
 import { getActiveOrganizationId } from '@/lib/get-active-organization'
+import { CancelSubscriptionButton } from '@/components/profile/cancel-subscription-button'
 
 // Type that matches the prop needed by TeamManager
 interface TeamMember {
@@ -116,8 +117,9 @@ export default async function ProfilePage() {
                 </CardContent>
             </Card>
 
-            <div className="mt-8">
+            <div className="mt-8 space-y-4">
                 <LogoutButton />
+                <CancelSubscriptionButton isFree={!profile?.plan || profile.plan === 'free'} />
             </div>
         </div >
     )

@@ -150,7 +150,7 @@ export function PricingSection() {
                                 <span className="text-lg font-bold text-zinc-500 mb-1">R$</span>
                                 <span className="font-black text-4xl text-white">49<span className="text-2xl text-zinc-500">,90</span></span>
                             </div>
-                            <p className="text-xs text-zinc-500 mt-1">Pagamento avulso • sem renovação automática</p>
+                            <p className="text-xs text-zinc-500 mt-1">Assinatura mensal • cancele quando quiser</p>
                         </div>
 
                         <ul className="space-y-4 mb-8 flex-1">

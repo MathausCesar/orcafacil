@@ -46,10 +46,10 @@ export async function POST(req: NextRequest) {
             ? process.env.NEXT_PUBLIC_APP_URL
             : origin || 'https://app.zacly.com.br'
 
-        // Mensal = pagamento avulso (sem renovação automática)
+        // Mensal = assinatura recorrente mensal
         // Anual  = assinatura recorrente anual
         const isMonthly = plan === "monthly"
-        const checkoutMode = isMonthly ? "payment" : "subscription"
+        const checkoutMode = "subscription"
 
         // Criar a Sessão de Checkout
         const sessionPayload: any = {

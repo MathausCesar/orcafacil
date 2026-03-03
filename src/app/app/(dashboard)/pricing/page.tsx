@@ -75,7 +75,7 @@ export default function PricingPage() {
                     <div className="mb-6">
                         <h3 className="text-lg font-bold text-foreground">Mensal</h3>
                         <p className="text-sm text-muted-foreground mt-1">
-                            Pague só um mês, sem comprometimento.
+                            Flexibilidade total, renova todo mês.
                         </p>
                     </div>
 
@@ -86,7 +86,7 @@ export default function PricingPage() {
                             </span>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                            Pagamento único • sem renovação automática
+                            Renovação automática mensal • cancele a qualquer momento
                         </p>
                     </div>
 
@@ -106,7 +106,7 @@ export default function PricingPage() {
                     >
                         {loading === "monthly"
                             ? <><Loader2 className="h-4 w-4 animate-spin" /> Abrindo...</>
-                            : "Comprar 1 mês"
+                            : "Assinar Mensal"
                         }
                     </button>
                 </div>

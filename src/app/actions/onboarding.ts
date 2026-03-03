@@ -54,7 +54,7 @@ export async function applyOnboardingKit(
     categoryId: string,
     specialties: string[],
     pricingTier: PricingTier,
-    businessProfile?: { businessName?: string; phone?: string; documentType?: "cpf" | "cnpj"; document?: string; email?: string; logoUrl?: string | null }
+    businessProfile?: { businessName?: string; phone?: string; documentType?: "cpf" | "cnpj"; document?: string; email?: string; logoUrl?: string | null; themeColor?: string | null }
 ) {
     const supabase = await createClient()
 
@@ -187,9 +187,11 @@ export async function applyOnboardingKit(
         if (businessProfile) {
             if (businessProfile.businessName) profileDataToUpsert.business_name = businessProfile.businessName;
             if (businessProfile.phone) profileDataToUpsert.phone = businessProfile.phone;
-            if (businessProfile.document) profileDataToUpsert.cnpj = businessProfile.document; // Still maps to profile cnpj (legacy) 
+            if (businessProfile.document) profileDataToUpsert.cnpj = businessProfile.document;
             if (businessProfile.email) profileDataToUpsert.email = businessProfile.email;
             if (businessProfile.logoUrl) profileDataToUpsert.logo_url = businessProfile.logoUrl;
+            // Save theme color extracted from logo to personalize quote appearance
+            if (businessProfile.themeColor) profileDataToUpsert.theme_color = businessProfile.themeColor;
         }
 
         const { error: upsertError } = await supabase

@@ -8,6 +8,7 @@ export type OnboardingData = {
     document: string;
     email: string;
     logoUrl: string | null;
+    themeColor: string | null;
 };
 
 export const INITIAL_ONBOARDING_DATA: OnboardingData = {
@@ -20,4 +21,5 @@ export const INITIAL_ONBOARDING_DATA: OnboardingData = {
     document: "",
     email: "",
     logoUrl: null,
+    themeColor: null,
 };

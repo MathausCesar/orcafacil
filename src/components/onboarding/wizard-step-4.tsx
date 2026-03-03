@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState } from "react";
 import { useOnboarding } from "@/components/onboarding/onboarding-context";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { LogoUpload } from "@/components/profile/logo-upload";
+import { extractColors } from "extract-colors";
 
 interface WizardStep4Props {
     userId: string;
@@ -18,17 +18,32 @@ interface WizardStep4Props {
 export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
     const { data, updateData, nextStep, prevStep } = useOnboarding();
 
-    // Initialize state from context, but if context is empty, use default overrides
     const [businessName, setBusinessName] = useState(data.businessName || "");
     const [phone, setPhone] = useState(data.phone || "");
     const [documentType, setDocumentType] = useState<"cpf" | "cnpj">(data.documentType || "cpf");
     const [document, setDocument] = useState(data.document || "");
     const [email, setEmail] = useState(data.email || initialEmail);
     const [logoUrl, setLogoUrl] = useState(data.logoUrl || null);
+    const [themeColor, setThemeColor] = useState<string | null>(data.themeColor || null);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Sync state whenever fields change to keep context updated
+    // Extract dominant color from logo when uploaded
+    const handleLogoUploaded = async (url: string) => {
+        setLogoUrl(url);
+        try {
+            const colors = await extractColors(url, { crossOrigin: 'anonymous' });
+            if (colors && colors.length > 0) {
+                // Pick the most vibrant/saturated color (avoid near-whites and near-blacks)
+                const filtered = colors.filter(c => c.lightness > 0.15 && c.lightness < 0.85);
+                const best = filtered.length > 0 ? filtered[0] : colors[0];
+                setThemeColor(best.hex);
+            }
+        } catch (e) {
+            console.error("Color extraction failed during onboarding:", e);
+        }
+    };
+
     const handleContinue = () => {
         setIsSubmitting(true);
         updateData({
@@ -37,10 +52,10 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
             documentType,
             document,
             email,
-            logoUrl
+            logoUrl,
+            themeColor,
         });
 
-        // Brief delay before next step
         setTimeout(() => nextStep(), 300);
     };
 
@@ -58,9 +73,18 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
                         <LogoUpload
                             currentLogoUrl={logoUrl}
                             userId={userId}
-                            onUploadComplete={(url) => setLogoUrl(url)}
+                            onUploadComplete={handleLogoUploaded}
                         />
-                        <p className="text-[10px] text-muted-foreground text-center mt-3 max-w-[120px]">
+                        {themeColor && (
+                            <div className="flex items-center gap-2 mt-3">
+                                <div
+                                    className="h-4 w-4 rounded-full border border-border shadow"
+                                    style={{ backgroundColor: themeColor }}
+                                />
+                                <p className="text-[10px] text-muted-foreground">Cor da marca detectada</p>
+                            </div>
+                        )}
+                        <p className="text-[10px] text-muted-foreground text-center mt-1 max-w-[120px]">
                             Ela será usada no topo dos seus PDFs
                         </p>
                     </div>

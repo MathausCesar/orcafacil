@@ -50,7 +50,8 @@ export function LoadingSuccess() {
                     documentType: data.documentType,
                     document: data.document,
                     email: data.email,
-                    logoUrl: data.logoUrl
+                    logoUrl: data.logoUrl,
+                    themeColor: data.themeColor,   // pass extracted logo color
                 }
             );
 

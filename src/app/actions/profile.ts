@@ -53,6 +53,27 @@ export async function updateProfile(formData: FormData) {
     return { success: true }
 }
 
+// Saves only the theme color — called immediately after logo color extraction
+// so the user doesn't need to click Save for the change to take effect.
+export async function updateThemeColor(color: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    const { error } = await supabase
+        .from('profiles')
+        .update({ theme_color: color, updated_at: new Date().toISOString() })
+        .eq('id', user.id)
+
+    if (error) {
+        console.error('Error saving theme color:', error)
+        return { error: 'Failed to save color' }
+    }
+
+    revalidatePath('/profile')
+    return { success: true }
+}
+
 export async function checkOnboardingStatus() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()

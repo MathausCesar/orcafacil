@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { updateProfile } from '@/app/actions/profile'
+import { updateProfile, updateThemeColor } from '@/app/actions/profile'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -43,8 +43,15 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
         try {
             const colors = await extractColors(newUrl, { crossOrigin: 'anonymous' })
             if (colors && colors.length > 0) {
-                const dominant = colors[0].hex
+                // Prefer a vibrant, non-neutral color
+                const filtered = colors.filter(c => c.lightness > 0.15 && c.lightness < 0.85)
+                const best = filtered.length > 0 ? filtered[0] : colors[0]
+                const dominant = best.hex
                 setThemeColor(dominant)
+
+                // Persist immediately — user shouldn't need to click Save for color to apply
+                await updateThemeColor(dominant)
+
                 toast.success('Cor da marca detectada!', {
                     description: 'O tema do orçamento foi ajustado para combinar com sua logo.'
                 })

@@ -48,7 +48,8 @@ export async function signup(formData: FormData) {
         email,
         password,
         options: {
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+            // Usa NEXT_PUBLIC_APP_URL porque NEXT_PUBLIC_SITE_URL não existe no .env.local
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/app/auth/callback`,
         },
     })
 
@@ -73,7 +74,7 @@ export async function requestPasswordReset(formData: FormData) {
     if (!email) return { error: 'O email é obrigatório.' }
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/update-password`,
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/app/auth/callback?next=/update-password`,
     })
 
     if (error) {

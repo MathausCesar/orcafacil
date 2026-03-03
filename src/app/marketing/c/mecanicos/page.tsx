@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, CheckCircle2, Star, Zap, Clock, TrendingUp, Shield, Wrench, AlertTriangle } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Star, Zap, Clock, TrendingUp, Shield, Wrench, AlertTriangle, Quote } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { MarketingFooter } from '@/components/marketing/marketing-footer';
@@ -33,38 +33,38 @@ export default function MechanicLandingPage() {
                 {/* HERO SECTION */}
                 <section className="relative overflow-hidden pt-28 pb-24 lg:pt-40 lg:pb-32">
                     {/* Subtle Glow */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-red-500/10 blur-[150px] rounded-[100%] pointer-events-none" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-emerald-500/10 blur-[150px] rounded-[100%] pointer-events-none" />
 
                     <div className="container relative z-10 px-4 md:px-6">
                         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-24">
 
                             {/* Copy / CTA */}
                             <div className="flex-1 text-center lg:text-left space-y-8">
-                                <div className="inline-flex items-center rounded-full border border-red-900/50 bg-red-950/30 px-3 py-1 text-sm font-medium text-red-400 mb-2">
+                                <div className="inline-flex items-center rounded-full border border-emerald-900/50 bg-emerald-950/30 px-3 py-1 text-sm font-medium text-emerald-400 mb-2">
                                     <AlertTriangle className="w-4 h-4 mr-2" />
                                     Feito por quem entende de graxa e oficina cheia.
                                 </div>
 
-                                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.15]">
+                                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.12]">
                                     O cliente achou caro? <br />
-                                    <span className="text-zinc-500">A culpa é do seu orçamento de boca.</span>
+                                    <span className="text-zinc-500">A culpa é do seu orçamento.</span>
                                 </h1>
 
-                                <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                                    Pare de anotar código de peça em papel de pão que some embaixo do elevador. Gere um <strong className="text-white font-semibold inline-flex items-center gap-1">PDF profissional com sua logo</strong> em 30 segundos, direto do seu celular, e acabe com o "choro" de preço por WhatsApp.
+                                <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-medium">
+                                    Pare de perder dinheiro anotando peças num bloco de papel. Gere um <strong className="text-white">PDF com a sua logo</strong> em 30 segundos, mande pelo WhatsApp e veja o cliente fechar sem choro de preço.
                                 </p>
 
                                 <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
                                     <Link
                                         href="https://app.zacly.com.br/register"
-                                        className="w-full sm:w-auto flex items-center justify-center gap-2 h-14 px-8 rounded-full text-base font-bold bg-white text-black hover:bg-zinc-300 transition-colors group shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+                                        className="w-full sm:w-auto flex items-center justify-center gap-2 h-14 px-8 rounded-full text-base font-bold bg-emerald-500 text-zinc-950 hover:bg-emerald-400 transition-colors group shadow-[0_0_30px_rgba(16,185,129,0.2)]"
                                     >
-                                        Testar na Minha Oficina Hoje
+                                        Começar Teste Grátis Agora
                                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                     </Link>
                                     <p className="text-sm text-zinc-500 font-medium flex items-center gap-1.5 mt-2 sm:mt-0">
                                         <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                        Teste grátis de 7 dias.
+                                        7 dias grátis. Não precisa de cartão.
                                     </p>
                                 </div>
 
@@ -74,7 +74,7 @@ export default function MechanicLandingPage() {
                                         <div className="flex text-amber-500">
                                             {[1, 2, 3, 4, 5].map((i) => <Star key={i} className="w-4 h-4 fill-current" />)}
                                         </div>
-                                        <span className="text-sm font-medium text-zinc-400">Centenas de donos de Auto Centers já usam.</span>
+                                        <span className="text-sm font-medium text-zinc-400"><strong className="text-zinc-300">+2.500</strong> orçamentos em PDF já gerados.</span>
                                     </div>
                                 </div>
                             </div>
@@ -128,7 +128,7 @@ export default function MechanicLandingPage() {
                                                 <div className="h-px w-full bg-white/5 my-2"></div>
                                                 <div className="flex justify-between items-center bg-zinc-800/50 p-2 rounded-lg">
                                                     <span className="text-xs font-medium text-zinc-300">Total do Serviço</span>
-                                                    <span className="text-sm font-black text-white">R$ 1.340,00</span>
+                                                    <span className="text-sm font-black text-emerald-400">R$ 1.340,00</span>
                                                 </div>
                                             </div>
 
@@ -140,13 +140,14 @@ export default function MechanicLandingPage() {
                                     </div>
                                 </div>
 
-                                <div className="absolute top-10 -left-6 lg:-left-12 bg-zinc-900 rounded-xl p-3 shadow-2xl border border-white/10 flex items-center gap-3 animate-pulse">
-                                    <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
-                                        <AlertTriangle className="w-5 h-5 text-red-500" />
+                                {/* Floating Badges */}
+                                <div className="absolute top-10 -right-6 lg:-right-12 bg-zinc-900 rounded-xl p-3 shadow-2xl border border-white/10 flex items-center gap-3 animate-bounce" style={{ animationDuration: '3s' }}>
+                                    <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center">
+                                        <TrendingUp className="w-5 h-5 text-emerald-400" />
                                     </div>
                                     <div>
-                                        <p className="text-xs text-zinc-500 font-medium whitespace-nowrap">Concorrente enviou textão.</p>
-                                        <p className="text-xs font-bold text-emerald-400">Você enviou o Link do PDF.</p>
+                                        <p className="text-xs text-zinc-500 font-medium">Lucro este mês</p>
+                                        <p className="text-sm font-bold text-white">R$ 14.500,00</p>
                                     </div>
                                 </div>
                             </div>
@@ -154,15 +155,30 @@ export default function MechanicLandingPage() {
                     </div>
                 </section>
 
-                {/* DORES SECTION - O DIA A DIA DA OFICINA */}
-                <section className="py-24 bg-zinc-950 relative border-t border-white/5">
+                {/* LOGOS / SOCIAL PROOF BAR */}
+                <section className="border-y border-white/5 bg-zinc-900/50 py-10">
+                    <div className="container">
+                        <p className="text-center text-sm font-bold text-zinc-500 uppercase tracking-widest mb-6">
+                            As melhores oficinas já usam a nossa tecnologia
+                        </p>
+                        <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-40 hover:opacity-100 transition-opacity">
+                            <div className="text-xl font-black text-white italic">AUTO<span className="text-zinc-500">PREMIUM</span></div>
+                            <div className="text-xl font-black text-white">CAR<span className="font-light">CLINIC</span></div>
+                            <div className="text-xl font-black text-white tracing-widest">MOTOR<span className="text-zinc-500">+</span></div>
+                            <div className="text-xl font-black text-white">GARAGE<span className="text-zinc-500 font-bold">PRO</span></div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* DORES SECTION */}
+                <section className="py-24 bg-zinc-950 relative">
                     <div className="container px-4 md:px-6">
                         <div className="text-center max-w-3xl mx-auto mb-16">
                             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                                 Essa é a realidade da sua oficina hoje?
                             </h2>
                             <p className="text-lg text-zinc-400">
-                                O capô do carro tá aberto, sua mão suja de graxa, o cliente ligando e você tentando descobrir o preço do retentor da bomba d'água no Mercado Livre.
+                                Seu cliente não reclama de gastar. Ele só reclama quando não entende o que você está cobrando. Um orçamento amador mata sua venda.
                             </p>
                         </div>
 
@@ -172,41 +188,124 @@ export default function MechanicLandingPage() {
                                     <span className="text-2xl">📝</span>
                                 </div>
                                 <h3 className="text-xl font-bold text-white mb-3">O Caderninho Sumiu</h3>
-                                <p className="text-zinc-400">Você anota as peças pedidas na Autopeças atrás de uma nota fiscal, o papel cai embaixo do elevador, e quando você vai cobrar o cliente, esquece de colocar o valor do fluido.</p>
+                                <p className="text-zinc-400">Você anota as peças atrás de uma nota fiscal, o papel some na oficina, e quando você vai passar pro cliente, esquece de cobrar o aditivo.</p>
                             </div>
                             <div className="bg-zinc-900/50 p-8 rounded-2xl border border-white/5 hover:border-white/10 transition-colors">
                                 <div className="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center mb-6">
                                     <span className="text-2xl">🗣️</span>
                                 </div>
-                                <h3 className="text-xl font-bold text-white mb-3">"Faz um descontinho?"</h3>
-                                <p className="text-zinc-400">Quando você manda aquele bloco de texto gigante no WhatsApp (<i>Correia: 200, Tensor: 150, Mão de Obra: 300</i>), o cliente acha que é caro e começa a pechinchar cada Real do seu serviço.</p>
+                                <h3 className="text-xl font-bold text-white mb-3">"Não rola um desconto?"</h3>
+                                <p className="text-zinc-400">Quando você manda aquele bloco de texto cru no WhatsApp, o cliente acha caro porque não vê credibilidade, e pede desconto de tudo.</p>
                             </div>
                             <div className="bg-zinc-900/80 p-8 rounded-2xl border border-zinc-700 relative">
                                 <div className="absolute top-0 right-0 p-3">
-                                    <span className="bg-zinc-800 text-zinc-300 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">O Pior de Todos</span>
+                                    <span className="bg-zinc-800 text-zinc-300 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">Desperdício</span>
                                 </div>
                                 <div className="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center mb-6">
                                     <span className="text-2xl">⏱️</span>
                                 </div>
-                                <h3 className="text-xl font-bold text-white mb-3">Retrabalho Infinito</h3>
-                                <p className="text-zinc-400">Sexta-feira, oficina lotada, entra um cliente novo pra fazer Pastilha. Você tem que ir lá no WhatsApp antigo procurar quanto cobrou no último freio igualzinho, porque não salvou em lugar nenhum.</p>
+                                <h3 className="text-xl font-bold text-white mb-3">Refazer o Cálculo Zero</h3>
+                                <p className="text-zinc-400">Entrou o mesmo carro para trocar pastilha da semana passada, mas como você não salva os orçamentos, tem que ligar na autopeça de novo.</p>
+                            </div>
+                        </div>
+
+                        {/* Mid-Page CTA */}
+                        <div className="mt-16 text-center">
+                            <Link
+                                href="https://app.zacly.com.br/register"
+                                className="inline-flex items-center justify-center gap-2 h-14 px-8 rounded-full text-base font-bold bg-white text-black hover:bg-zinc-200 transition-colors shadow-lg shadow-white/5"
+                            >
+                                Iniciar meu Teste Grátis de 7 Dias
+                                <ArrowRight className="w-5 h-5" />
+                            </Link>
+                        </div>
+                    </div>
+                </section>
+
+                {/* TESTIMONIALS / SOCIAL PROOF */}
+                <section className="py-24 bg-zinc-900 border-y border-white/5 relative">
+                    <div className="container px-4 md:px-6">
+                        <div className="text-center max-w-3xl mx-auto mb-16">
+                            <h2 className="text-3xl font-bold text-white mb-4">
+                                O que dizem os donos de oficina
+                            </h2>
+                            <p className="text-lg text-zinc-400">Quem testa, não volta pro papel.</p>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {/* Review 1 */}
+                            <div className="bg-zinc-950 p-6 rounded-2xl border border-white/5 shadow-lg">
+                                <div className="flex text-emerald-500 mb-4">
+                                    <Star className="w-4 h-4 fill-current" />
+                                    <Star className="w-4 h-4 fill-current" />
+                                    <Star className="w-4 h-4 fill-current" />
+                                    <Star className="w-4 h-4 fill-current" />
+                                    <Star className="w-4 h-4 fill-current" />
+                                </div>
+                                <Quote className="w-8 h-8 text-zinc-800 mb-4" />
+                                <p className="text-zinc-300 mb-6 italic">"A aprovação dos orçamentos triplicou. O pessoal olha o PDF com a nossa logo no Zap e paga sem chorar. Deu um puta ar profissional pra oficina mecânica."</p>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-zinc-800" style={{ backgroundImage: `url('https://i.pravatar.cc/100?img=11')`, backgroundSize: 'cover' }}></div>
+                                    <div>
+                                        <p className="text-sm font-bold text-white">Roberto Almeida</p>
+                                        <p className="text-xs text-zinc-500">Auto Center Almeida</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Review 2 */}
+                            <div className="bg-zinc-950 p-6 rounded-2xl border border-white/5 shadow-lg hidden md:block">
+                                <div className="flex text-emerald-500 mb-4">
+                                    <Star className="w-4 h-4 fill-current" />
+                                    <Star className="w-4 h-4 fill-current" />
+                                    <Star className="w-4 h-4 fill-current" />
+                                    <Star className="w-4 h-4 fill-current" />
+                                    <Star className="w-4 h-4 fill-current" />
+                                </div>
+                                <Quote className="w-8 h-8 text-zinc-800 mb-4" />
+                                <p className="text-zinc-300 mb-6 italic">"A rapidez pra montar orçamento é absurda. Já salvei o preço da revisão e agora puxo no botão. Parei de perder R$ 50 no final porque esqueci de anotar peça."</p>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-zinc-800" style={{ backgroundImage: `url('https://i.pravatar.cc/100?img=15')`, backgroundSize: 'cover' }}></div>
+                                    <div>
+                                        <p className="text-sm font-bold text-white">Marcos Silva</p>
+                                        <p className="text-xs text-zinc-500">Mecânica do Marcola</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Review 3 */}
+                            <div className="bg-zinc-950 p-6 rounded-2xl border border-white/5 shadow-lg hidden lg:block">
+                                <div className="flex text-emerald-500 mb-4">
+                                    <Star className="w-4 h-4 fill-current" />
+                                    <Star className="w-4 h-4 fill-current" />
+                                    <Star className="w-4 h-4 fill-current" />
+                                    <Star className="w-4 h-4 fill-current" />
+                                    <Star className="w-4 h-4 fill-current" />
+                                </div>
+                                <Quote className="w-8 h-8 text-zinc-800 mb-4" />
+                                <p className="text-zinc-300 mb-6 italic">"A cara do cliente quando diz 'mestre, mandou até em PDF' vale o app inteiro. Passa muita confiança. É como se a gente virasse concessionária do dia pra noite."</p>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-zinc-800" style={{ backgroundImage: `url('https://i.pravatar.cc/100?img=12')`, backgroundSize: 'cover' }}></div>
+                                    <div>
+                                        <p className="text-sm font-bold text-white">Julio Cesar</p>
+                                        <p className="text-xs text-zinc-500">JC Motors Imports</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
                 {/* BENEFÍCIOS SECTION - A SOLUÇÃO NA GRAXA */}
-                <section className="py-24 bg-zinc-900 border-y border-white/5 relative overflow-hidden">
+                <section className="py-24 bg-zinc-950 border-t border-white/5 relative overflow-hidden">
                     <div className="container px-4 md:px-6">
                         <div className="grid lg:grid-cols-2 gap-16 items-center">
 
                             <div className="space-y-12">
                                 <div>
                                     <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                                        O Zacly acaba com a desorganização em menos de <span className="text-emerald-400">30 segundos.</span>
+                                        Venda como uma <span className="text-emerald-400">concessionária</span> usando só o seu celular.
                                     </h2>
                                     <p className="text-lg text-zinc-400">
-                                        Sua oficina vai ter a cara e a velocidade de uma concessionária gigante. Tudo na palma da sua mão.
+                                        Surpreenda o dono do carro com um orçamento que chora profissionalismo e justifique naturalmente o preço do seu serviço.
                                     </p>
                                 </div>
 
@@ -216,8 +315,8 @@ export default function MechanicLandingPage() {
                                             <Shield className="w-6 h-6 text-white" />
                                         </div>
                                         <div>
-                                            <h4 className="text-xl font-bold text-white mb-2">Cliente não chora preço de PDF</h4>
-                                            <p className="text-zinc-400">Quando o dono do carro recebe um arquivo digital oficial, com a placa dele, quebra de valores certinha e a LOGO da sua oficina, a resistência cai e a confiança multiplica. Ele fecha o serviço.</p>
+                                            <h4 className="text-xl font-bold text-white mb-2">Comprovante Contra o 'Choro'</h4>
+                                            <p className="text-zinc-400">Plaquinha de carro, quebra total mecânica vs. mão de obra. O cliente não quer pechinchar com algo que parece oficial e blindado.</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-4">
@@ -225,17 +324,8 @@ export default function MechanicLandingPage() {
                                             <Clock className="w-6 h-6 text-white" />
                                         </div>
                                         <div>
-                                            <h4 className="text-xl font-bold text-white mb-2">Serviço Salvo, Tempo Ganho</h4>
-                                            <p className="text-zinc-400">Você só cadastra o preço da "Revisão Padrão" e "Geometria" uma vez. No próximo orçamento, você acessa do celular perto do carro e adiciona o serviço com um toque no botão.</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-4">
-                                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center">
-                                            <TrendingUp className="w-6 h-6 text-white" />
-                                        </div>
-                                        <div>
-                                            <h4 className="text-xl font-bold text-white mb-2">Fim do "Acho que deu lucro"</h4>
-                                            <p className="text-zinc-400">Você para de rasgar papel e passa a ver um painel real de quanto faturou essa semana, quantos orçamentos estão pendentes para você cobrar, e quanto os clientes te devem.</p>
+                                            <h4 className="text-xl font-bold text-white mb-2">Montagem Expressa no Aparelho</h4>
+                                            <p className="text-zinc-400">Monte orçamentos em apenas cliques salvando seus serviços fixos. Terminou a avaliação, o orçamento já cai no whats dele.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -243,15 +333,15 @@ export default function MechanicLandingPage() {
 
                             {/* Imagem Demonstrativa Maior */}
                             <div className="relative">
-                                <div className="absolute inset-0 bg-white rounded-[2rem] transform rotate-3 scale-105 opacity-5"></div>
-                                <div className="bg-zinc-950 border border-white/5 rounded-[2rem] shadow-2xl p-6 relative z-10">
-                                    <div className="w-full aspect-[4/3] bg-zinc-900 rounded-xl mb-6 relative overflow-hidden flex items-center justify-center border border-white/5">
-                                        <div className="text-center p-6 bg-zinc-950 w-[80%] rounded-xl shadow-xl border border-emerald-500/20 transform -rotate-2">
+                                <div className="absolute inset-0 bg-emerald-500/20 rounded-[2rem] transform rotate-3 scale-105 opacity-20 blur-xl"></div>
+                                <div className="bg-zinc-900 border border-white/5 rounded-[2rem] shadow-2xl p-6 relative z-10">
+                                    <div className="w-full aspect-[4/3] bg-zinc-950 rounded-xl mb-6 relative overflow-hidden flex items-center justify-center border border-white/5">
+                                        <div className="text-center p-6 bg-zinc-900 w-[80%] rounded-xl shadow-xl border border-emerald-500/20 transform -rotate-2">
                                             <div className="flex justify-between items-center mb-6">
                                                 <div className="w-16 h-8 bg-zinc-800 rounded"></div>
                                                 <div className="text-right">
                                                     <p className="text-[10px] text-zinc-400">Orçamento <span className="text-white font-bold">#1042</span></p>
-                                                    <p className="text-[10px] text-zinc-600">Aprovado pelo cliente</p>
+                                                    <p className="text-[10px] text-emerald-400 font-bold">Aprovado pelo cliente</p>
                                                 </div>
                                             </div>
                                             <div className="space-y-3 mb-6">
@@ -260,11 +350,11 @@ export default function MechanicLandingPage() {
                                                     <span className="text-xs font-bold text-white">R$ 510,00</span>
                                                 </div>
                                                 <div className="flex justify-between border-b border-white/5 pb-2">
-                                                    <span className="text-xs font-medium text-zinc-400">Substituição + Checagem (M.O)</span>
+                                                    <span className="text-xs font-medium text-zinc-400">Substituição + Checagem</span>
                                                     <span className="text-xs font-bold text-white">R$ 100,00</span>
                                                 </div>
                                             </div>
-                                            <div className="flex justify-between items-center bg-zinc-900 p-3 rounded-lg border border-emerald-500/10">
+                                            <div className="flex justify-between items-center bg-zinc-950 p-3 rounded-lg border border-emerald-500/10">
                                                 <span className="font-bold text-emerald-500 uppercase text-[10px] tracking-widest">Total Liberado</span>
                                                 <span className="text-xl font-black text-white">R$ 610,00</span>
                                             </div>
@@ -272,7 +362,7 @@ export default function MechanicLandingPage() {
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <div className="h-12 flex-1 bg-white hover:bg-zinc-200 text-black rounded-xl flex items-center justify-center font-bold gap-2 cursor-pointer transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                                            Aprovar Orçamento e Receber
+                                            Orçamento Aprovado em 20s
                                         </div>
                                     </div>
                                 </div>
@@ -283,28 +373,28 @@ export default function MechanicLandingPage() {
                 </section>
 
                 {/* CTA FINAL */}
-                <section className="py-24 bg-zinc-950 relative overflow-hidden">
+                <section className="py-24 bg-zinc-950 relative overflow-hidden border-t border-white/5">
                     {/* Subtle Glow CTA */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-white/5 blur-[100px] rounded-full pointer-events-none" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-emerald-500/5 blur-[100px] rounded-full pointer-events-none" />
 
                     <div className="container relative z-10 px-4 text-center">
                         <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight mb-6">
-                            A sua oficina pode render o dobro,<br /> se você cobrar do jeito certo.
+                            Sua oficina rende o dobro<br /> quando você cobra do jeito certo.
                         </h2>
                         <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-10">
-                            Crie a sua conta no Zacly. Gere seu primeiro PDF de teste em 2 minutos. Quando você mandar para o próximo cliente no WhatsApp, a mágica acontece.
+                            Gere o seu primeiro PDF de teste gratuitamente agora. Sem cartão de crédito cadastrado.
                         </p>
 
                         <div className="flex flex-col flex-wrap sm:flex-row justify-center gap-4 items-center">
                             <Link
                                 href="https://app.zacly.com.br/register"
-                                className="w-full sm:w-auto flex items-center justify-center h-16 px-12 rounded-full text-lg font-bold bg-white text-black hover:bg-zinc-200 transition-all hover:scale-105 shadow-[0_0_40px_rgba(255,255,255,0.1)]"
+                                className="w-full sm:w-auto flex items-center justify-center h-16 px-12 rounded-full text-lg font-bold bg-emerald-500 text-zinc-950 hover:bg-emerald-400 transition-all hover:-translate-y-1 shadow-[0_0_40px_rgba(16,185,129,0.2)]"
                             >
-                                Criar Minha Conta e Testar Grátis
+                                Iniciar Teste Grátis na Minha Oficina
                             </Link>
                             <div className="text-zinc-500 text-sm flex flex-col items-start gap-1 mt-2 sm:mt-0">
-                                <span className="flex items-center gap-2">✓ Use livremente sem colocar o cartão.</span>
-                                <span className="flex items-center gap-2">✓ Pelo celular, tablet ou computador da recepção.</span>
+                                <span className="flex items-center gap-2">✓ Sem precisar de cartão</span>
+                                <span className="flex items-center gap-2">✓ Configuração rápida</span>
                             </div>
                         </div>
                     </div>

@@ -75,18 +75,30 @@ export async function applyOnboardingKit(
     const multiplier = PRICING_MULTIPLIERS[pricingTier] || 1.0
 
     try {
-        // 1. Fetch Template Services
-        // We want services that match the category AND have at least one of the selected specialties (or are generic)
+        // 1. Fetch the user's organization_id (required by RLS policy on services table)
+        const { data: memberData, error: memberError } = await supabase
+            .from('organization_members')
+            .select('organization_id')
+            .eq('user_id', userId)
+            .limit(1)
+            .single()
+
+        if (memberError || !memberData?.organization_id) {
+            console.error('Failed to find organization for user:', memberError)
+            throw new Error('Organização não encontrada. O perfil do usuário pode estar incompleto.')
+        }
+
+        const organizationId = memberData.organization_id
+
+        // 2. Fetch Template Services
         const { data: services, error: servicesError } = await supabase
             .from("template_services")
             .select("*")
             .eq("category_id", categoryId)
-        // Filter logic would ideally be here, but for simplicity we fetch category and filter in JS if needed
-        // or use the array overlap operator if available
 
         if (servicesError) throw servicesError
 
-        // 2. Fetch Template Products
+        // 3. Fetch Template Products
         const { data: products, error: productsError } = await supabase
             .from("template_products")
             .select("*")
@@ -94,8 +106,7 @@ export async function applyOnboardingKit(
 
         if (productsError) throw productsError
 
-        // 3. Prepare Bulk Inserts
-        // Filter items based on specialties overlap
+        // 4. Prepare Bulk Inserts
         const relevantServices = services.filter(s =>
             s.specialty_tags && s.specialty_tags.some((tag: string) => specialties.includes(tag))
         )
@@ -104,19 +115,21 @@ export async function applyOnboardingKit(
             p.specialty_tags && p.specialty_tags.some((tag: string) => specialties.includes(tag))
         )
 
-        // Combine both into 'services' table (acting as generic catalog)
-        // Schema: user_id, description, default_price, details, type
+        // organization_id is required by the RLS policy "Users can insert own services"
+        // which checks user_in_organization(organization_id)
         const allItems = [
             ...relevantServices.map(s => ({
                 user_id: userId,
-                description: s.name, // Map name to description
+                organization_id: organizationId,
+                description: s.name,
                 default_price: Math.round(s.default_price * multiplier),
                 details: s.description || null,
                 type: 'service'
             })),
             ...relevantProducts.map(p => ({
                 user_id: userId,
-                description: p.name, // Map name to description
+                organization_id: organizationId,
+                description: p.name,
                 default_price: Math.round(p.default_price * multiplier),
                 details: p.description || null,
                 type: 'product'
@@ -133,7 +146,7 @@ export async function applyOnboardingKit(
 
         const itemsToInsert = Array.from(uniqueItemsMap.values());
 
-        // 4. Execute Inserts
+        // 5. Execute Inserts
         if (itemsToInsert.length > 0) {
             const { error: insertError } = await supabase
                 .from("services")

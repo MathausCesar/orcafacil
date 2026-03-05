@@ -22,12 +22,36 @@ interface QuotesViewProps {
 }
 
 const PIPELINE_COLUMNS = [
-    { id: 'created', label: 'Criado', bg: 'bg-zinc-50', border: 'border-zinc-200', dot: 'bg-zinc-400' },
-    { id: 'sent', label: 'Enviado', bg: 'bg-blue-50', border: 'border-blue-200', dot: 'bg-blue-500' },
-    { id: 'approved', label: 'Aprovado', bg: 'bg-emerald-50', border: 'border-emerald-200', dot: 'bg-emerald-500' },
-    { id: 'rejected', label: 'Recusado', bg: 'bg-red-50', border: 'border-red-200', dot: 'bg-red-500' },
-    { id: 'in_progress', label: 'Em Execução', bg: 'bg-violet-50', border: 'border-violet-200', dot: 'bg-violet-500' },
-    { id: 'completed', label: 'Concluído', bg: 'bg-teal-50', border: 'border-teal-200', dot: 'bg-teal-500' },
+    {
+        id: 'created', label: 'CRIADO',
+        accent: 'bg-zinc-500', color: 'text-zinc-600 dark:text-zinc-400',
+        bg: 'bg-zinc-500/5 dark:bg-zinc-500/10', border: 'border-zinc-500/20'
+    },
+    {
+        id: 'sent', label: 'ENVIADO',
+        accent: 'bg-blue-500', color: 'text-blue-600 dark:text-blue-400',
+        bg: 'bg-blue-500/5 dark:bg-blue-500/10', border: 'border-blue-500/20'
+    },
+    {
+        id: 'approved', label: 'APROVADO',
+        accent: 'bg-emerald-500', color: 'text-emerald-600 dark:text-emerald-400',
+        bg: 'bg-emerald-500/5 dark:bg-emerald-500/10', border: 'border-emerald-500/20'
+    },
+    {
+        id: 'rejected', label: 'RECUSADO',
+        accent: 'bg-red-500', color: 'text-red-600 dark:text-red-400',
+        bg: 'bg-red-500/5 dark:bg-red-500/10', border: 'border-red-500/20'
+    },
+    {
+        id: 'in_progress', label: 'EM EXECUÇÃO',
+        accent: 'bg-violet-500', color: 'text-violet-600 dark:text-violet-400',
+        bg: 'bg-violet-500/5 dark:bg-violet-500/10', border: 'border-violet-500/20'
+    },
+    {
+        id: 'completed', label: 'CONCLUÍDO',
+        accent: 'bg-teal-500', color: 'text-teal-600 dark:text-teal-400',
+        bg: 'bg-teal-500/5 dark:bg-teal-500/10', border: 'border-teal-500/20'
+    },
 ]
 
 function getColumnId(status: string): string {
@@ -43,31 +67,32 @@ export function QuotesView({ quotes, totalCount }: QuotesViewProps) {
 
     const fmtDate = (dt: string) => {
         try {
-            return format(new Date(dt), 'dd MMM, yyyy', { locale: ptBR })
+            return format(new Date(dt), "d 'de' MMM", { locale: ptBR })
         } catch {
             return dt
         }
     }
 
     return (
-        <div className="space-y-6">
-            {/* Header with toggle */}
-            <div className="flex justify-between items-center flex-wrap gap-4">
+        <div className="space-y-8 animate-in fade-in duration-500">
+            {/* Header & View Toggle Container */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <div className="flex items-center gap-3">
-                    <h1 className="text-2xl font-bold text-foreground">Meus Orçamentos</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Orçamentos</h1>
                     {totalCount > 0 && (
-                        <span className="text-sm text-muted-foreground bg-primary/10 px-2 py-0.5 rounded-full font-medium">
-                            {totalCount} {totalCount === 1 ? 'orçamento' : 'orçamentos'}
-                        </span>
+                        <div className="flex items-center justify-center min-w-6 h-6 px-2 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/20">
+                            {totalCount}
+                        </div>
                     )}
                 </div>
 
-                <div className="flex items-center bg-zinc-100/70 p-1 rounded-xl border border-zinc-200 shadow-sm gap-1">
+                {/* Premium Segmented Control Toggle */}
+                <div className="flex items-center bg-muted/50 p-1 rounded-full border border-border/50 shadow-inner w-full sm:w-auto">
                     <button
                         onClick={() => setView('list')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${view === 'list'
-                            ? 'bg-white text-primary shadow-sm ring-1 ring-zinc-200/80'
-                            : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200/50'
+                        className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2 text-sm font-semibold rounded-full transition-all duration-300 ${view === 'list'
+                            ? 'bg-background text-foreground shadow-sm ring-1 ring-border shadow-black/5 dark:shadow-white/5'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                             }`}
                     >
                         <LayoutList className="h-4 w-4" />
@@ -75,9 +100,9 @@ export function QuotesView({ quotes, totalCount }: QuotesViewProps) {
                     </button>
                     <button
                         onClick={() => setView('pipeline')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${view === 'pipeline'
-                            ? 'bg-white text-primary shadow-sm ring-1 ring-zinc-200/80'
-                            : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200/50'
+                        className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2 text-sm font-semibold rounded-full transition-all duration-300 ${view === 'pipeline'
+                            ? 'bg-background text-foreground shadow-sm ring-1 ring-border shadow-black/5 dark:shadow-white/5'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                             }`}
                     >
                         <KanbanSquare className="h-4 w-4" />
@@ -86,92 +111,124 @@ export function QuotesView({ quotes, totalCount }: QuotesViewProps) {
                 </div>
             </div>
 
-            {/* Content: List View */}
+            {/* List View */}
             {view === 'list' && (
-                <div className="space-y-3">
+                <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-500">
                     {quotes.length === 0 ? (
-                        <div className="text-center py-10 text-muted-foreground bg-primary/5 rounded-xl border border-dashed border-primary/20">
-                            <FileText className="h-12 w-12 mx-auto mb-3 text-primary/25" />
-                            <p>Nenhum orçamento encontrado.</p>
+                        <div className="text-center py-16 px-4 bg-muted/20 rounded-2xl border border-dashed border-border flex flex-col items-center">
+                            <div className="h-16 w-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
+                                <FileText className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-foreground">Ainda não há orçamentos</h3>
+                            <p className="text-sm text-muted-foreground max-w-sm mt-1">Crie o seu primeiro orçamento para iniciar o gerenciamento de propostas.</p>
                         </div>
                     ) : (
-                        quotes.map((quote) => (
-                            <Link key={quote.id} href={`/quotes/${quote.id}`}>
-                                <Card className="hover:border-primary/25 hover:shadow-md transition-all border-l-4 border-l-primary cursor-pointer group border-primary/10">
-                                    <CardContent className="p-4 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-primary/10 rounded-lg">
-                                                <FileText className="h-4 w-4 text-primary" />
+                        <div className="grid gap-3">
+                            {quotes.map((quote) => (
+                                <Link key={quote.id} href={`/quotes/${quote.id}`}>
+                                    <Card className="hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 border border-border/60 bg-card group overflow-hidden relative">
+                                        <CardContent className="p-0 flex flex-col sm:flex-row sm:items-center justify-between">
+                                            {/* Accent left border indicator */}
+                                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/20 group-hover:bg-primary transition-colors duration-300" />
+
+                                            <div className="p-5 flex items-center gap-4 flex-1">
+                                                <div className="hidden sm:flex h-10 w-10 shrink-0 rounded-full bg-primary/10 items-center justify-center">
+                                                    <FileText className="h-5 w-5 text-primary" />
+                                                </div>
+                                                <div className="flex flex-col gap-1">
+                                                    <p className="font-bold text-foreground group-hover:text-primary transition-colors text-base sm:text-lg">
+                                                        {quote.client_name}
+                                                    </p>
+                                                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+                                                        {fmtDate(quote.created_at)}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                                                    {quote.client_name}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground mt-0.5">
-                                                    {fmtDate(quote.created_at)}
+                                            <div className="p-5 sm:py-5 sm:pl-0 sm:pr-6 flex items-center justify-between sm:justify-end gap-6 bg-muted/10 sm:bg-transparent border-t border-border/50 sm:border-0">
+                                                <QuoteStatusBadge status={quote.status} />
+                                                <p className="font-black text-foreground text-lg tracking-tight">
+                                                    {fmt(quote.total)}
                                                 </p>
                                             </div>
-                                        </div>
-                                        <div className="flex items-center justify-between md:justify-end gap-4">
-                                            <QuoteStatusBadge status={quote.status} />
-                                            <p className="font-bold text-primary text-right">
-                                                {fmt(quote.total)}
-                                            </p>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </Link>
-                        ))
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            ))}
+                        </div>
                     )}
                 </div>
             )}
 
-            {/* Content: Pipeline / Kanban View */}
+            {/* Pipeline / Kanban View */}
             {view === 'pipeline' && (
-                <div className="overflow-x-auto pb-4">
-                    <div className="flex gap-4 min-w-max">
+                <div className="relative -mx-4 sm:mx-0">
+                    <div className="flex gap-4 overflow-x-auto pb-8 snap-x snap-mandatory pt-2 px-4 sm:px-0 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
                         {PIPELINE_COLUMNS.map(col => {
                             const colQuotes = quotes.filter(q => getColumnId(q.status) === col.id)
                             return (
                                 <div
                                     key={col.id}
-                                    className={`w-72 flex-shrink-0 rounded-xl border ${col.border} ${col.bg} flex flex-col overflow-hidden`}
+                                    className={`w-[85vw] sm:w-[320px] flex-shrink-0 flex flex-col snap-center rounded-2xl border ${col.border} ${col.bg} relative overflow-hidden transition-colors duration-300`}
                                 >
+                                    {/* Top Accent Line */}
+                                    <div className={`absolute top-0 left-0 right-0 h-1.5 ${col.accent} opacity-80`} />
+
                                     {/* Column Header */}
-                                    <div className="flex items-center justify-between px-4 py-3 border-b border-inherit">
-                                        <div className="flex items-center gap-2">
-                                            <span className={`w-2 h-2 rounded-full ${col.dot}`}></span>
-                                            <h3 className="text-sm font-semibold text-foreground">{col.label}</h3>
+                                    <div className="flex items-center justify-between px-5 pt-5 pb-3">
+                                        <div className="flex items-center gap-2.5">
+                                            <span className={`w-2.5 h-2.5 rounded-full ${col.accent} shadow-sm`} />
+                                            <h3 className={`text-xs font-black tracking-widest uppercase ${col.color}`}>
+                                                {col.label}
+                                            </h3>
                                         </div>
-                                        <span className="text-xs bg-white/70 border border-inherit px-2 py-0.5 rounded-full text-muted-foreground font-medium">
+                                        <span className="text-xs bg-background/80 backdrop-blur-md border border-border/50 px-2.5 py-1 rounded-full text-foreground font-bold shadow-sm">
                                             {colQuotes.length}
                                         </span>
                                     </div>
 
-                                    {/* Cards */}
-                                    <div className="flex flex-col gap-2 p-3 overflow-y-auto max-h-[65vh] scrollbar-thin">
-                                        {colQuotes.map(quote => (
+                                    {/* Cards Container */}
+                                    <div className="flex px-3 pb-4 flex-col gap-3 overflow-y-auto max-h-[65vh] scrollbar-none">
+                                        {colQuotes.map((quote, idx) => (
                                             <Link key={quote.id} href={`/quotes/${quote.id}`}>
-                                                <div className="bg-white rounded-lg border border-zinc-200/80 p-3 hover:shadow-md hover:border-primary/30 cursor-pointer transition-all group">
-                                                    <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors leading-tight">
-                                                        {quote.client_name}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground mt-1">
-                                                        {fmtDate(quote.created_at)}
-                                                    </p>
-                                                    <p className="font-bold text-primary text-sm mt-2">
-                                                        {fmt(quote.total)}
-                                                    </p>
+                                                <div
+                                                    className="group relative bg-background rounded-xl border border-border/60 p-4 shadow-sm hover:shadow-md hover:border-foreground/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer animate-in fade-in slide-in-from-bottom-2"
+                                                    style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'both' }}
+                                                >
+                                                    {/* Card Left Indicator */}
+                                                    <div className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl ${col.accent} opacity-30 group-hover:opacity-100 transition-opacity duration-300`} />
+
+                                                    <div className="flex flex-col gap-3">
+                                                        <div>
+                                                            <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors leading-tight line-clamp-2">
+                                                                {quote.client_name}
+                                                            </p>
+                                                            <p className="text-xs text-muted-foreground mt-1.5 font-medium flex items-center gap-1.5">
+                                                                {fmtDate(quote.created_at)}
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex items-end justify-between border-t border-border/40 pt-3 mt-1">
+                                                            <div className={`text-[10px] uppercase font-bold tracking-wider ${col.color} bg-background px-2 py-0.5 rounded-md border border-inherit`}>
+                                                                id: {quote.id.split('-')[0]}
+                                                            </div>
+                                                            <p className="font-black text-foreground text-sm tracking-tight">
+                                                                {fmt(quote.total)}
+                                                            </p>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </Link>
                                         ))}
 
+                                        {/* Empty State */}
                                         {colQuotes.length === 0 && (
-                                            <div className="text-center py-6 border-2 border-dashed border-current/20 rounded-lg opacity-40">
-                                                <p className="text-xs font-medium text-foreground">Vazio</p>
+                                            <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-current/10 rounded-xl opacity-60 m-1">
+                                                <p className="text-xs font-bold uppercase tracking-widest text-foreground/50">Vazio</p>
                                             </div>
                                         )}
                                     </div>
+
+                                    {/* Gradient fade at bottom for scrolling indication */}
+                                    <div className={`absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-${col.bg.split(' ')[0].replace('bg-', '')} to-transparent pointer-events-none`} />
                                 </div>
                             )
                         })}

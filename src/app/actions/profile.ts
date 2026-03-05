@@ -1,12 +1,11 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { getAuthContext } from '@/lib/get-auth-context'
 
 export async function updateProfile(formData: FormData) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthContext()
 
     if (!user) {
         redirect('/login')
@@ -49,15 +48,12 @@ export async function updateProfile(formData: FormData) {
     }
 
     revalidatePath('/profile')
-    revalidatePath('/') // Update header name
+    revalidatePath('/')
     return { success: true }
 }
 
-// Saves only the theme color — called immediately after logo color extraction
-// so the user doesn't need to click Save for the change to take effect.
 export async function updateThemeColor(color: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthContext()
     if (!user) return { error: 'Unauthorized' }
 
     const { error } = await supabase
@@ -75,22 +71,15 @@ export async function updateThemeColor(color: string) {
 }
 
 export async function checkOnboardingStatus() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthContext()
 
     if (!user) return false
 
-    console.log('Checking onboarding status for user:', user.id)
-    const { data: profile, error } = await supabase
+    const { data: profile } = await supabase
         .from('profiles')
         .select('onboarded_at')
         .eq('id', user.id)
         .single()
 
-    if (error) {
-        console.error('Error checking profile:', error)
-    }
-
-    console.log('Profile onboarding status:', profile?.onboarded_at)
     return !!profile?.onboarded_at
 }

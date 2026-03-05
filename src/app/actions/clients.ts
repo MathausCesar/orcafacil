@@ -1,19 +1,15 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { getActiveOrganizationId } from '@/lib/get-active-organization'
+import { getAuthContext } from '@/lib/get-auth-context'
 
 export async function createClientAction(formData: FormData) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user, orgId } = await getAuthContext()
 
     if (!user) {
         return { error: 'Unauthorized', redirect: '/login' }
     }
-
-    const orgId = await getActiveOrganizationId()
 
     if (!orgId) {
         return { error: 'No active organization found' }
@@ -73,13 +69,12 @@ export async function createClientAction(formData: FormData) {
     }
 
     revalidatePath('/clients')
-    revalidatePath('/new') // Revalidate quote form
+    revalidatePath('/new')
     return { success: true, client: data }
 }
 
 export async function getClients(query?: string) {
-    const supabase = await createClient()
-    const orgId = await getActiveOrganizationId()
+    const { supabase, orgId } = await getAuthContext()
 
     if (!orgId) return []
 
@@ -104,14 +99,11 @@ export async function getClients(query?: string) {
 }
 
 export async function updateClient(id: string, formData: FormData) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user, orgId } = await getAuthContext()
 
     if (!user) {
         return { error: 'Unauthorized', redirect: '/login' }
     }
-
-    const orgId = await getActiveOrganizationId()
 
     // Verify ownership via organization
     const { data: existingClient } = await supabase
@@ -149,7 +141,7 @@ export async function updateClient(id: string, formData: FormData) {
     const { data: existingName } = await supabase
         .from('clients')
         .select('id')
-        .eq('organization_id', orgId)
+        .eq('organization_id', orgId!)
         .ilike('name', name)
         .neq('id', id)
         .limit(1)
@@ -182,14 +174,11 @@ export async function updateClient(id: string, formData: FormData) {
 }
 
 export async function deleteClient(id: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user, orgId } = await getAuthContext()
 
     if (!user) {
         redirect('/login')
     }
-
-    const orgId = await getActiveOrganizationId()
 
     // Verify ownership via organization
     const { data: existingClient } = await supabase

@@ -1,7 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { getActiveOrganizationId } from '@/lib/get-active-organization'
+import { getAuthContext } from '@/lib/get-auth-context'
 import { revalidatePath } from 'next/cache'
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -9,8 +8,7 @@ import { revalidatePath } from 'next/cache'
 // ──────────────────────────────────────────────────────────────────────────────
 
 export async function createSupportTicket(formData: FormData) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user, orgId } = await getAuthContext()
     if (!user) throw new Error('Usuário não autenticado.')
 
     const type = formData.get('type') as string
@@ -23,8 +21,6 @@ export async function createSupportTicket(formData: FormData) {
 
     const validTypes = ['doubt', 'bug', 'suggestion', 'praise']
     if (!validTypes.includes(type)) throw new Error('Tipo inválido.')
-
-    const orgId = await getActiveOrganizationId()
 
     const { error } = await supabase.from('support_tickets').insert({
         user_id: user.id,
@@ -40,8 +36,7 @@ export async function createSupportTicket(formData: FormData) {
 }
 
 export async function getMyTickets() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthContext()
     if (!user) return []
 
     const { data } = await supabase
@@ -59,8 +54,7 @@ export async function getMyTickets() {
 // ──────────────────────────────────────────────────────────────────────────────
 
 export async function getSuggestions() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthContext()
 
     const { data: suggestions } = await supabase
         .from('feature_suggestions')
@@ -87,16 +81,13 @@ export async function getSuggestions() {
 }
 
 export async function createSuggestion(formData: FormData) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user, orgId } = await getAuthContext()
     if (!user) throw new Error('Usuário não autenticado.')
 
     const title = (formData.get('title') as string)?.trim()
     const description = (formData.get('description') as string)?.trim()
 
     if (!title) throw new Error('O título é obrigatório.')
-
-    const orgId = await getActiveOrganizationId()
 
     const { error } = await supabase.from('feature_suggestions').insert({
         user_id: user.id,
@@ -111,8 +102,7 @@ export async function createSuggestion(formData: FormData) {
 }
 
 export async function toggleVote(suggestionId: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthContext()
     if (!user) throw new Error('Usuário não autenticado.')
 
     // Verifica voto existente

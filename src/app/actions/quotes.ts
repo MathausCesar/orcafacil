@@ -1,20 +1,15 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { createNotification } from './notifications'
-import { getActiveOrganizationId } from '@/lib/get-active-organization'
+import { getAuthContext } from '@/lib/get-auth-context'
 
 export async function createQuote(formData: FormData) {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user, orgId } = await getAuthContext()
 
     if (!user) {
         return { error: 'Unauthorized', redirect: '/login' }
     }
-
-    const orgId = await getActiveOrganizationId()
 
     if (!orgId) {
         return { error: 'No active organization found' }
@@ -74,7 +69,7 @@ export async function createQuote(formData: FormData) {
     const { data: quote, error: quoteError } = await supabase
         .from('quotes')
         .insert({
-            user_id: user.id, // Keeping user_id for original creator reference
+            user_id: user.id,
             organization_id: orgId,
             client_name: clientName,
             client_phone: clientPhone,
@@ -83,7 +78,6 @@ export async function createQuote(formData: FormData) {
             notes: notes,
             total: total,
             status: 'draft',
-            // Customization fields
             show_timeline: showTimeline,
             show_payment_options: showPaymentOptions,
             show_detailed_items: showDetailedItems,
@@ -135,14 +129,11 @@ export async function createQuote(formData: FormData) {
 }
 
 export async function updateQuote(id: string, formData: FormData) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user, orgId } = await getAuthContext()
 
     if (!user) {
         return { error: 'Unauthorized', redirect: '/login' }
     }
-
-    const orgId = await getActiveOrganizationId()
 
     // Check current status — block locked quotes
     const { data: currentQuote } = await supabase
@@ -153,10 +144,6 @@ export async function updateQuote(id: string, formData: FormData) {
 
     if (!currentQuote || currentQuote.organization_id !== orgId) {
         return { error: 'Quote not found or Unauthorized' }
-    }
-
-    if (!currentQuote) {
-        return { error: 'Quote not found' }
     }
 
     if (['in_progress', 'completed'].includes(currentQuote.status)) {
@@ -219,15 +206,14 @@ export async function updateQuote(id: string, formData: FormData) {
         .from('quotes')
         .update(updateData)
         .eq('id', id)
-        .eq('organization_id', orgId)
+        .eq('organization_id', orgId || '')
 
     if (updateError) {
         console.error('Error updating quote:', updateError)
         return { error: 'Failed to update quote' }
     }
 
-    // 2. Update Items (Delete all and recreate - simplest strategy for now)
-    // First, delete existing items
+    // 2. Update Items (Delete all and recreate)
     const { error: deleteError } = await supabase
         .from('quote_items')
         .delete()
@@ -238,7 +224,6 @@ export async function updateQuote(id: string, formData: FormData) {
         return { error: 'Failed to update items' }
     }
 
-    // Insert new items
     const quoteItems = items.map((item: any) => ({
         quote_id: id,
         description: item.description,
@@ -262,14 +247,11 @@ export async function updateQuote(id: string, formData: FormData) {
 }
 
 export async function deleteQuote(id: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user, orgId } = await getAuthContext()
 
     if (!user) {
         throw new Error('Unauthorized')
     }
-
-    const orgId = await getActiveOrganizationId()
 
     const { error } = await supabase
         .from('quotes')
@@ -288,7 +270,7 @@ export async function deleteQuote(id: string) {
 }
 
 export async function updateQuoteStatus(id: string, status: 'draft' | 'pending' | 'sent' | 'approved' | 'rejected' | 'in_progress' | 'completed') {
-    const supabase = await createClient()
+    const { supabase } = await getAuthContext()
 
     // Calls the security definer RPC function to allow public updates
     const { error } = await supabase.rpc('update_quote_status', {

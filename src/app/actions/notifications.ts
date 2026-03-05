@@ -2,22 +2,17 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { getActiveOrganizationId } from '@/lib/get-active-organization'
+import { getAuthContext } from '@/lib/get-auth-context'
 
 export async function getNotifications() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user, orgId } = await getAuthContext()
 
-    if (!user) return []
+    if (!user || !orgId) return []
 
-    const orgId = await getActiveOrganizationId()
-
-    if (!orgId) return []
-
-    // Check for inactive quotes first (Lazy Trigger)
-    await checkInactiveQuotes(user.id, orgId)
-    // Check for expiring quotes (Lazy Trigger)
-    await checkExpiringQuotes(user.id, orgId)
+    // Fire-and-forget: schedule lazy checks without blocking the response
+    // These run in the background and don't delay the notification list
+    checkInactiveQuotesBatch(user.id, orgId).catch(() => { })
+    checkExpiringQuotesBatch(user.id, orgId).catch(() => { })
 
     const { data } = await supabase
         .from('notifications')
@@ -40,13 +35,8 @@ export async function markAsRead(id: string) {
 }
 
 export async function markAllAsRead() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-
-    const orgId = await getActiveOrganizationId()
-
-    if (!orgId) return
+    const { supabase, user, orgId } = await getAuthContext()
+    if (!user || !orgId) return
 
     await supabase
         .from('notifications')
@@ -57,65 +47,72 @@ export async function markAllAsRead() {
     revalidatePath('/')
 }
 
-async function checkInactiveQuotes(userId: string, orgId: string) {
+async function checkInactiveQuotesBatch(userId: string, orgId: string) {
     const supabase = await createClient()
 
-    // 1. Get active quotes (pending or sent)
     const { data: quotes } = await supabase
         .from('quotes')
         .select('id, client_name, updated_at, created_at, status')
         .in('status', ['pending', 'sent'])
         .eq('organization_id', orgId)
 
-    if (!quotes) return
+    if (!quotes || quotes.length === 0) return
 
     const now = new Date()
     const notificationThresholds = [7, 10, 15, 30]
+
+    // Collect all quote IDs that need checking
+    const quoteLinks = quotes.map(q => `/quotes/${q.id}`)
+
+    // Batch query: get ALL existing notifications for these quotes in ONE query
+    const { data: existingNotifications } = await supabase
+        .from('notifications')
+        .select('link, title')
+        .eq('organization_id', orgId)
+        .in('link', quoteLinks)
+
+    const existingSet = new Set(
+        (existingNotifications || []).map(n => `${n.link}|${n.title}`)
+    )
+
+    // Build batch of notifications to insert
+    const toInsert: any[] = []
 
     for (const quote of quotes) {
         const lastUpdate = new Date(quote.updated_at || quote.created_at)
         const diffTime = Math.abs(now.getTime() - lastUpdate.getTime())
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
-        // Check if any threshold matches
-        // Optimization: We could check specifically if diffDays is close to a threshold
-        // But simply ">= 7" would spam every day.
-        // Needs a way to know if we ALREADY notified for THIS threshold.
-
         for (const days of notificationThresholds) {
             if (diffDays >= days) {
-                // Check if we already notified for this quote and this threshold
-                // We can check local "cache" in DB? 
-                // Query notifications for this quote link AND title containing "X dias"
                 const titleKey = `${days} dias sem movimentação`
+                const fullTitle = `Alerta: ${titleKey}`
+                const link = `/quotes/${quote.id}`
+                const key = `${link}|${fullTitle}`
 
-                const { count } = await supabase
-                    .from('notifications')
-                    .select('id', { count: 'exact', head: true })
-                    .eq('link', `/quotes/${quote.id}`)
-                    .ilike('title', `%${titleKey}%`)
-                    .eq('organization_id', orgId)
-
-                if (count === 0) {
-                    // Create notification
-                    await supabase.from('notifications').insert({
-                        user_id: userId, // Keep explicit target user
+                if (!existingSet.has(key)) {
+                    existingSet.add(key) // Prevent duplicates within this batch
+                    toInsert.push({
+                        user_id: userId,
                         organization_id: orgId,
-                        title: `Alerta: ${titleKey}`,
+                        title: fullTitle,
                         message: `O orçamento para ${quote.client_name} não é atualizado há ${diffDays} dias.`,
-                        link: `/quotes/${quote.id}`,
+                        link,
                         type: 'warning'
                     })
                 }
             }
         }
     }
+
+    if (toInsert.length > 0) {
+        await supabase.from('notifications').insert(toInsert)
+    }
 }
 
-async function checkExpiringQuotes(userId: string, orgId: string) {
+async function checkExpiringQuotesBatch(userId: string, orgId: string) {
     const supabase = await createClient()
 
-    // Get quotes in analysis with a valid_until date
     const { data: quotes } = await supabase
         .from('quotes')
         .select('id, client_name, valid_until')
@@ -123,9 +120,27 @@ async function checkExpiringQuotes(userId: string, orgId: string) {
         .not('valid_until', 'is', null)
         .eq('organization_id', orgId)
 
-    if (!quotes) return
+    if (!quotes || quotes.length === 0) return
 
     const now = new Date()
+    const quoteLinks = quotes
+        .filter(q => q.valid_until)
+        .map(q => `/quotes/${q.id}`)
+
+    if (quoteLinks.length === 0) return
+
+    // Batch query for existing notifications
+    const { data: existingNotifications } = await supabase
+        .from('notifications')
+        .select('link, title')
+        .eq('organization_id', orgId)
+        .in('link', quoteLinks)
+
+    const existingSet = new Set(
+        (existingNotifications || []).map(n => `${n.link}|${n.title}`)
+    )
+
+    const toInsert: any[] = []
 
     for (const quote of quotes) {
         if (!quote.valid_until) continue
@@ -153,30 +168,30 @@ async function checkExpiringQuotes(userId: string, orgId: string) {
             continue
         }
 
-        // Dedup: check if we already notified for this quote + this specific alert
-        const { count } = await supabase
-            .from('notifications')
-            .select('id', { count: 'exact', head: true })
-            .eq('link', `/quotes/${quote.id}`)
-            .ilike('title', `%${titleKey}%`)
-            .eq('organization_id', orgId)
+        const fullTitle = `⏰ ${titleKey}`
+        const link = `/quotes/${quote.id}`
+        const key = `${link}|${fullTitle}`
 
-        if (count === 0) {
-            await supabase.from('notifications').insert({
+        if (!existingSet.has(key)) {
+            existingSet.add(key)
+            toInsert.push({
                 user_id: userId,
                 organization_id: orgId,
-                title: `⏰ ${titleKey}`,
+                title: fullTitle,
                 message,
-                link: `/quotes/${quote.id}`,
+                link,
                 type
             })
         }
     }
+
+    if (toInsert.length > 0) {
+        await supabase.from('notifications').insert(toInsert)
+    }
 }
 
 export async function createNotification(userId: string, title: string, message: string, link: string, type: 'info' | 'success' | 'warning' | 'alert' = 'info') {
-    const supabase = await createClient()
-    const orgId = await getActiveOrganizationId()
+    const { supabase, orgId } = await getAuthContext()
 
     await supabase.from('notifications').insert({
         user_id: userId,

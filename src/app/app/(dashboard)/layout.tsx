@@ -1,12 +1,11 @@
 import { redirect } from 'next/navigation'
-import { checkOnboardingStatus } from '@/app/actions/profile'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { DesktopSidebar } from '@/components/layout/desktop-sidebar'
 import { SupportWidget } from '@/components/support/support-widget'
 import { createClient } from '@/lib/supabase/server'
 import { UpgradeBanner } from '@/components/upgrade-banner'
 import { PwaInstallPrompt } from '@/components/pwa-install-prompt'
-import { getActiveOrganizationId } from '@/lib/get-active-organization'
+import { cookies } from 'next/headers'
 
 export default async function DashboardLayout({
     children,
@@ -20,38 +19,35 @@ export default async function DashboardLayout({
         redirect('/login')
     }
 
-    const isOnboarded = await checkOnboardingStatus()
+    // Read orgId from cookie (zero latency) instead of calling getActiveOrganizationId()
+    const cookieStore = await cookies()
+    const orgId = cookieStore.get("activeOrganizationId")?.value || null
 
-    if (!isOnboarded) {
+    // Single parallel fetch: profile + quotes count (instead of 3 sequential calls)
+    const [profileResult, quotesCountResult] = await Promise.all([
+        supabase
+            .from('profiles')
+            .select('plan, onboarded_at')
+            .eq('id', user.id)
+            .single(),
+        orgId
+            ? supabase
+                .from('quotes')
+                .select('id', { count: 'exact', head: true })
+                .eq('organization_id', orgId)
+                .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
+            : Promise.resolve({ count: 0 })
+    ])
+
+    const profile = profileResult.data
+
+    // Onboarding check (no separate function call needed)
+    if (!profile?.onboarded_at) {
         redirect('/onboarding')
     }
 
-    // Buscando perfil para checar o plano
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('plan')
-        .eq('id', user.id)
-        .single()
-
     const isFree = !profile?.plan || profile.plan === 'free'
-
-    const orgId = await getActiveOrganizationId()
-
-    // Contagem de orçamentos para o gatilho de escassez no Banner
-    let quotesUsed = 0
-    if (isFree && orgId) {
-        const now = new Date();
-        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-        const { count } = await supabase
-            .from('quotes')
-            .select('id', { count: 'exact', head: true })
-            .eq('organization_id', orgId)
-            .gte('created_at', firstDayOfMonth.toISOString())
-        quotesUsed = count || 0
-    }
-
-
+    const quotesUsed = (isFree && orgId) ? (quotesCountResult.count || 0) : 0
 
     return (
         <div className="flex min-h-screen bg-background">

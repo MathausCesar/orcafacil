@@ -9,7 +9,7 @@ import { Plus, FileText, ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { getActiveOrganizationId } from '@/lib/get-active-organization'
+import { cookies } from 'next/headers'
 
 export default async function Dashboard() {
   const supabase = await createClient()
@@ -20,24 +20,32 @@ export default async function Dashboard() {
     redirect('/login')
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  // Read orgId from cookie (zero latency)
+  const cookieStore = await cookies()
+  const orgId = cookieStore.get("activeOrganizationId")?.value || null
+
+  // Parallel fetch: profile + recent quotes
+  const [profileResult, quotesResult] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('business_name, logo_url, onboarded_at')
+      .eq('id', user.id)
+      .single(),
+    supabase
+      .from('quotes')
+      .select('*, quote_items(description)')
+      .eq('organization_id', orgId || '')
+      .order('created_at', { ascending: false })
+      .limit(5)
+  ])
+
+  const profile = profileResult.data
 
   if (!profile?.onboarded_at) {
     redirect('/onboarding')
   }
 
-  const orgId = await getActiveOrganizationId()
-
-  const { data: recentQuotes } = await supabase
-    .from('quotes')
-    .select('*, quote_items(description)')
-    .eq('organization_id', orgId || '')
-    .order('created_at', { ascending: false })
-    .limit(5)
+  const recentQuotes = quotesResult.data
 
   return (
     <div className="space-y-8 p-4 md:p-8 max-w-7xl mx-auto">

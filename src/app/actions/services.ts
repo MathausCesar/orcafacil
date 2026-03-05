@@ -1,18 +1,14 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { getActiveOrganizationId } from '@/lib/get-active-organization'
+import { getAuthContext } from '@/lib/get-auth-context'
 
 export async function createService(formData: FormData) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user, orgId } = await getAuthContext()
 
     if (!user) {
         return { error: 'Unauthorized' }
     }
-
-    const orgId = await getActiveOrganizationId()
 
     if (!orgId) {
         return { error: 'No active organization found' }
@@ -33,7 +29,7 @@ export async function createService(formData: FormData) {
     const { error } = await supabase
         .from('services')
         .insert({
-            user_id: user.id, // Keeping user_id for original creator reference
+            user_id: user.id,
             organization_id: orgId,
             description: description.trim(),
             default_price: price,
@@ -52,14 +48,11 @@ export async function createService(formData: FormData) {
 }
 
 export async function updateService(id: string, formData: FormData) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user, orgId } = await getAuthContext()
 
     if (!user) {
         return { error: 'Unauthorized' }
     }
-
-    const orgId = await getActiveOrganizationId()
 
     if (!orgId) {
         return { error: 'No active organization found' }
@@ -87,7 +80,7 @@ export async function updateService(id: string, formData: FormData) {
             folder_id
         })
         .eq('id', id)
-        .eq('organization_id', orgId) // Security check
+        .eq('organization_id', orgId)
 
     if (error) {
         console.error('Error updating service:', error)
@@ -99,14 +92,11 @@ export async function updateService(id: string, formData: FormData) {
 }
 
 export async function deleteService(id: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user, orgId } = await getAuthContext()
 
     if (!user) {
         return { error: 'Unauthorized' }
     }
-
-    const orgId = await getActiveOrganizationId()
 
     if (!orgId) {
         return { error: 'No active organization found' }

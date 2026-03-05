@@ -1,8 +1,7 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { getActiveOrganizationId } from '@/lib/get-active-organization'
+import { getAuthContext } from '@/lib/get-auth-context'
 
 export interface ItemFolder {
     id: string
@@ -13,14 +12,11 @@ export interface ItemFolder {
 }
 
 export async function getFolders() {
-    const supabase = await createClient()
+    const { supabase, user, orgId } = await getAuthContext()
 
-    const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return { error: 'Usuário não autenticado' }
     }
-
-    const orgId = await getActiveOrganizationId()
 
     if (!orgId) {
         return { error: 'No active organization found' }
@@ -40,9 +36,8 @@ export async function getFolders() {
 }
 
 export async function createFolder(formData: FormData) {
-    const supabase = await createClient()
+    const { supabase, user, orgId } = await getAuthContext()
 
-    const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return { error: 'Usuário não autenticado' }
     }
@@ -54,8 +49,6 @@ export async function createFolder(formData: FormData) {
         return { error: 'Nome da pasta é obrigatório' }
     }
 
-    const orgId = await getActiveOrganizationId()
-
     if (!orgId) {
         return { error: 'No active organization found' }
     }
@@ -63,7 +56,7 @@ export async function createFolder(formData: FormData) {
     const { data, error } = await supabase
         .from('item_folders')
         .insert({
-            user_id: user.id, // Keeping user_id for original creator reference
+            user_id: user.id,
             organization_id: orgId,
             name,
             color
@@ -80,9 +73,8 @@ export async function createFolder(formData: FormData) {
 }
 
 export async function updateFolder(id: string, formData: FormData) {
-    const supabase = await createClient()
+    const { supabase, user, orgId } = await getAuthContext()
 
-    const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return { error: 'Usuário não autenticado' }
     }
@@ -93,8 +85,6 @@ export async function updateFolder(id: string, formData: FormData) {
     if (!name) {
         return { error: 'Nome da pasta é obrigatório' }
     }
-
-    const orgId = await getActiveOrganizationId()
 
     if (!orgId) {
         return { error: 'No active organization found' }
@@ -120,14 +110,11 @@ export async function updateFolder(id: string, formData: FormData) {
 }
 
 export async function deleteFolder(id: string) {
-    const supabase = await createClient()
+    const { supabase, user, orgId } = await getAuthContext()
 
-    const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return { error: 'Usuário não autenticado' }
     }
-
-    const orgId = await getActiveOrganizationId()
 
     if (!orgId) {
         return { error: 'No active organization found' }

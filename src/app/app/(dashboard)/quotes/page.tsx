@@ -8,9 +8,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { QuoteStatusBadge } from '@/components/quotes/quote-status-badge'
 import { QuoteFilters } from '@/components/quotes/quote-filters'
 import { QuotesPipeline } from '@/components/quotes/quotes-pipeline'
+import { QuotesViewToggle } from '@/components/quotes/quotes-view-toggle'
 import { getActiveOrganizationId } from '@/lib/get-active-organization'
-import { Button } from '@/components/ui/button'
-import { LayoutList, KanbanSquare } from 'lucide-react'
 
 interface SearchParams {
     q?: string
@@ -98,26 +97,7 @@ export default async function QuotesListPage({ searchParams }: { searchParams: P
                     )}
                 </div>
 
-                <div className="flex items-center bg-zinc-100/50 p-1 rounded-xl border border-zinc-200 shadow-sm">
-                    <Link href={`/quotes?${new URLSearchParams(Object.fromEntries(Object.entries({ ...params, view: 'list' }).filter(([, v]) => v !== undefined && v !== ''))).toString()}`}>
-                        <Button
-                            variant={view === 'list' ? 'default' : 'ghost'}
-                            size="sm"
-                            className={`rounded-lg ${view === 'list' ? 'bg-white text-primary shadow-sm ring-1 ring-zinc-200/50 hover:bg-zinc-50' : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200/50'}`}
-                        >
-                            <LayoutList className="h-4 w-4 mr-2" /> Lista
-                        </Button>
-                    </Link>
-                    <Link href={`/quotes?${new URLSearchParams(Object.fromEntries(Object.entries({ ...params, view: 'pipeline' }).filter(([, v]) => v !== undefined && v !== ''))).toString()}`}>
-                        <Button
-                            variant={view === 'pipeline' ? 'default' : 'ghost'}
-                            size="sm"
-                            className={`rounded-lg ${view === 'pipeline' ? 'bg-white text-primary shadow-sm ring-1 ring-zinc-200/50 hover:bg-zinc-50' : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200/50'}`}
-                        >
-                            <KanbanSquare className="h-4 w-4 mr-2" /> Pipeline
-                        </Button>
-                    </Link>
-                </div>
+                <QuotesViewToggle />
             </div>
 
             {/* Filters */}

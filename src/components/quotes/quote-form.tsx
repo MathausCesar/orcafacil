@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createQuote, updateQuote } from '@/app/actions/quotes'
 import { ProductSearch } from '@/components/quotes/product-search'
 import { Button } from '@/components/ui/button'
@@ -32,6 +32,15 @@ interface QuoteFormProps {
         paymentTerms?: string
         notes?: string
         showDetailedItems?: boolean
+        showTimeline?: boolean
+        showPaymentOptions?: boolean
+        estimatedDays?: string
+        cashDiscountPercent?: number
+        cashDiscountFixed?: number
+        cashDiscountType?: string
+        paymentMethods?: string[]
+        installmentCount?: string
+        layoutStyle?: string
         items: QuoteItem[]
     }
 }
@@ -39,6 +48,7 @@ interface QuoteFormProps {
 export function QuoteForm({ initialData }: QuoteFormProps) {
     const [items, setItems] = useState<QuoteItem[]>(initialData?.items || [])
     const [loading, setLoading] = useState(false)
+    const isSubmitting = useRef(false)
     const [date, setDate] = useState<string>(initialData?.expirationDate || '')
     const [clientName, setClientName] = useState(initialData?.clientName || '')
     const [clientPhone, setClientPhone] = useState(initialData?.clientPhone || '')
@@ -46,13 +56,18 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
     // Customization states
     // In a real app, these could come from initialData too if persisted
     const [showDetailedItems, setShowDetailedItems] = useState(initialData?.showDetailedItems || false)
-    const [showTimeline, setShowTimeline] = useState(false)
-    const [showPaymentOptions, setShowPaymentOptions] = useState(false)
-    const [estimatedDays, setEstimatedDays] = useState('')
-    const [cashDiscount, setCashDiscount] = useState('')
-    const [paymentMethods, setPaymentMethods] = useState<string[]>([])
-    const [installmentCount, setInstallmentCount] = useState('')
-    const [layoutStyle, setLayoutStyle] = useState('modern')
+    const [showTimeline, setShowTimeline] = useState(initialData?.showTimeline || false)
+    const [showPaymentOptions, setShowPaymentOptions] = useState(initialData?.showPaymentOptions || false)
+    const [estimatedDays, setEstimatedDays] = useState(initialData?.estimatedDays || '')
+    const [cashDiscountType, setCashDiscountType] = useState(initialData?.cashDiscountType || 'percent')
+    const [cashDiscount, setCashDiscount] = useState(
+        initialData?.cashDiscountType === 'fixed'
+            ? String(initialData?.cashDiscountFixed || '')
+            : String(initialData?.cashDiscountPercent || '')
+    )
+    const [paymentMethods, setPaymentMethods] = useState<string[]>(initialData?.paymentMethods || [])
+    const [installmentCount, setInstallmentCount] = useState(initialData?.installmentCount || '')
+    const [layoutStyle, setLayoutStyle] = useState(initialData?.layoutStyle || 'modern')
 
     const router = useRouter()
 
@@ -84,6 +99,8 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
     }
 
     const handleSubmit = async (formData: FormData) => {
+        if (isSubmitting.current) return;
+
         if (items.length === 0) {
             toast.error('Adicione pelo menos um item.')
             return
@@ -94,6 +111,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
             return
         }
 
+        isSubmitting.current = true;
         setLoading(true)
         formData.append('items', JSON.stringify(items))
         formData.set('clientName', clientName)
@@ -111,7 +129,14 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                 formData.set('payment_methods', JSON.stringify(paymentMethods))
             }
             if (cashDiscount) {
-                formData.set('cash_discount_percent', cashDiscount)
+                if (cashDiscountType === 'percent') {
+                    formData.set('cash_discount_percent', cashDiscount)
+                    formData.set('cash_discount_fixed', '0')
+                } else {
+                    formData.set('cash_discount_fixed', cashDiscount)
+                    formData.set('cash_discount_percent', '0')
+                }
+                formData.set('cash_discount_type', cashDiscountType)
             }
             if (paymentMethods.includes('installment') && installmentCount) {
                 formData.set('installment_count', installmentCount)
@@ -150,6 +175,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
         } catch (e) {
             toast.error('Erro ao salvar orçamento.')
         } finally {
+            isSubmitting.current = false;
             setLoading(false)
         }
     }
@@ -486,14 +512,29 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
 
                                                 {(paymentMethods.includes('pix') || paymentMethods.includes('cash')) && (
                                                     <div>
-                                                        <Label className="text-xs text-muted-foreground mb-1 block">Desconto à vista (%)</Label>
-                                                        <Input
-                                                            type="number"
-                                                            placeholder="Ex: 5"
-                                                            value={cashDiscount}
-                                                            onChange={(e) => setCashDiscount(e.target.value)}
-                                                            className="h-8 text-sm"
-                                                        />
+                                                        <Label className="text-xs text-muted-foreground mb-1 block">Desconto à vista</Label>
+                                                        <div className="flex gap-2">
+                                                            <div className="flex bg-muted rounded-md p-1 self-start">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setCashDiscountType('percent')}
+                                                                    className={`px-3 py-1 text-xs rounded-sm font-medium transition-all ${cashDiscountType === 'percent' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                                                                >%</button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setCashDiscountType('fixed')}
+                                                                    className={`px-3 py-1 text-xs rounded-sm font-medium transition-all ${cashDiscountType === 'fixed' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                                                                >R$</button>
+                                                            </div>
+                                                            <Input
+                                                                type="number"
+                                                                step={cashDiscountType === 'percent' ? "1" : "0.01"}
+                                                                placeholder={cashDiscountType === 'percent' ? "Ex: 5" : "Ex: 100.00"}
+                                                                value={cashDiscount}
+                                                                onChange={(e) => setCashDiscount(e.target.value)}
+                                                                className="h-8 text-sm flex-1"
+                                                            />
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>

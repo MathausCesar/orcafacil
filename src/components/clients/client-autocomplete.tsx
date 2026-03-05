@@ -68,8 +68,17 @@ export function ClientAutocomplete({ onSelect, defaultValue, defaultPhone }: Cli
         onSelect(client)
     }
 
-    const handleCreateSuccess = (result: any) => {
-        setSuggestions([])
+    const handleCreateSuccess = async (newClient: any) => {
+        setLoading(true)
+        const results = await getClients('')
+        setAllClients(results || [])
+        setLoading(false)
+
+        if (newClient && newClient.name) {
+            handleSelect(newClient)
+        } else {
+            setSuggestions([])
+        }
     }
 
     return (

@@ -12,6 +12,10 @@ interface PaymentOptionsProps {
     showCashDiscount?: boolean
     /** Percentual de desconto à vista (ex: 5 = 5%) */
     cashDiscountPercent?: number
+    /** Valor fixo de desconto à vista */
+    cashDiscountFixed?: number
+    /** Tipo de desconto: percent ou fixed */
+    cashDiscountType?: string
     /** Número de parcelas */
     installmentCount?: number
     /** Total do orçamento para cálculo de parcelas */
@@ -21,7 +25,9 @@ interface PaymentOptionsProps {
 export function PaymentOptions({
     themeColor = '#0D9B5C',
     showCashDiscount = false,
-    cashDiscountPercent = 5,
+    cashDiscountPercent = 0,
+    cashDiscountFixed = 0,
+    cashDiscountType = 'percent',
     installmentCount,
     total
 }: PaymentOptionsProps) {
@@ -34,20 +40,28 @@ export function PaymentOptions({
         {
             icon: QrCode,
             title: 'PIX',
-            description: showCashDiscount && total
+            description: showCashDiscount && total && cashDiscountType === 'percent'
                 ? `À vista ${formatCurrency(total * (1 - cashDiscountPercent / 100))} (${cashDiscountPercent}% desc.)`
-                : showCashDiscount
-                    ? `À vista com ${cashDiscountPercent}% de desconto`
-                    : 'Pagamento instantâneo'
+                : showCashDiscount && total && cashDiscountType === 'fixed'
+                    ? `À vista ${formatCurrency(Math.max(0, total - cashDiscountFixed))} (${formatCurrency(cashDiscountFixed)} desc.)`
+                    : showCashDiscount && cashDiscountType === 'percent'
+                        ? `À vista com ${cashDiscountPercent}% de desconto`
+                        : showCashDiscount && cashDiscountType === 'fixed'
+                            ? `À vista com ${formatCurrency(cashDiscountFixed)} de desconto`
+                            : 'Pagamento instantâneo'
         },
         {
             icon: Banknote,
             title: 'Dinheiro',
-            description: showCashDiscount && total
+            description: showCashDiscount && total && cashDiscountType === 'percent'
                 ? `À vista ${formatCurrency(total * (1 - cashDiscountPercent / 100))} (${cashDiscountPercent}% desc.)`
-                : showCashDiscount
-                    ? `À vista com ${cashDiscountPercent}% de desconto`
-                    : 'Pagamento em espécie'
+                : showCashDiscount && total && cashDiscountType === 'fixed'
+                    ? `À vista ${formatCurrency(Math.max(0, total - cashDiscountFixed))} (${formatCurrency(cashDiscountFixed)} desc.)`
+                    : showCashDiscount && cashDiscountType === 'percent'
+                        ? `À vista com ${cashDiscountPercent}% de desconto`
+                        : showCashDiscount && cashDiscountType === 'fixed'
+                            ? `À vista com ${formatCurrency(cashDiscountFixed)} de desconto`
+                            : 'Pagamento em espécie'
         },
         {
             icon: CreditCard,
@@ -118,7 +132,7 @@ export function PaymentOptions({
                     }}
                 >
                     <p className="text-sm font-semibold" style={{ color: themeColor }}>
-                        💰 {cashDiscountPercent}% de desconto para pagamento à vista (PIX ou Dinheiro)
+                        💰 {cashDiscountType === 'percent' ? `${cashDiscountPercent}%` : formatCurrency(cashDiscountFixed)} de desconto para pagamento à vista (PIX ou Dinheiro)
                     </p>
                 </div>
             )}

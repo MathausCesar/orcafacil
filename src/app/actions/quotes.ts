@@ -57,7 +57,9 @@ export async function createQuote(formData: FormData) {
     const showPaymentOptions = formData.get('show_payment_options') === 'true'
     const showDetailedItems = formData.get('show_detailed_items') === 'true'
     const estimatedDays = formData.get('estimated_days') ? parseInt(formData.get('estimated_days') as string) : null
+    const cashDiscountType = formData.get('cash_discount_type') as string || 'percent'
     const cashDiscountPercent = formData.get('cash_discount_percent') ? parseInt(formData.get('cash_discount_percent') as string) : 0
+    const cashDiscountFixed = formData.get('cash_discount_fixed') ? parseFloat(formData.get('cash_discount_fixed') as string) : 0
     const installmentCount = formData.get('installment_count') ? parseInt(formData.get('installment_count') as string) : null
     const paymentMethodsStr = formData.get('payment_methods') as string
     const paymentMethods = paymentMethodsStr ? JSON.parse(paymentMethodsStr) : []
@@ -80,13 +82,15 @@ export async function createQuote(formData: FormData) {
             payment_terms: paymentTerms,
             notes: notes,
             total: total,
-            status: 'pending',
+            status: 'draft',
             // Customization fields
             show_timeline: showTimeline,
             show_payment_options: showPaymentOptions,
             show_detailed_items: showDetailedItems,
             estimated_days: estimatedDays,
+            cash_discount_type: cashDiscountType,
             cash_discount_percent: cashDiscountPercent,
+            cash_discount_fixed: cashDiscountFixed,
             payment_methods: paymentMethods,
             installment_count: installmentCount,
             layout_style: layoutStyle
@@ -159,7 +163,7 @@ export async function updateQuote(id: string, formData: FormData) {
         return { error: 'Orçamentos em execução ou concluídos não podem ser editados.' }
     }
 
-    // If approved, reset to pending for re-approval
+    // If approved, reset to draft for re-approval
     const shouldResetStatus = currentQuote.status === 'approved'
 
     const clientName = formData.get('clientName') as string
@@ -174,7 +178,9 @@ export async function updateQuote(id: string, formData: FormData) {
     const showPaymentOptions = formData.get('show_payment_options') === 'true'
     const showDetailedItems = formData.get('show_detailed_items') === 'true'
     const estimatedDays = formData.get('estimated_days') ? parseInt(formData.get('estimated_days') as string) : null
+    const cashDiscountType = formData.get('cash_discount_type') as string || 'percent'
     const cashDiscountPercent = formData.get('cash_discount_percent') ? parseInt(formData.get('cash_discount_percent') as string) : 0
+    const cashDiscountFixed = formData.get('cash_discount_fixed') ? parseFloat(formData.get('cash_discount_fixed') as string) : 0
     const installmentCount = formData.get('installment_count') ? parseInt(formData.get('installment_count') as string) : null
     const paymentMethodsStr = formData.get('payment_methods') as string
     const paymentMethods = paymentMethodsStr ? JSON.parse(paymentMethodsStr) : []
@@ -196,15 +202,17 @@ export async function updateQuote(id: string, formData: FormData) {
         show_payment_options: showPaymentOptions,
         show_detailed_items: showDetailedItems,
         estimated_days: estimatedDays,
+        cash_discount_type: cashDiscountType,
         cash_discount_percent: cashDiscountPercent,
+        cash_discount_fixed: cashDiscountFixed,
         payment_methods: paymentMethods,
         installment_count: installmentCount,
         layout_style: layoutStyle
     }
 
-    // Reset approved quotes back to pending for re-approval
+    // Reset approved quotes back to draft for re-approval
     if (shouldResetStatus) {
-        updateData.status = 'pending'
+        updateData.status = 'draft'
     }
 
     const { error: updateError } = await supabase
@@ -279,7 +287,7 @@ export async function deleteQuote(id: string) {
     return { success: true }
 }
 
-export async function updateQuoteStatus(id: string, status: 'approved' | 'rejected' | 'in_progress' | 'completed') {
+export async function updateQuoteStatus(id: string, status: 'draft' | 'pending' | 'sent' | 'approved' | 'rejected' | 'in_progress' | 'completed') {
     const supabase = await createClient()
 
     // Calls the security definer RPC function to allow public updates

@@ -47,6 +47,15 @@ export default async function EditQuotePage(props: PageProps) {
         paymentTerms: quote.payment_terms,
         notes: quote.notes,
         showDetailedItems: quote.show_detailed_items || false,
+        showTimeline: quote.show_timeline || false,
+        showPaymentOptions: quote.show_payment_options || false,
+        estimatedDays: quote.estimated_days || '',
+        cashDiscountPercent: quote.cash_discount_percent || 0,
+        cashDiscountFixed: quote.cash_discount_fixed || 0,
+        cashDiscountType: quote.cash_discount_type || 'percent',
+        paymentMethods: quote.payment_methods || [],
+        installmentCount: quote.installment_count || '',
+        layoutStyle: quote.layout_style || 'modern',
         items: quote.quote_items.map((item: any) => ({
             id: item.id, // Or generate random if needed, but ID is fine
             description: item.description,

@@ -11,6 +11,7 @@ import { PrintButton } from '@/components/quotes/print-button'
 import { cn } from '@/lib/utils'
 import { QuoteStatusActions } from '@/components/quotes/quote-status-actions'
 import { QuoteOwnerActions } from '@/components/quotes/quote-owner-actions'
+import { QuoteShareModal } from '@/components/quotes/quote-share-modal'
 import { QRCodeGenerator } from '@/components/quotes/qr-code-generator'
 import { WarrantyBox } from '@/components/quotes/warranty-box'
 import { ValueProposition } from '@/components/quotes/value-proposition'
@@ -194,11 +195,15 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
 
                 <div className="flex gap-2">
                     {isOwner && (
-                        <Link href={whatsappLink} target="_blank">
-                            <Button variant="outline" size="sm" className="gap-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50">
-                                <Share2 className="h-4 w-4" /> <span className="hidden sm:inline">WhatsApp</span>
-                            </Button>
-                        </Link>
+                        <QuoteShareModal
+                            quoteId={quote.id}
+                            clientName={quote.client_name}
+                            approvalUrl={approvalUrl}
+                            whatsappLink={whatsappLink}
+                            businessName={businessName}
+                            totalFormatted={totalFormatted}
+                            whatsappMessage={whatsappMessage}
+                        />
                     )}
                     <PrintButton />
                 </div>
@@ -342,8 +347,10 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 {quote.show_payment_options && (
                                     <PaymentOptions
                                         themeColor={themeColor}
-                                        showCashDiscount={(quote.cash_discount_percent ?? 0) > 0}
+                                        showCashDiscount={(quote.cash_discount_percent ?? 0) > 0 || (quote.cash_discount_fixed ?? 0) > 0}
                                         cashDiscountPercent={quote.cash_discount_percent ?? 0}
+                                        cashDiscountFixed={quote.cash_discount_fixed ?? 0}
+                                        cashDiscountType={quote.cash_discount_type ?? 'percent'}
                                         installmentCount={quote.installment_count}
                                         total={total}
                                     />
@@ -489,8 +496,10 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 {quote.show_payment_options && (
                                     <PaymentOptions
                                         themeColor="#334155"
-                                        showCashDiscount={(quote.cash_discount_percent ?? 0) > 0}
+                                        showCashDiscount={(quote.cash_discount_percent ?? 0) > 0 || (quote.cash_discount_fixed ?? 0) > 0}
                                         cashDiscountPercent={quote.cash_discount_percent ?? 0}
+                                        cashDiscountFixed={quote.cash_discount_fixed ?? 0}
+                                        cashDiscountType={quote.cash_discount_type ?? 'percent'}
                                         installmentCount={quote.installment_count}
                                         total={total}
                                     />
@@ -616,8 +625,10 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                             {quote.show_payment_options && (
                                 <PaymentOptions
                                     themeColor="#1e293b"
-                                    showCashDiscount={(quote.cash_discount_percent ?? 0) > 0}
+                                    showCashDiscount={(quote.cash_discount_percent ?? 0) > 0 || (quote.cash_discount_fixed ?? 0) > 0}
                                     cashDiscountPercent={quote.cash_discount_percent ?? 0}
+                                    cashDiscountFixed={quote.cash_discount_fixed ?? 0}
+                                    cashDiscountType={quote.cash_discount_type ?? 'percent'}
                                     installmentCount={quote.installment_count}
                                     total={total}
                                 />

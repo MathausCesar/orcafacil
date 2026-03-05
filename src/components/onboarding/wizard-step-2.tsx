@@ -61,6 +61,12 @@ const SPECIALTIES_BY_CATEGORY: Record<string, { label: string; value: string }[]
         { label: "Envelopamento de Frotas", value: "frotas" },
         { label: "Impressos (Flyers, Cardápios)", value: "impressos" },
     ],
+    outros: [
+        { label: "Serviços Gerais", value: "geral" },
+        { label: "Consultoria Especializada", value: "consultoria_especializada" },
+        { label: "Atendimento ou Suporte", value: "atendimento" },
+        { label: "Outras Especialidades", value: "outras_especialidades" },
+    ],
 };
 
 export function WizardStep2() {

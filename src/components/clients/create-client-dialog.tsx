@@ -35,7 +35,7 @@ export function CreateClientDialog({ trigger, onSuccess }: CreateClientDialogPro
                 toast.success('Cliente cadastrado com sucesso!')
                 setOpen(false)
                 router.refresh()
-                if (onSuccess) onSuccess(result)
+                if (onSuccess) onSuccess(result.client)
             }
         } catch (e) {
             toast.error('Erro ao cadastrar cliente')

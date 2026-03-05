@@ -23,6 +23,24 @@ export async function login(formData: FormData) {
     return { success: true, redirect: '/' }
 }
 
+export async function signInWithGoogle() {
+    const supabase = await createClient()
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/app/auth/callback`,
+        },
+    })
+
+    if (error) {
+        return { error: error.message }
+    }
+
+    if (data.url) {
+        redirect(data.url)
+    }
+}
+
 export async function signup(formData: FormData) {
     const supabase = await createClient()
 

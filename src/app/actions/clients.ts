@@ -28,7 +28,29 @@ export async function createClientAction(formData: FormData) {
     const personType = formData.get('person_type') as string || 'pf'
     const companyName = formData.get('company_name') as string || null
 
-    const { error } = await supabase
+    if (email) {
+        const { data: existingEmail } = await supabase
+            .from('clients')
+            .select('id')
+            .eq('organization_id', orgId)
+            .eq('email', email)
+            .limit(1)
+            .single()
+
+        if (existingEmail) return { error: 'Já existe um cliente cadastrado com este e-mail.' }
+    }
+
+    const { data: existingName } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('organization_id', orgId)
+        .ilike('name', name)
+        .limit(1)
+        .single()
+
+    if (existingName) return { error: 'Já existe um cliente cadastrado com este nome.' }
+
+    const { data, error } = await supabase
         .from('clients')
         .insert({
             user_id: user.id,
@@ -42,6 +64,8 @@ export async function createClientAction(formData: FormData) {
             person_type: personType,
             company_name: companyName
         })
+        .select()
+        .single()
 
     if (error) {
         console.error('Error creating client:', error)
@@ -50,7 +74,7 @@ export async function createClientAction(formData: FormData) {
 
     revalidatePath('/clients')
     revalidatePath('/new') // Revalidate quote form
-    return { success: true }
+    return { success: true, client: data }
 }
 
 export async function getClients(query?: string) {
@@ -108,6 +132,30 @@ export async function updateClient(id: string, formData: FormData) {
     const notes = formData.get('notes') as string
     const personType = formData.get('person_type') as string
     const companyName = formData.get('company_name') as string || null
+
+    if (email) {
+        const { data: existingEmail } = await supabase
+            .from('clients')
+            .select('id')
+            .eq('organization_id', orgId)
+            .eq('email', email)
+            .neq('id', id)
+            .limit(1)
+            .single()
+
+        if (existingEmail) return { error: 'Já existe um cliente cadastrado com este e-mail.' }
+    }
+
+    const { data: existingName } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('organization_id', orgId)
+        .ilike('name', name)
+        .neq('id', id)
+        .limit(1)
+        .single()
+
+    if (existingName) return { error: 'Já existe um cliente cadastrado com este nome.' }
 
     const { error } = await supabase
         .from('clients')

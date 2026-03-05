@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { updateQuoteStatus } from '@/app/actions/quotes'
 import { Button } from '@/components/ui/button'
-import { CheckCircle, XCircle, Loader2, PlayCircle, Trophy } from 'lucide-react'
+import { CheckCircle, XCircle, Loader2, PlayCircle, Trophy, Send, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface QuoteActionsProps {
@@ -15,11 +15,12 @@ interface QuoteActionsProps {
 export function QuoteStatusActions({ quoteId, currentStatus, isOwner }: QuoteActionsProps) {
     const [loading, setLoading] = useState(false)
 
-    const handleStatusChange = async (status: 'approved' | 'rejected' | 'in_progress' | 'completed') => {
+    const handleStatusChange = async (status: 'sent' | 'approved' | 'rejected' | 'in_progress' | 'completed') => {
         setLoading(true)
         try {
             await updateQuoteStatus(quoteId, status)
             const messages: Record<string, string> = {
+                sent: 'Marcado como enviado!',
                 approved: 'Orçamento Aprovado!',
                 rejected: 'Orçamento Recusado.',
                 in_progress: 'Execução iniciada!',
@@ -38,6 +39,27 @@ export function QuoteStatusActions({ quoteId, currentStatus, isOwner }: QuoteAct
             <div className="flex items-center justify-center gap-2 p-4 bg-teal-50 text-teal-700 rounded-lg border border-teal-200 w-full">
                 <Trophy className="h-5 w-5" />
                 <span className="font-bold">Orçamento Concluído</span>
+            </div>
+        )
+    }
+
+    if (currentStatus === 'draft') {
+        return (
+            <div className="flex flex-col gap-3 w-full print:hidden">
+                <div className="flex items-center justify-center gap-2 p-3 bg-zinc-50 text-zinc-700 rounded-lg border border-zinc-200 w-full">
+                    <FileText className="h-5 w-5" />
+                    <span className="font-bold">Rascunho</span>
+                </div>
+                {isOwner && (
+                    <Button
+                        onClick={() => handleStatusChange('sent')}
+                        disabled={loading}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200"
+                    >
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
+                        Marcar como Enviado
+                    </Button>
+                )}
             </div>
         )
     }

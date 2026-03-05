@@ -5,22 +5,13 @@ import { Printer } from 'lucide-react'
 
 export function PrintButton() {
     const handlePrint = () => {
-        // iOS Safari workaround: Safari often ignores window.print() if called directly
-        // due to anti-phishing/popup measures or SPA routing state.
-        // We defer it slightly and use a robust approach
-        setTimeout(() => {
-            try {
-                // Tenta o método padrão primeiro
-                const result = document.execCommand('print', false, undefined);
-                if (!result) {
-                    // Se falhar (em navegadores modernos) tenta window.print()
-                    window.print();
-                }
-            } catch (e) {
-                // Fallback de segurança definitivo
-                window.print();
-            }
-        }, 150);
+        // window.print MUST be called synchronously to avoid popup blockers in Safari/iOS
+        // Executing inside a setTimeout drops the user-interaction context.
+        try {
+            window.print();
+        } catch (e) {
+            console.error("Failed to print:", e);
+        }
     }
 
     return (

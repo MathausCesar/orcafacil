@@ -99,7 +99,7 @@ export default async function QuotesListPage({ searchParams }: { searchParams: P
                 </div>
 
                 <div className="flex items-center bg-zinc-100/50 p-1 rounded-xl border border-zinc-200 shadow-sm">
-                    <Link href={`/quotes?${new URLSearchParams({ ...params, view: 'list' } as any).toString()}`}>
+                    <Link href={`/quotes?${new URLSearchParams(Object.fromEntries(Object.entries({ ...params, view: 'list' }).filter(([, v]) => v !== undefined && v !== ''))).toString()}`}>
                         <Button
                             variant={view === 'list' ? 'default' : 'ghost'}
                             size="sm"
@@ -108,7 +108,7 @@ export default async function QuotesListPage({ searchParams }: { searchParams: P
                             <LayoutList className="h-4 w-4 mr-2" /> Lista
                         </Button>
                     </Link>
-                    <Link href={`/quotes?${new URLSearchParams({ ...params, view: 'pipeline' } as any).toString()}`}>
+                    <Link href={`/quotes?${new URLSearchParams(Object.fromEntries(Object.entries({ ...params, view: 'pipeline' }).filter(([, v]) => v !== undefined && v !== ''))).toString()}`}>
                         <Button
                             variant={view === 'pipeline' ? 'default' : 'ghost'}
                             size="sm"

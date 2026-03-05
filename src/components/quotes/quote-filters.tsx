@@ -35,6 +35,8 @@ export function QuoteFilters() {
         return !!(searchParams.get('status') || searchParams.get('from') || searchParams.get('to') || searchParams.get('sort'))
     })
 
+    const currentView = searchParams.get('view') || ''
+
     const createQueryString = useCallback((updates: Record<string, string>) => {
         const params = new URLSearchParams(searchParams.toString())
         Object.entries(updates).forEach(([key, value]) => {
@@ -52,7 +54,7 @@ export function QuoteFilters() {
     }
 
     const clearAll = () => {
-        router.push(pathname)
+        router.push(currentView ? `${pathname}?view=${currentView}` : pathname)
         setOpen(false)
     }
 
@@ -76,11 +78,12 @@ export function QuoteFilters() {
                         className="pl-10 h-10 bg-card border-primary/10 focus-visible:ring-primary"
                         defaultValue={currentQ}
                     />
-                    {/* Preserve other params */}
+                    {/* Preserve other params including view */}
                     {currentStatus && <input type="hidden" name="status" value={currentStatus} />}
                     {currentFrom && <input type="hidden" name="from" value={currentFrom} />}
                     {currentTo && <input type="hidden" name="to" value={currentTo} />}
                     {currentSort !== 'recent' && <input type="hidden" name="sort" value={currentSort} />}
+                    {currentView && <input type="hidden" name="view" value={currentView} />}
                 </form>
                 <Button
                     type="button"

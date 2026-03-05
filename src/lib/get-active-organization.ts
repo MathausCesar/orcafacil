@@ -5,7 +5,7 @@ export async function getActiveOrganizationId(
     existingSupabase?: Awaited<ReturnType<typeof createClient>>
 ) {
     const cookieStore = await cookies()
-    const activeOrgId = cookieStore.get("activeOrganizationId")?.value
+    const activeOrgId = cookieStore.get("active_organization_id")?.value
 
     if (activeOrgId) {
         return activeOrgId

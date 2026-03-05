@@ -22,7 +22,7 @@ export default async function Dashboard() {
 
   // Read orgId from cookie (zero latency)
   const cookieStore = await cookies()
-  const orgId = cookieStore.get("activeOrganizationId")?.value || null
+  const orgId = cookieStore.get("active_organization_id")?.value || null
 
   // Parallel fetch: profile + recent quotes
   const [profileResult, quotesResult] = await Promise.all([

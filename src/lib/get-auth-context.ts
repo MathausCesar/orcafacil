@@ -16,7 +16,7 @@ export async function getAuthContext(): Promise<AuthContext> {
     }
 
     const cookieStore = await cookies()
-    const orgId = cookieStore.get("activeOrganizationId")?.value || null
+    const orgId = cookieStore.get("active_organization_id")?.value || null
 
     if (orgId) {
         return { supabase, user, orgId }

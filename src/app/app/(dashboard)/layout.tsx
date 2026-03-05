@@ -21,7 +21,7 @@ export default async function DashboardLayout({
 
     // Read orgId from cookie (zero latency) instead of calling getActiveOrganizationId()
     const cookieStore = await cookies()
-    const orgId = cookieStore.get("activeOrganizationId")?.value || null
+    const orgId = cookieStore.get("active_organization_id")?.value || null
 
     // Single parallel fetch: profile + quotes count (instead of 3 sequential calls)
     const [profileResult, quotesCountResult] = await Promise.all([

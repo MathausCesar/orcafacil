@@ -79,21 +79,21 @@ export function NotificationBell() {
                             Nenhuma notificação.
                         </div>
                     ) : (
-                        <div className="divide-y">
+                        <div className="divide-y divide-border">
                             {notifications.map((notification) => (
                                 <div
                                     key={notification.id}
                                     className={cn(
-                                        "p-4 hover:bg-slate-50 transition-colors flex gap-3 items-start",
-                                        !notification.read && "bg-blue-50/50 hover:bg-blue-50"
+                                        "p-4 hover:bg-secondary/50 transition-colors flex gap-3 items-start",
+                                        !notification.read && "bg-primary/5 dark:bg-primary/10 hover:bg-primary/10 dark:hover:bg-primary/20"
                                     )}
                                 >
                                     <div className={cn(
                                         "h-2 w-2 mt-2 rounded-full flex-shrink-0",
-                                        !notification.read ? "bg-blue-500" : "bg-slate-300"
+                                        !notification.read ? "bg-primary" : "bg-muted-foreground/30"
                                     )} />
                                     <div className="flex-1 space-y-1">
-                                        <p className="text-sm font-medium leading-none">{notification.title}</p>
+                                        <p className="text-sm font-medium leading-none text-foreground">{notification.title}</p>
                                         <p className="text-xs text-muted-foreground line-clamp-2">{notification.message}</p>
                                         <div className="flex gap-2 mt-2">
                                             {notification.link && (

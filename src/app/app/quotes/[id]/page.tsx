@@ -148,9 +148,9 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
     };
     const logoSizeClass = logoSizeMap[quoteSettings.logoSize] || logoSizeMap.medium;
 
-    const logoAlignmentClass = quoteSettings.logoAlignment === 'center' ? 'mx-auto'
-        : quoteSettings.logoAlignment === 'right' ? 'ml-auto'
-            : 'mr-auto';
+    const blockAlignmentClasses = quoteSettings.logoAlignment === 'center' ? 'flex flex-col items-center text-center'
+        : quoteSettings.logoAlignment === 'right' ? 'flex flex-col items-end text-right'
+            : 'flex flex-col items-start text-left';
 
     const imageObjectFitClass = quoteSettings.logoAlignment === 'center' ? 'object-center'
         : quoteSettings.logoAlignment === 'right' ? 'object-right'
@@ -159,19 +159,20 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
     const logoConfig = {
         shouldShowInHeader: quoteSettings.logoPosition === 'header',
         shouldShowInFooter: quoteSettings.logoPosition === 'footer',
-        wrapperClass: `relative mb-4 ${logoSizeClass} ${logoAlignmentClass}`,
-        imageClass: `object-contain ${imageObjectFitClass}`
+        wrapperClass: `relative mb-4 shrink-0 ${logoSizeClass}`,
+        imageClass: `object-contain ${imageObjectFitClass}`,
+        blockClass: blockAlignmentClasses
     };
 
     const FooterLogoAndText = () => (
-        <div className="w-full flex flex-col items-center mt-8 space-y-4">
+        <div className={`w-full mt-8 space-y-4 ${logoConfig.blockClass}`}>
             {logoConfig.shouldShowInFooter && profile?.logo_url && (
                 <div className={`relative ${logoSizeClass}`}>
-                    <Image src={profile.logo_url} alt="Logo" fill className="object-contain object-center" unoptimized />
+                    <Image src={profile.logo_url} alt="Logo" fill className={logoConfig.imageClass} unoptimized />
                 </div>
             )}
             {quoteSettings.footerText && (
-                <p className="text-sm text-center text-muted-foreground italic max-w-lg mx-auto">
+                <p className="text-sm text-muted-foreground italic max-w-lg">
                     "{quoteSettings.footerText}"
                 </p>
             )}
@@ -231,7 +232,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                         <CardContent className="p-0">
                             {/* Modern Header */}
                             <div className="bg-[var(--theme-color)]/5 p-8 flex justify-between items-start">
-                                <div>
+                                <div className={logoConfig.blockClass}>
                                     {logoConfig.shouldShowInHeader && profile?.logo_url && (
                                         <div className={logoConfig.wrapperClass}>
                                             <Image src={profile.logo_url} alt="Logo" fill className={logoConfig.imageClass} unoptimized />
@@ -394,8 +395,8 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                         <CardContent className="p-0">
                             {/* Executive Header — Dark, authoritative */}
                             <div className="bg-slate-900 text-white p-8 md:p-10">
-                                <div className="flex justify-between items-start">
-                                    <div className="flex-1 w-full">
+                                <div className="flex justify-between items-start gap-8">
+                                    <div className={`flex-1 w-full ${logoConfig.blockClass}`}>
                                         {logoConfig.shouldShowInHeader && profile?.logo_url && (
                                             <div className={logoConfig.wrapperClass}>
                                                 <Image src={profile.logo_url} alt="Logo" fill className={logoConfig.imageClass} unoptimized />
@@ -407,7 +408,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                             <p>{[profile?.phone, profile?.email].filter(Boolean).join(' · ')}</p>
                                         </div>
                                     </div>
-                                    <div className="text-right">
+                                    <div className="text-right shrink-0">
                                         <p className="text-xs font-medium uppercase tracking-widest text-slate-500">Proposta</p>
                                         <p className="text-2xl font-bold mt-1">#{quote.id.substring(0, 8).toUpperCase()}</p>
                                         <p className="text-sm text-slate-400 mt-2">{format(new Date(quote.created_at), "dd/MM/yyyy")}</p>
@@ -521,14 +522,14 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                     <Card className="relative shadow-lg print:shadow-none print:border-none rounded-none border border-slate-300">
                         <CardContent className="p-10 md:p-14 space-y-8" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
                             {/* Ornamental Header */}
-                            <div className="text-center space-y-5 flex flex-col items-center">
+                            <div className={`space-y-5 w-full ${logoConfig.blockClass}`}>
                                 <div className="border-t-2 border-b border-slate-800 py-1 w-full">
                                     <div className="border-t border-slate-800" />
                                 </div>
 
                                 {logoConfig.shouldShowInHeader && profile?.logo_url && (
-                                    <div className={`relative ${logoSizeClass} mx-auto mb-4`}>
-                                        <Image src={profile.logo_url} alt="Logo" fill className="object-contain object-center" unoptimized />
+                                    <div className={logoConfig.wrapperClass}>
+                                        <Image src={profile.logo_url} alt="Logo" fill className={logoConfig.imageClass} unoptimized />
                                     </div>
                                 )}
                                 <h1 className="text-3xl font-normal text-slate-900 tracking-[0.2em] uppercase">{profile?.business_name}</h1>

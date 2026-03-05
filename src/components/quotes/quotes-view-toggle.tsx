@@ -1,17 +1,18 @@
 'use client'
 
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, usePathname } from 'next/navigation'
 import { LayoutList, KanbanSquare } from 'lucide-react'
 
 export function QuotesViewToggle() {
     const searchParams = useSearchParams()
+    const pathname = usePathname()
     const view = searchParams.get('view') || 'list'
 
     const buildHref = (newView: string) => {
         const params = new URLSearchParams(searchParams.toString())
         params.set('view', newView)
-        return `/quotes?${params.toString()}`
+        return `${pathname}?${params.toString()}`
     }
 
     const baseClass = 'flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all'

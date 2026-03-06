@@ -46,6 +46,9 @@ export function QuoteOwnerActions({ quoteId, status }: QuoteOwnerActionsProps) {
             {/* Edit Button — hidden for in_progress/completed */}
             {canEdit && (
                 <Link href={`/quotes/${quoteId}/edit`}>
+                    <Button variant="outline" size="icon" className="sm:hidden">
+                        <Edit className="h-4 w-4" />
+                    </Button>
                     <Button variant="outline" size="sm" className="hidden sm:flex">
                         <Edit className="h-4 w-4 mr-2" /> Editar
                     </Button>

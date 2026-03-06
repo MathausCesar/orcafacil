@@ -113,7 +113,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
 
         isSubmitting.current = true;
         setLoading(true)
-        formData.append('items', JSON.stringify(items))
+        formData.set('items', JSON.stringify(items))
         formData.set('clientName', clientName)
         if (clientPhone) formData.set('clientPhone', clientPhone)
 
@@ -242,56 +242,56 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                             {items.length > 0 ? (
                                 <div className="space-y-4">
                                     {/* Desktop Table Header */}
-                                    <div className="hidden lg:grid grid-cols-12 gap-4 text-xs font-semibold text-muted-foreground px-4 uppercase tracking-wider">
-                                        <div className="col-span-6">Descrição</div>
-                                        <div className="col-span-2 text-center">Qtd</div>
-                                        <div className="col-span-2 text-right">Unitário</div>
-                                        <div className="col-span-2 text-right">Total</div>
+                                    <div className="hidden lg:grid grid-cols-12 gap-2 text-xs font-semibold text-muted-foreground px-4 uppercase tracking-wider">
+                                        <div className="col-span-5">Descrição</div>
+                                        <div className="col-span-1 text-center">Qtd</div>
+                                        <div className="col-span-3 text-right">Unitário</div>
+                                        <div className="col-span-3 text-right">Total</div>
                                     </div>
 
                                     <div className="space-y-3">
                                         {items.map((item) => (
-                                            <div key={item.id} className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center bg-card p-4 rounded-xl border border-border shadow-sm group hover:border-primary/30 hover:shadow-md transition-all">
+                                            <div key={item.id} className="grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-2 items-center bg-card p-4 rounded-xl border border-border shadow-sm group hover:border-primary/30 hover:shadow-md transition-all">
 
-                                                <div className="lg:col-span-6">
+                                                <div className="lg:col-span-5 min-w-0">
                                                     <Input
                                                         value={item.description}
                                                         onChange={(e) => handleUpdateItem(item.id, 'description', e.target.value)}
-                                                        className="font-medium border-transparent hover:border-slate-200 focus:border-emerald-500 bg-transparent px-0 lg:px-3 h-auto py-1"
+                                                        className="font-medium border-transparent hover:border-slate-200 focus:border-emerald-500 bg-transparent px-0 lg:px-3 h-auto py-1 truncate"
                                                         placeholder="Descrição do item"
                                                     />
                                                 </div>
 
-                                                <div className="lg:col-span-2 flex items-center lg:justify-center">
+                                                <div className="lg:col-span-1 flex items-center lg:justify-center">
                                                     <span className="lg:hidden text-sm text-muted-foreground mr-2">Qtd:</span>
                                                     <Input
                                                         type="number"
                                                         value={item.quantity}
                                                         onChange={(e) => handleUpdateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
-                                                        className="w-20 text-center h-8"
+                                                        className="w-16 text-center h-8"
                                                     />
                                                 </div>
 
-                                                <div className="lg:col-span-2 flex items-center lg:justify-end">
-                                                    <span className="lg:hidden text-sm text-muted-foreground mr-2">Unit:</span>
+                                                <div className="lg:col-span-3 flex items-center lg:justify-end min-w-0">
+                                                    <span className="lg:hidden text-sm text-muted-foreground mr-2 shrink-0">Unit:</span>
                                                     <Input
                                                         type="number"
                                                         step="0.01"
                                                         value={item.unitPrice}
                                                         onChange={(e) => handleUpdateItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
-                                                        className="w-24 text-right h-8"
+                                                        className="w-full max-w-[120px] text-right h-8"
                                                     />
                                                 </div>
 
-                                                <div className="lg:col-span-2 flex items-center justify-between lg:justify-end gap-4 border-t lg:border-t-0 pt-3 lg:pt-0 mt-2 lg:mt-0">
-                                                    <span className="font-bold text-foreground">
+                                                <div className="lg:col-span-3 flex items-center justify-between lg:justify-end gap-2 border-t lg:border-t-0 pt-3 lg:pt-0 mt-2 lg:mt-0 min-w-0">
+                                                    <span className="font-bold text-foreground text-sm whitespace-nowrap">
                                                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.quantity * item.unitPrice)}
                                                     </span>
                                                     <Button
                                                         type="button"
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-500/10 rounded-full"
+                                                        className="h-8 w-8 shrink-0 text-muted-foreground hover:text-red-600 hover:bg-red-500/10 rounded-full"
                                                         onClick={() => handleRemoveItem(item.id)}
                                                     >
                                                         <Trash2 className="h-4 w-4" />

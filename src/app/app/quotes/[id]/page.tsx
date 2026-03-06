@@ -266,14 +266,51 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     <p className="text-sm text-muted-foreground">{quote.client_phone}</p>
                                 </div>
 
-                                {/* Items */}
-                                <table className="w-full text-sm">
+                                {/* Items - Mobile Cards */}
+                                <div className="md:hidden space-y-3">
+                                    <div className="grid grid-cols-4 gap-2 text-xs font-bold text-[var(--theme-color)] uppercase tracking-wider pb-2 border-b-2 border-[var(--theme-color)]/20 px-1">
+                                        <div className="col-span-2">Descrição</div>
+                                        <div className="text-right">Unit.</div>
+                                        <div className="text-right">Total</div>
+                                    </div>
+                                    {quote.quote_items.map((item: any) => {
+                                        const categoryInfo = detectItemCategory(item.description)
+                                        const CategoryIcon = categoryInfo.icon
+                                        return (
+                                            <div key={item.id} className="grid grid-cols-4 gap-2 items-start py-3 border-b border-dashed border-slate-200 px-1">
+                                                <div className="col-span-2 min-w-0">
+                                                    <div className="flex items-start gap-1.5">
+                                                        <CategoryIcon
+                                                            className="h-3.5 w-3.5 flex-shrink-0 mt-0.5"
+                                                            style={{ color: categoryInfo.color }}
+                                                        />
+                                                        <div className="min-w-0">
+                                                            <p className="font-medium text-foreground text-sm leading-tight">{item.quantity} {item.description}</p>
+                                                            {quote.show_detailed_items && item.details && (
+                                                                <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap leading-relaxed">{item.details}</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right text-xs text-muted-foreground whitespace-nowrap pt-0.5">
+                                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_price)}
+                                                </div>
+                                                <div className="text-right font-bold text-sm text-foreground whitespace-nowrap pt-0.5">
+                                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.quantity * item.unit_price)}
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+
+                                {/* Items - Desktop Table */}
+                                <table className="hidden md:table w-full text-sm">
                                     <thead>
                                         <tr className="border-b-2 border-[var(--theme-color)]/20 text-left">
                                             <th className="py-3 font-bold text-[var(--theme-color)] pl-2">DESCRIÇÃO</th>
-                                            <th className="py-3 font-bold text-[var(--theme-color)] text-center w-20">QTD</th>
-                                            <th className="py-3 font-bold text-[var(--theme-color)] text-right w-24">UNIT.</th>
-                                            <th className="py-3 font-bold text-[var(--theme-color)] text-right w-28 pr-2">TOTAL</th>
+                                            <th className="py-3 font-bold text-[var(--theme-color)] text-center w-16">QTD</th>
+                                            <th className="py-3 font-bold text-[var(--theme-color)] text-right whitespace-nowrap">UNIT.</th>
+                                            <th className="py-3 font-bold text-[var(--theme-color)] text-right whitespace-nowrap pr-2">TOTAL</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-dashed divide-slate-200">
@@ -295,10 +332,10 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                                         )}
                                                     </td>
                                                     <td className="py-4 text-center text-muted-foreground">{item.quantity}</td>
-                                                    <td className="py-4 text-right text-muted-foreground">
+                                                    <td className="py-4 text-right text-muted-foreground whitespace-nowrap">
                                                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_price)}
                                                     </td>
-                                                    <td className="py-4 text-right font-bold text-foreground pr-2">
+                                                    <td className="py-4 text-right font-bold text-foreground pr-2 whitespace-nowrap">
                                                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.quantity * item.unit_price)}
                                                     </td>
                                                 </tr>
@@ -309,8 +346,8 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
 
                                 {/* Totals */}
                                 <div className="flex justify-end pt-4 border-t border-slate-100">
-                                    <div className="w-56 space-y-2">
-                                        <div className="flex justify-between text-xl font-bold bg-[var(--theme-color)] text-white p-3 rounded-md shadow-lg shadow-[var(--theme-color)]/20">
+                                    <div className="min-w-fit space-y-2">
+                                        <div className="flex justify-between gap-4 text-lg sm:text-xl font-bold bg-[var(--theme-color)] text-white p-3 rounded-md shadow-lg shadow-[var(--theme-color)]/20 whitespace-nowrap">
                                             <span>Total</span>
                                             <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}</span>
                                         </div>
@@ -438,15 +475,41 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     </div>
                                 </div>
 
-                                {/* Items Table — Neutral, clean */}
+                                {/* Items — Responsive */}
                                 <div>
-                                    <table className="w-full text-sm">
+                                    {/* Mobile Cards */}
+                                    <div className="md:hidden space-y-3">
+                                        <div className="grid grid-cols-4 gap-2 text-[11px] font-semibold text-slate-800 uppercase tracking-wider pb-2 border-b-2 border-slate-800 px-1">
+                                            <div className="col-span-2">Descrição</div>
+                                            <div className="text-right">Unitário</div>
+                                            <div className="text-right">Total</div>
+                                        </div>
+                                        {quote.quote_items.map((item: any) => (
+                                            <div key={item.id} className="grid grid-cols-4 gap-2 items-start py-3 border-b border-slate-100 px-1">
+                                                <div className="col-span-2 min-w-0">
+                                                    <p className="font-medium text-slate-800 text-sm leading-tight">{item.quantity} {item.description}</p>
+                                                    {quote.show_detailed_items && item.details && (
+                                                        <p className="text-xs text-slate-400 mt-1 whitespace-pre-wrap leading-relaxed">{item.details}</p>
+                                                    )}
+                                                </div>
+                                                <div className="text-right text-xs text-slate-500 whitespace-nowrap pt-0.5">
+                                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_price)}
+                                                </div>
+                                                <div className="text-right font-semibold text-sm text-slate-900 whitespace-nowrap pt-0.5">
+                                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.quantity * item.unit_price)}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Desktop Table */}
+                                    <table className="hidden md:table w-full text-sm">
                                         <thead>
                                             <tr className="border-b-2 border-slate-800">
                                                 <th className="py-3 text-left font-semibold text-slate-800 text-xs uppercase tracking-wider">Descrição</th>
                                                 <th className="py-3 text-center font-semibold text-slate-800 text-xs uppercase tracking-wider w-16">Qtd</th>
-                                                <th className="py-3 text-right font-semibold text-slate-800 text-xs uppercase tracking-wider w-28">Unitário</th>
-                                                <th className="py-3 text-right font-semibold text-slate-800 text-xs uppercase tracking-wider w-28">Total</th>
+                                                <th className="py-3 text-right font-semibold text-slate-800 text-xs uppercase tracking-wider whitespace-nowrap">Unitário</th>
+                                                <th className="py-3 text-right font-semibold text-slate-800 text-xs uppercase tracking-wider whitespace-nowrap">Total</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -459,10 +522,10 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                                         )}
                                                     </td>
                                                     <td className="py-3.5 text-center text-slate-500">{item.quantity}</td>
-                                                    <td className="py-3.5 text-right text-slate-500">
+                                                    <td className="py-3.5 text-right text-slate-500 whitespace-nowrap">
                                                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_price)}
                                                     </td>
-                                                    <td className="py-3.5 text-right font-semibold text-slate-900">
+                                                    <td className="py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">
                                                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.quantity * item.unit_price)}
                                                     </td>
                                                 </tr>
@@ -473,7 +536,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     <div className="flex justify-end mt-4 pt-4 border-t border-slate-200">
                                         <div className="text-right">
                                             <p className="text-[11px] uppercase tracking-widest text-slate-400 mb-1">Total</p>
-                                            <p className="text-2xl font-bold text-slate-900">
+                                            <p className="text-2xl font-bold text-slate-900 whitespace-nowrap">
                                                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
                                             </p>
                                         </div>
@@ -565,15 +628,41 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 </div>
                             </div>
 
-                            {/* Items Table */}
+                            {/* Items Table — Responsive */}
                             <div>
-                                <table className="w-full text-sm border-collapse">
+                                {/* Mobile Cards */}
+                                <div className="md:hidden space-y-3">
+                                    <div className="grid grid-cols-4 gap-2 bg-slate-800 text-white text-[11px] font-semibold uppercase tracking-wider py-2.5 px-3">
+                                        <div className="col-span-2">Descrição</div>
+                                        <div className="text-right">Unitário</div>
+                                        <div className="text-right">Total</div>
+                                    </div>
+                                    {quote.quote_items.map((item: any, idx: number) => (
+                                        <div key={item.id} className="grid grid-cols-4 gap-2 items-start py-3 border-b border-slate-200 px-3">
+                                            <div className="col-span-2 min-w-0">
+                                                <p className="font-medium text-slate-800 text-sm leading-tight">{item.quantity} {item.description}</p>
+                                                {quote.show_detailed_items && item.details && (
+                                                    <p className="text-xs italic text-slate-500 mt-1 whitespace-pre-wrap leading-relaxed">{item.details}</p>
+                                                )}
+                                            </div>
+                                            <div className="text-right text-xs text-slate-600 whitespace-nowrap pt-0.5">
+                                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_price)}
+                                            </div>
+                                            <div className="text-right font-semibold text-sm text-slate-900 whitespace-nowrap pt-0.5">
+                                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.quantity * item.unit_price)}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Desktop Table */}
+                                <table className="hidden md:table w-full text-sm border-collapse">
                                     <thead>
                                         <tr className="bg-slate-800 text-white">
                                             <th className="py-2.5 pl-4 text-left font-semibold text-xs uppercase tracking-wider">Descrição</th>
                                             <th className="py-2.5 text-center font-semibold text-xs uppercase tracking-wider w-16">Qtd</th>
-                                            <th className="py-2.5 text-right font-semibold text-xs uppercase tracking-wider w-28">Unitário</th>
-                                            <th className="py-2.5 pr-4 text-right font-semibold text-xs uppercase tracking-wider w-28">Total</th>
+                                            <th className="py-2.5 text-right font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Unitário</th>
+                                            <th className="py-2.5 pr-4 text-right font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Total</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -586,10 +675,10 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                                     )}
                                                 </td>
                                                 <td className="py-3 text-center text-slate-600">{item.quantity}</td>
-                                                <td className="py-3 text-right text-slate-600">
+                                                <td className="py-3 text-right text-slate-600 whitespace-nowrap">
                                                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_price)}
                                                 </td>
-                                                <td className="py-3 pr-4 text-right font-semibold text-slate-900">
+                                                <td className="py-3 pr-4 text-right font-semibold text-slate-900 whitespace-nowrap">
                                                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.quantity * item.unit_price)}
                                                 </td>
                                             </tr>
@@ -599,9 +688,9 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
 
                                 {/* Total — Double border formal block */}
                                 <div className="flex justify-end mt-4">
-                                    <div className="border-2 border-slate-800 px-8 py-4 text-right">
+                                    <div className="border-2 border-slate-800 px-6 sm:px-8 py-4 text-right">
                                         <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Total a Pagar</p>
-                                        <p className="text-2xl font-bold text-slate-900">
+                                        <p className="text-xl sm:text-2xl font-bold text-slate-900 whitespace-nowrap">
                                             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
                                         </p>
                                     </div>

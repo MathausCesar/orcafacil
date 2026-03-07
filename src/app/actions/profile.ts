@@ -46,7 +46,7 @@ export async function updateProfile(formData: FormData) {
 
     if (error) {
         console.error('Error updating profile:', error)
-        return { error: 'Failed to update profile' }
+        return { error: error.message || 'Failed to update profile' }
     }
 
     revalidatePath('/profile')

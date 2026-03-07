@@ -61,13 +61,6 @@ const PIPELINE_COLUMNS = [
         dotRing: 'ring-emerald-500/30'
     },
     {
-        id: 'rejected', label: 'RECUSADO',
-        accent: 'bg-red-500', accentHex: '#ef4444',
-        color: 'text-red-600 dark:text-red-400',
-        bg: 'bg-red-500/5 dark:bg-red-500/10', border: 'border-red-500/20',
-        dotRing: 'ring-red-500/30'
-    },
-    {
         id: 'in_progress', label: 'EM EXECUÇÃO',
         accent: 'bg-violet-500', accentHex: '#8b5cf6',
         color: 'text-violet-600 dark:text-violet-400',

@@ -12,14 +12,25 @@ export function MarketingHeader() {
         <header className="fixed top-0 left-0 right-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-white/5">
             <div className="flex items-center justify-between px-4 sm:px-6 py-3">
                 {/* Logo */}
-                <Link href="/" className="relative h-10 w-36 sm:h-12 sm:w-44 flex items-center shrink-0">
-                    <Image
-                        src="/logo/logo.png"
-                        alt="Zacly"
-                        fill
-                        className="object-contain object-left"
-                        priority
-                    />
+                <Link href="/" className="relative flex items-center shrink-0">
+                    <div className="relative h-10 w-10 sm:hidden">
+                        <Image
+                            src="/logo/zacly_icone.png"
+                            alt="Zacly"
+                            fill
+                            className="object-contain"
+                            priority
+                        />
+                    </div>
+                    <div className="relative hidden sm:block h-12 w-44">
+                        <Image
+                            src="/logo/logo.png"
+                            alt="Zacly"
+                            fill
+                            className="object-contain object-left"
+                            priority
+                        />
+                    </div>
                 </Link>
 
                 {/* Desktop nav */}

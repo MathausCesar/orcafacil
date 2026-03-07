@@ -160,13 +160,14 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                 <div className="mx-auto w-full max-w-md space-y-10">
                     {/* Mobile Logo */}
                     <div className="lg:hidden text-center mb-8">
-                        <div className="relative mx-auto h-20 w-48 flex items-center justify-center">
+                        <div className="relative mx-auto h-20 w-20 flex items-center justify-center bg-white rounded-2xl shadow-sm p-2 border border-border">
                             <div className="relative h-full w-full">
                                 <Image
-                                    src="/logo/logo.png"
-                                    alt="Zacly Logo"
+                                    src="/logo/zacly_icone.png"
+                                    alt="Zacly Ícone"
                                     fill
                                     className="object-contain"
+                                    priority
                                 />
                             </div>
                         </div>

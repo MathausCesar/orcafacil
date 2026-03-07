@@ -18,7 +18,7 @@ import {
     TouchSensor,
     useSensor,
     useSensors,
-    closestCenter,
+    pointerWithin,
     DragStartEvent,
     DragEndEvent,
     useDroppable,
@@ -249,7 +249,7 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
         activationConstraint: { distance: 8 },
     })
     const touchSensor = useSensor(TouchSensor, {
-        activationConstraint: { delay: 200, tolerance: 6 },
+        activationConstraint: { delay: 250, tolerance: 10 },
     })
     const sensors = useSensors(pointerSensor, touchSensor)
 
@@ -280,8 +280,17 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
     }, [])
 
     const handleDragOver = useCallback((event: DragOverEvent) => {
-        setOverId(event.over?.id as string || null)
-    }, [])
+        const newOverId = event.over?.id as string || null
+        setOverId(newOverId)
+        // Auto-expand collapsed sections when dragging over them
+        if (newOverId && collapsedSections.has(newOverId)) {
+            setCollapsedSections(prev => {
+                const next = new Set(prev)
+                next.delete(newOverId)
+                return next
+            })
+        }
+    }, [collapsedSections])
 
     const handleDragEnd = useCallback(async (event: DragEndEvent) => {
         setActiveQuote(null)
@@ -425,7 +434,7 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
             {view === 'pipeline' && (
                 <DndContext
                     sensors={sensors}
-                    collisionDetection={closestCenter}
+                    collisionDetection={pointerWithin}
                     onDragStart={handleDragStart}
                     onDragOver={handleDragOver}
                     onDragEnd={handleDragEnd}
@@ -463,7 +472,7 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                                     <DroppableColumn
                                         key={col.id}
                                         id={col.id}
-                                        className={`relative ${!isLast ? 'pb-6' : 'pb-2'} rounded-xl px-1 -mx-1 animate-in fade-in`}
+                                        className={`relative ${!isLast ? 'pb-4' : 'pb-2'} rounded-xl px-2 -mx-2 py-2 animate-in fade-in`}
                                     >
                                         {/* Dot */}
                                         <div className="absolute -left-10 top-0 flex items-center justify-center">
@@ -511,8 +520,15 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                                         )}
 
                                         {!isCollapsed && colQuotes.length === 0 && (
-                                            <div className={`text-[11px] italic pl-1 py-2 rounded-lg transition-colors ${isDropTarget ? 'text-primary font-semibold bg-primary/5 text-center' : 'text-muted-foreground/50'}`}>
+                                            <div className={`text-[11px] italic pl-1 py-4 rounded-xl transition-all min-h-[48px] flex items-center ${isDropTarget ? 'text-primary font-semibold bg-primary/10 border-2 border-dashed border-primary/30 justify-center' : 'text-muted-foreground/50'}`}>
                                                 {isDropTarget ? '↓ Soltar aqui' : 'Nenhum orçamento nesta fase'}
+                                            </div>
+                                        )}
+
+                                        {/* Collapsed but droppable area */}
+                                        {isCollapsed && (
+                                            <div className={`py-3 rounded-xl transition-all min-h-[40px] flex items-center justify-center ${isDropTarget ? 'text-primary text-xs font-semibold bg-primary/10 border-2 border-dashed border-primary/30' : ''}`}>
+                                                {isDropTarget && '↓ Soltar aqui'}
                                             </div>
                                         )}
                                     </DroppableColumn>

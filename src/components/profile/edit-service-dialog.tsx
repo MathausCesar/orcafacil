@@ -80,7 +80,7 @@ export function EditServiceDialog({ service, initialFolders }: EditServiceDialog
             } else {
                 toast.success('Serviço atualizado!')
                 setOpen(false)
-                router.refresh()
+                setTimeout(() => router.refresh(), 100)
             }
         } catch (error) {
             console.error('Error in handleSave:', error)

@@ -23,6 +23,7 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
     const [themeColor, setThemeColor] = useState(initialProfile?.theme_color || '#0D9B5C')
     const [layoutStyle, setLayoutStyle] = useState(initialProfile?.layout_style || 'modern')
     const [logoUrl, setLogoUrl] = useState(initialProfile?.logo_url)
+    const [businessName, setBusinessName] = useState(initialProfile?.business_name || '')
     const getInitialSettings = () => {
         if (!initialProfile?.quote_settings) return null
         if (typeof initialProfile.quote_settings === 'string') {
@@ -127,6 +128,7 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                                                 id="businessName"
                                                 name="businessName"
                                                 defaultValue={initialProfile?.business_name || ''}
+                                                onChange={(e) => setBusinessName(e.target.value)}
                                                 className="focus-visible:ring-primary h-10"
                                                 placeholder="Ex: Soluções Técnicas Ltda"
                                             />
@@ -142,6 +144,17 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                                                 placeholder="(00) 00000-0000"
                                             />
                                         </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="address">Endereço</Label>
+                                        <Input
+                                            id="address"
+                                            name="address"
+                                            defaultValue={initialProfile?.address || ''}
+                                            className="focus-visible:ring-primary h-10"
+                                            placeholder="Ex: Rua Exemplo, 123 - Sala 45, São Paulo - SP"
+                                        />
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -221,7 +234,7 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                                         )}
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-foreground line-clamp-1">{initialProfile?.business_name || 'Sua Empresa'}</h3>
+                                        <h3 className="font-bold text-foreground line-clamp-1">{businessName || 'Sua Empresa'}</h3>
                                         <div className="flex items-center gap-1.5 mt-1">
                                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                                             <p className="text-xs font-medium text-emerald-600">Perfil Ativo</p>

@@ -1,15 +1,373 @@
+version: "2"
+type: frontend
 tech_stack:
-  framework: Next.js 15 (App Router)
-  language: TypeScript
-  styling: Tailwind CSS
-  components: shadcn/ui, Radix UI
-  database: Supabase (Auth, Postgres)
-  forms: React Hook Form, Zod
-
+  - TypeScript
+  - Next.js 16
+  - React 19
+  - Tailwind CSS 4
+  - Supabase (Auth + Database + SSR)
+  - Stripe (Payments)
+  - Radix UI
+  - Framer Motion
+  - Zod (Validation)
+  - React Hook Form
+  - Resend (Email)
+  - Lucide React (Icons)
+  - next-themes (Dark mode)
+  - cmdk (Command palette)
+routes:
+  - path: /app/login
+    file: src/app/app/(auth)/login/page.tsx
+    auth_required: false
+    description: User login page with email and password
+  - path: /app/register
+    file: src/app/app/(auth)/register/page.tsx
+    auth_required: false
+    description: User registration page
+  - path: /app/forgot-password
+    file: src/app/app/(auth)/forgot-password/page.tsx
+    auth_required: false
+    description: Password recovery page
+  - path: /app/update-password
+    file: src/app/app/(auth)/update-password/page.tsx
+    auth_required: false
+    description: Update password page
+  - path: /app/onboarding
+    file: src/app/app/(onboarding)/page.tsx
+    auth_required: true
+    description: Multi-step onboarding wizard for new users
+  - path: /app
+    file: src/app/app/(dashboard)/page.tsx
+    auth_required: true
+    description: Main dashboard with metrics, quick actions and recent activity
+  - path: /app/clients
+    file: src/app/app/(dashboard)/clients/page.tsx
+    auth_required: true
+    description: Clients list with CRUD operations
+  - path: /app/new
+    file: src/app/app/(dashboard)/new/page.tsx
+    auth_required: true
+    description: Create new quote page
+  - path: /app/quotes
+    file: src/app/app/(dashboard)/quotes/page.tsx
+    auth_required: true
+    description: Quotes list with pipeline view and filters
+  - path: /app/profile
+    file: src/app/app/(dashboard)/profile/page.tsx
+    auth_required: true
+    description: User profile management (company info, logo, settings)
+  - path: /app/pricing
+    file: src/app/app/(dashboard)/pricing/page.tsx
+    auth_required: true
+    description: Pricing plans comparison and upgrade
+  - path: /app/quotes/[id]
+    file: src/app/app/quotes/[id]/page.tsx
+    auth_required: true
+    description: Quote detail view with PDF generation
+  - path: /app/quotes/[id]/edit
+    file: src/app/app/quotes/[id]/edit/page.tsx
+    auth_required: true
+    description: Edit existing quote
+  - path: /app/quotes/[id]/approve
+    file: src/app/app/quotes/[id]/approve/page.tsx
+    auth_required: false
+    description: Public quote approval page for clients
+  - path: /marketing
+    file: src/app/marketing/page.tsx
+    auth_required: false
+    description: Marketing landing page
+  - path: /marketing/c/mecanicos
+    file: src/app/marketing/c/mecanicos/page.tsx
+    auth_required: false
+    description: Mechanic vertical landing page
+  - path: /api/checkout
+    file: src/app/api/checkout/route.ts
+    auth_required: true
+    description: Stripe checkout session creation
+  - path: /api/webhook
+    file: src/app/api/webhook/route.ts
+    auth_required: false
+    description: Stripe webhook handler
 features:
-  - Auth: Login, Signup, Password Reset
-  - Dashboard: Main overview and statistics
-  - Clients: Client management (CRUD)
-  - Quotes: Orçamentos creation, editing, pdf generation
-  - Profile & Onboarding: User settings and setup
-  - Notifications & Support: Support widget and in-app notifications
+  - name: User Authentication
+    description: Login, register, forgot password, and update password flows using Supabase Auth
+    files:
+      - src/app/actions/auth.ts
+      - src/app/app/(auth)/login/page.tsx
+      - src/app/app/(auth)/register/page.tsx
+      - src/components/auth/login-form.tsx
+      - src/components/auth/register-form.tsx
+    entry_route: /app/login
+    user_interactions:
+      - Fill email input field
+      - Fill password input field
+      - Click Login button to submit
+      - Click Register link to create account
+      - Fill registration fields and submit
+      - Click Forgot Password link
+      - Receive reset email and update password
+    api_calls:
+      - method: POST
+        endpoint: supabase.auth.signInWithPassword
+      - method: POST
+        endpoint: supabase.auth.signUp
+      - method: POST
+        endpoint: supabase.auth.resetPasswordForEmail
+    auth_required: false
+  - name: Onboarding Wizard
+    description: Multi-step wizard to set up company info, address, and default service after registration
+    files:
+      - src/app/actions/onboarding.ts
+      - src/components/onboarding/onboarding-wizard.tsx
+      - src/components/onboarding/loading-success.tsx
+    entry_route: /app/onboarding
+    user_interactions:
+      - Type company name
+      - Type company address
+      - Click Continue button
+      - Select default service
+      - Click Finish button
+      - See loading/success animation
+    api_calls:
+      - method: POST
+        endpoint: supabase.from('profiles').upsert
+      - method: POST
+        endpoint: supabase.from('services').insert
+    auth_required: true
+  - name: Dashboard
+    description: Main dashboard showing business metrics, quick actions (New Quote, New Client), and recent activity
+    files:
+      - src/app/app/(dashboard)/page.tsx
+      - src/components/dashboard/dashboard-stats.tsx
+    entry_route: /app
+    user_interactions:
+      - View business metrics (total quotes, clients, revenue)
+      - Click New Quote quick action
+      - Click New Client quick action
+      - View recent activity feed
+    api_calls:
+      - method: GET
+        endpoint: supabase.from('quotes').select
+      - method: GET
+        endpoint: supabase.from('clients').select
+    auth_required: true
+  - name: Client Management
+    description: Full CRUD for clients with B2B/B2C support, contact details, and search
+    files:
+      - src/app/actions/clients.ts
+      - src/app/app/(dashboard)/clients/page.tsx
+      - src/components/clients/client-form.tsx
+      - src/components/clients/client-list.tsx
+      - src/components/clients/client-detail.tsx
+    entry_route: /app/clients
+    user_interactions:
+      - View clients list
+      - Click New Client button
+      - Fill client name, email, phone, CNPJ/CPF
+      - Click Save to create client
+      - Click on client row to view details
+      - Click Edit to modify client
+      - Delete client
+      - Search clients by name
+    api_calls:
+      - method: POST
+        endpoint: supabase.from('clients').insert
+      - method: PATCH
+        endpoint: supabase.from('clients').update
+      - method: DELETE
+        endpoint: supabase.from('clients').delete
+      - method: GET
+        endpoint: supabase.from('clients').select
+    auth_required: true
+  - name: Quote Management
+    description: Create, edit, and manage professional quotes with items, payment options, warranty, and PDF generation
+    files:
+      - src/app/actions/quotes.ts
+      - src/app/app/(dashboard)/new/page.tsx
+      - src/app/app/(dashboard)/quotes/page.tsx
+      - src/app/app/quotes/[id]/page.tsx
+      - src/app/app/quotes/[id]/edit/page.tsx
+      - src/components/quotes/quote-form.tsx
+      - src/components/quotes/quote-detail.tsx
+      - src/components/quotes/quote-filters.tsx
+    entry_route: /app/quotes
+    user_interactions:
+      - View quotes list with pipeline view
+      - Click New Quote button
+      - Select client from dropdown
+      - Add item with description, quantity, unit price
+      - Configure payment options
+      - Toggle warranty on/off
+      - Click Save Quote
+      - View quote details
+      - Edit existing quote
+      - Generate PDF
+      - Filter quotes by status, date, client
+      - Move quote through pipeline stages
+    api_calls:
+      - method: POST
+        endpoint: supabase.from('quotes').insert
+      - method: PATCH
+        endpoint: supabase.from('quotes').update
+      - method: GET
+        endpoint: supabase.from('quotes').select
+      - method: POST
+        endpoint: supabase.from('quote_items').insert
+    auth_required: true
+  - name: Quote Approval
+    description: Public page where clients can view and approve quotes
+    files:
+      - src/app/app/quotes/[id]/approve/page.tsx
+      - src/app/actions/approve-quote.ts
+    entry_route: /app/quotes/[id]/approve
+    user_interactions:
+      - View quote details publicly
+      - Click Approve button
+      - See confirmation message
+    api_calls:
+      - method: PATCH
+        endpoint: supabase.from('quotes').update
+    auth_required: false
+  - name: Profile Management
+    description: Manage company profile, logo upload, layout customization, and account settings
+    files:
+      - src/app/actions/profile.ts
+      - src/app/app/(dashboard)/profile/page.tsx
+      - src/components/profile/profile-form.tsx
+    entry_route: /app/profile
+    user_interactions:
+      - Edit company name and address
+      - Upload company logo
+      - Customize proposal layout (logo size, position)
+      - Change password
+      - Cancel subscription
+    api_calls:
+      - method: PATCH
+        endpoint: supabase.from('profiles').update
+      - method: POST
+        endpoint: supabase.storage.upload
+    auth_required: true
+  - name: Service Management
+    description: Manage services offered by the company
+    files:
+      - src/app/actions/services.ts
+    entry_route: /app
+    user_interactions:
+      - Add new service
+      - Edit service name and price
+      - Delete service
+    api_calls:
+      - method: POST
+        endpoint: supabase.from('services').insert
+      - method: PATCH
+        endpoint: supabase.from('services').update
+      - method: DELETE
+        endpoint: supabase.from('services').delete
+    auth_required: true
+  - name: Notifications
+    description: In-app notification system with bell icon, unread count, and mark as read
+    files:
+      - src/app/actions/notifications.ts
+      - src/components/notifications/notification-bell.tsx
+    entry_route: /app
+    user_interactions:
+      - Click bell icon to see notifications
+      - View list of notifications
+      - Mark notification as read
+      - See unread count badge
+    api_calls:
+      - method: GET
+        endpoint: supabase.from('notifications').select
+      - method: PATCH
+        endpoint: supabase.from('notifications').update
+    auth_required: true
+  - name: Subscription & Pricing
+    description: Plan comparison, Stripe checkout, and subscription cancellation
+    files:
+      - src/app/app/(dashboard)/pricing/page.tsx
+      - src/app/api/checkout/route.ts
+      - src/app/api/webhook/route.ts
+      - src/app/actions/cancel-subscription.ts
+    entry_route: /app/pricing
+    user_interactions:
+      - View pricing plans comparison
+      - Click upgrade button
+      - Complete Stripe checkout
+      - Cancel subscription from profile
+    api_calls:
+      - method: POST
+        endpoint: /api/checkout
+      - method: POST
+        endpoint: stripe.checkout.sessions.create
+    auth_required: true
+  - name: Global Search
+    description: Command palette style global search across clients and quotes
+    files:
+      - src/app/actions/search.ts
+    entry_route: /app
+    user_interactions:
+      - Open search with keyboard shortcut or click
+      - Type search query
+      - View filtered results
+      - Click result to navigate
+    api_calls:
+      - method: GET
+        endpoint: supabase.from('clients').select
+      - method: GET
+        endpoint: supabase.from('quotes').select
+    auth_required: true
+  - name: Support System
+    description: Support widget with FAQ, contact tickets, and feature suggestions
+    files:
+      - src/app/actions/support.ts
+      - src/components/support/support-widget.tsx
+    entry_route: /app
+    user_interactions:
+      - Open support widget
+      - Browse FAQ by category
+      - Submit support ticket (bug, doubt, suggestion, praise)
+      - View ticket history
+      - Submit feature suggestion
+      - Vote on feature suggestions
+    api_calls:
+      - method: POST
+        endpoint: supabase.from('support_tickets').insert
+      - method: POST
+        endpoint: supabase.from('feature_suggestions').insert
+      - method: GET
+        endpoint: supabase.from('support_tickets').select
+    auth_required: true
+  - name: Folder Organization
+    description: Organize quotes into folders for better management
+    files:
+      - src/app/actions/folders.ts
+    entry_route: /app/quotes
+    user_interactions:
+      - Create new folder
+      - Move quote to folder
+      - Rename folder
+      - Delete folder
+    api_calls:
+      - method: POST
+        endpoint: supabase.from('folders').insert
+      - method: PATCH
+        endpoint: supabase.from('folders').update
+      - method: DELETE
+        endpoint: supabase.from('folders').delete
+    auth_required: true
+  - name: Team Management
+    description: Manage team members for multi-user collaboration
+    files:
+      - src/app/actions/team.ts
+    entry_route: /app/profile
+    user_interactions:
+      - Invite team member
+      - View team members
+      - Remove team member
+    api_calls:
+      - method: POST
+        endpoint: supabase.from('team_members').insert
+      - method: DELETE
+        endpoint: supabase.from('team_members').delete
+    auth_required: true
+known_limitations: []

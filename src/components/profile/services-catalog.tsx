@@ -89,7 +89,7 @@ export function ServicesCatalog({ initialServices, initialFolders, userId }: Ser
                 setDescription('')
                 setPrice('')
                 setDetails('')
-                router.refresh()
+                setTimeout(() => router.refresh(), 100)
             }
         } catch (error) {
             console.error('Error adding service:', error)
@@ -106,7 +106,7 @@ export function ServicesCatalog({ initialServices, initialFolders, userId }: Ser
                 toast.error(result.error)
             } else {
                 toast.success('Serviço removido.')
-                router.refresh()
+                setTimeout(() => router.refresh(), 100)
             }
         } catch (error) {
             toast.error('Erro ao remover.')

@@ -15,6 +15,7 @@ export async function updateProfile(formData: FormData) {
     const phone = formData.get('phone') as string
     const email = formData.get('email') as string
     const cnpj = formData.get('cnpj') as string
+    const address = formData.get('address') as string
     const themeColor = formData.get('themeColor') as string
     const layoutStyle = formData.get('layoutStyle') as string
     const quoteSettingsStr = formData.get('quoteSettings') as string
@@ -24,6 +25,7 @@ export async function updateProfile(formData: FormData) {
         phone: phone,
         email: email,
         cnpj: cnpj,
+        address: address,
         updated_at: new Date().toISOString(),
     }
 

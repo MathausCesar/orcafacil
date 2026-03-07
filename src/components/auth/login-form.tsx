@@ -70,9 +70,9 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                 if (result?.error) {
                     toast.error(result.error)
                 } else if (result?.success && result?.redirect) {
-                    // Successful login - redirect to dashboard
+                    // Successful login - hard navigation to force full session refresh
                     toast.success('Login realizado com sucesso!')
-                    router.push(result.redirect)
+                    window.location.href = result.redirect
                 }
             }
         } catch {

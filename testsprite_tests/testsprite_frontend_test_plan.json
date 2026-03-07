@@ -1,443 +1,235 @@
 [
   {
     "id": "TC001",
-    "title": "Complete onboarding wizard successfully and land on dashboard",
-    "description": "Verifies a new user can complete the multi-step onboarding wizard and is redirected to the dashboard.",
-    "category": "Onboarding Wizard",
+    "title": "Dashboard loads and shows key metrics and recent activity",
+    "description": "Verifies the authenticated user can open the dashboard and see business metrics and the recent activity feed.",
+    "category": "Dashboard",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /onboarding"
+        "description": "Navigate to /app/login"
       },
       {
         "type": "action",
-        "description": "Type \"Acme Serviços\" into the Company name field"
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
       },
       {
         "type": "action",
-        "description": "Type \"Rua Exemplo 123, São Paulo\" into the Company address field"
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
       },
       {
         "type": "action",
-        "description": "Click the Continue button"
-      },
-      {
-        "type": "action",
-        "description": "Select \"Consultoria\" from the Default service selection"
-      },
-      {
-        "type": "action",
-        "description": "Click the Finish button"
+        "description": "Click the \"Login\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Total quotes\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Clients\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Recent activity\" is visible"
       }
     ]
   },
   {
     "id": "TC002",
-    "title": "Company name rejects invalid characters with inline validation",
-    "description": "Verifies the Company name field shows an inline validation error when invalid characters are entered.",
-    "category": "Onboarding Wizard",
+    "title": "New Quote quick action navigates to Create New Quote page",
+    "description": "Verifies the New Quote quick action on the dashboard takes the user to the create new quote page.",
+    "category": "Dashboard",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /onboarding"
+        "description": "Navigate to /app/login"
       },
       {
         "type": "action",
-        "description": "Type \"@@@###\" into the Company name field"
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
       },
       {
         "type": "action",
-        "description": "Click the Continue button"
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"New Quote\" quick action"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"invalid\" is visible"
+        "description": "Verify URL contains \"/app/new\""
       },
       {
         "type": "assertion",
-        "description": "Verify element \"Company name field error message\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/onboarding\""
+        "description": "Verify text \"New quote\" is visible"
       }
     ]
   },
   {
     "id": "TC003",
-    "title": "Continue requires Company name before proceeding",
-    "description": "Verifies the wizard prevents moving to the next step when Company name is missing.",
-    "category": "Onboarding Wizard",
-    "priority": "Medium",
+    "title": "New Client quick action navigates to Clients page",
+    "description": "Verifies the New Client quick action on the dashboard takes the user to the clients list page.",
+    "category": "Dashboard",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /onboarding"
+        "description": "Navigate to /app/login"
       },
       {
         "type": "action",
-        "description": "Type \"Rua Sem Nome 45\" into the Company address field"
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
       },
       {
         "type": "action",
-        "description": "Click the Continue button"
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"New Client\" quick action"
       },
       {
         "type": "assertion",
-        "description": "Verify element \"Company name field error message\" is visible"
+        "description": "Verify URL contains \"/app/clients\""
       },
       {
         "type": "assertion",
-        "description": "Verify URL contains \"/onboarding\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Company\" is visible"
+        "description": "Verify text \"Clients\" is visible"
       }
     ]
   },
   {
     "id": "TC004",
-    "title": "Continue requires Company address before proceeding",
-    "description": "Verifies the wizard prevents moving to the next step when Company address is missing.",
-    "category": "Onboarding Wizard",
+    "title": "Dashboard recent activity feed is visible and populated or empty-state is shown",
+    "description": "Verifies the dashboard shows the recent activity feed section and displays either activity items or a clear empty state.",
+    "category": "Dashboard",
     "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /onboarding"
+        "description": "Navigate to /app/login"
       },
       {
         "type": "action",
-        "description": "Type \"Empresa Sem Endereço\" into the Company name field"
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
       },
       {
         "type": "action",
-        "description": "Click the Continue button"
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify element \"Company address field error message\" is visible"
+        "description": "Verify text \"Recent activity\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the \"Recent activity\" section"
       },
       {
         "type": "assertion",
-        "description": "Verify URL contains \"/onboarding\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Address\" is visible"
+        "description": "Verify element \"Recent activity\" is visible"
       }
     ]
   },
   {
     "id": "TC005",
-    "title": "Finish requires a default service selection",
-    "description": "Verifies the user cannot finish onboarding without selecting a default service.",
-    "category": "Onboarding Wizard",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /onboarding"
-      },
-      {
-        "type": "action",
-        "description": "Type \"Empresa Alpha\" into the Company name field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"Rua Alpha 10\" into the Company address field"
-      },
-      {
-        "type": "action",
-        "description": "Click the Continue button"
-      },
-      {
-        "type": "action",
-        "description": "Click the Finish button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Default service selection error message\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/onboarding\""
-      }
-    ]
-  },
-  {
-    "id": "TC006",
-    "title": "User can recover from invalid company name by correcting it and continuing",
-    "description": "Verifies an inline error clears after correcting the Company name and the user can proceed to the next step.",
-    "category": "Onboarding Wizard",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /onboarding"
-      },
-      {
-        "type": "action",
-        "description": "Type \"!!!\" into the Company name field"
-      },
-      {
-        "type": "action",
-        "description": "Click the Continue button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Company name field error message\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Type \"Empresa Correta\" into the Company name field"
-      },
-      {
-        "type": "action",
-        "description": "Click the Continue button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Default service\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC007",
-    "title": "Dashboard loads and shows metrics and recent activity",
-    "description": "Verifies the dashboard renders core overview widgets including business metrics and recent activity.",
-    "category": "Dashboard",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /dashboard"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Dashboard\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Recent\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"New Quote\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"New Client\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC008",
-    "title": "Dashboard quick action: New Quote navigates to quote creation",
-    "description": "Verifies that clicking the New Quote quick action from the dashboard takes the user to the quote creation page.",
-    "category": "Dashboard",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /dashboard"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"New Quote\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click on \"New Quote\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/quotes/new\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"New Quote\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC009",
-    "title": "Dashboard quick action: New Client navigates to client creation",
-    "description": "Verifies that clicking the New Client quick action from the dashboard takes the user to the client creation page (if available).",
-    "category": "Dashboard",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /dashboard"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"New Client\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click on \"New Client\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/clients\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"New Client\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC010",
-    "title": "Global search: filter results by client name",
-    "description": "Verifies that entering a client name into global search shows filtered results on the dashboard.",
-    "category": "Dashboard",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /dashboard"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Global search\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Type \"Acme\" into \"Global search\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Acme\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Search results\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC011",
-    "title": "Global search: no results state is shown",
-    "description": "Verifies that searching for a non-existent term shows a clear empty/no-results state.",
-    "category": "Dashboard",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /dashboard"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Global search\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Type \"zzzz-no-such-client\" into \"Global search\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"No results\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC012",
-    "title": "Dashboard refresh: core quick actions remain visible after reload",
-    "description": "Verifies dashboard is stable on reload and key quick actions remain visible for continued navigation.",
+    "title": "Dashboard retains access to quick actions after scrolling",
+    "description": "Verifies that after scrolling the dashboard, the quick action buttons are still reachable and usable.",
     "category": "Dashboard",
     "priority": "Low",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /dashboard"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"New Quote\" is visible"
+        "description": "Navigate to /app/login"
       },
       {
         "type": "action",
-        "description": "Press \"Enter\""
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the bottom of the dashboard page"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the top of the dashboard page"
       },
       {
         "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
+        "description": "Verify element \"New Quote\" is visible"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"New Client\" is visible"
+        "description": "Verify element \"New Client\" is visible"
       }
     ]
   },
   {
-    "id": "TC013",
-    "title": "Create a new corporate (B2B) client and verify it appears in the clients list",
-    "description": "Verifies a user can create a new corporate client with required fields and then find it in the clients list.",
-    "category": "Clients (CRUD)",
+    "id": "TC006",
+    "title": "Create a new client with valid B2B/B2C fields and see it in the list",
+    "description": "Verifies a user can create a client with valid contact and document fields and the client appears in the clients list.",
+    "category": "Client Management",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /clients"
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Clients\" is visible"
+        "description": "Verify URL contains \"/app\""
       },
       {
         "type": "action",
-        "description": "Click on \"New Client\""
+        "description": "Click the \"Clients\" item in the main navigation"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"New Client\" is visible"
+        "description": "Verify URL contains \"/app/clients"
       },
       {
         "type": "action",
-        "description": "Type \"ACME Corp E2E\" into the client name field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"acme.e2e@example.com\" into the contact email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"REG-ACME-10001\" into the corporate identifier / registration number field"
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Save\""
-      }
-    ]
-  },
-  {
-    "id": "TC014",
-    "title": "Create a new individual (B2C) client without corporate identifier and verify it appears in the list",
-    "description": "Verifies a user can create an individual client without corporate fields and then find it in the clients list.",
-    "category": "Clients (CRUD)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /clients"
-      },
-      {
-        "type": "action",
-        "description": "Click on \"New Client\""
+        "description": "Click the \"New Client\" button"
       },
       {
         "type": "assertion",
@@ -445,36 +237,113 @@
       },
       {
         "type": "action",
-        "description": "Type \"Maria Silva E2E\" into the client name field"
+        "description": "Type \"Cliente Teste E2E\" into the client name field"
       },
       {
         "type": "action",
-        "description": "Type \"maria.silva.e2e@example.com\" into the contact email field"
+        "description": "Type \"cliente.teste.e2e@example.com\" into the email field"
       },
       {
         "type": "action",
-        "description": "Click on \"Save\""
+        "description": "Type \"11999990000\" into the phone field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"123.456.789-09\" into the CPF/CNPJ field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Save\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Maria Silva E2E\" is visible"
+        "description": "Verify text \"Cliente Teste E2E\" is visible"
       }
     ]
   },
   {
-    "id": "TC015",
-    "title": "Edit an existing client phone number and verify the updated value on details page",
-    "description": "Verifies a user can open a client, edit the phone field, save, and see the updated value on the client details screen.",
-    "category": "Clients (CRUD)",
+    "id": "TC007",
+    "title": "Open an existing client detail view from the list",
+    "description": "Verifies a user can open a client detail view by clicking a client row from the clients list.",
+    "category": "Client Management",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /clients"
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Clients\" is visible"
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Clients\" item in the main navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app/clients"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first client row in the clients list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Client Details\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Edit\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Edit a client email and verify updated details are displayed",
+    "description": "Verifies a user can edit an existing client and see the updated email reflected on the client detail view.",
+    "category": "Client Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Clients\" item in the main navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app/clients"
       },
       {
         "type": "action",
@@ -486,36 +355,64 @@
       },
       {
         "type": "action",
-        "description": "Click on \"Edit\""
-      },
-      {
-        "type": "action",
-        "description": "Type \"(11) 99999-1234\" into the phone field"
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Save\""
+        "description": "Click the \"Edit\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"(11) 99999-1234\" is visible"
+        "description": "Verify text \"Edit Client\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"updated.email.e2e@example.com\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Save\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"updated.email.e2e@example.com\" is visible"
       }
     ]
   },
   {
-    "id": "TC016",
-    "title": "Validate required fields when creating a new client",
-    "description": "Verifies required field validation prevents saving a client when mandatory fields are missing.",
-    "category": "Clients (CRUD)",
-    "priority": "Medium",
+    "id": "TC009",
+    "title": "Validate error when creating a client with an invalid email",
+    "description": "Verifies the client form shows a visible validation error and does not proceed when email format is invalid.",
+    "category": "Client Management",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /clients"
+        "description": "Navigate to /app/login"
       },
       {
         "type": "action",
-        "description": "Click on \"New Client\""
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Clients\" item in the main navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app/clients"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"New Client\" button"
       },
       {
         "type": "assertion",
@@ -523,179 +420,170 @@
       },
       {
         "type": "action",
-        "description": "Click on \"Save\""
+        "description": "Type \"Cliente Email Invalido\" into the client name field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"email-invalido\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Save\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Name is required\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Email is required\" is visible"
+        "description": "Verify text \"Invalid email\" is visible"
       }
     ]
   },
   {
-    "id": "TC017",
-    "title": "Create a new draft quote with one item, payment options, and warranty enabled",
-    "description": "Verifies a user can create a new quote with an existing client, add an item, configure options, save, and see it listed as Draft.",
-    "category": "Quotes (Creation, Editing, PDF Generation)",
+    "id": "TC010",
+    "title": "Delete a client from the detail view and verify it is removed from the list",
+    "description": "Verifies a user can delete a client and the client no longer appears in the clients list after deletion.",
+    "category": "Client Management",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /quotes"
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Quotes\" is visible"
+        "description": "Verify URL contains \"/app\""
       },
       {
         "type": "action",
-        "description": "Click on \"New Quote\""
+        "description": "Click the \"Clients\" item in the main navigation"
       },
       {
         "type": "assertion",
-        "description": "Verify URL contains \"/quotes/new\""
+        "description": "Verify URL contains \"/app/clients"
       },
       {
         "type": "action",
-        "description": "Select an existing client from the client selector"
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Add Item\""
-      },
-      {
-        "type": "action",
-        "description": "Fill \"Item description\" with \"Website design service\""
-      },
-      {
-        "type": "action",
-        "description": "Fill \"Quantity\" with \"2\""
-      },
-      {
-        "type": "action",
-        "description": "Fill \"Unit price\" with \"1500\""
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Add Item\" button"
-      },
-      {
-        "type": "action",
-        "description": "Select an option in \"Payment options\" (any available option)"
-      },
-      {
-        "type": "action",
-        "description": "Click to enable the \"Warranty\" box toggle"
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Save Quote\""
+        "description": "Click on the first client row in the clients list"
       },
       {
         "type": "assertion",
-        "description": "Verify URL contains \"/quotes\""
+        "description": "Verify text \"Client Details\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Delete\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Draft\" is visible"
+        "description": "Verify text \"Clients\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"\" into the client search field"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Clients list\" is visible"
       }
     ]
   },
   {
-    "id": "TC018",
-    "title": "Edit an existing quote item quantity and confirm totals update",
-    "description": "Verifies a user can open a quote, edit item quantity, save, and see updated totals on the quote detail page.",
-    "category": "Quotes (Creation, Editing, PDF Generation)",
-    "priority": "High",
+    "id": "TC011",
+    "title": "Cancel client creation leaves the user on the clients list without creating a record",
+    "description": "Verifies a user can exit the new client form without saving and returns to the clients list view.",
+    "category": "Client Management",
+    "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /quotes"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Quotes\" is visible"
+        "description": "Navigate to /app/login"
       },
       {
         "type": "action",
-        "description": "Click on the first quote in the quotes list"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Edit\" is visible"
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
       },
       {
         "type": "action",
-        "description": "Click on \"Edit\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Quantity\" is visible"
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
       },
       {
         "type": "action",
-        "description": "Fill \"Quantity\" with \"3\""
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Save\""
+        "description": "Click the \"Sign in\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Total\" is visible"
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Clients\" item in the main navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app/clients"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"New Client\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"New Client\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Cancel\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Clients\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Clients list\" is visible"
       }
     ]
   },
   {
-    "id": "TC019",
-    "title": "Generate PDF for an existing quote and observe generation progress UI",
-    "description": "Verifies a user can start PDF generation from a quote and sees a visible progress/loading state indicating generation is occurring.",
-    "category": "Quotes (Creation, Editing, PDF Generation)",
+    "id": "TC012",
+    "title": "Complete quote creation form: select client, add item, configure payment, toggle warranty, and save",
+    "description": "Verifies the quote form supports selecting a client, adding a line item, configuring payment options, toggling warranty, and saving successfully.",
+    "category": "Quote Management",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /quotes"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Quotes\" is visible"
+        "description": "Navigate to /app/login"
       },
       {
         "type": "action",
-        "description": "Click on the first quote in the quotes list"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Generate PDF\" is visible"
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
       },
       {
         "type": "action",
-        "description": "Click on \"Generate PDF\""
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
       },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Generating\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"PDF\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC020",
-    "title": "Validation: Attempt to save a new quote without items shows required error",
-    "description": "Verifies the quote editor blocks saving when no items are added and shows the specified validation message.",
-    "category": "Quotes (Creation, Editing, PDF Generation)",
-    "priority": "High",
-    "steps": [
       {
         "type": "action",
-        "description": "Navigate to /quotes/new"
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"New\" or \"Create Quote\" entry point (e.g., \"New Quote\" in dashboard quick actions)"
       },
       {
         "type": "assertion",
@@ -703,147 +591,986 @@
       },
       {
         "type": "action",
-        "description": "Click on \"Save Quote\""
+        "description": "Select the first available client from the client dropdown"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Save a quote after adding item details and verify it appears in details view",
+    "description": "Verifies saving a properly filled quote leads to a visible confirmation or a quote details screen showing the entered item information.",
+    "category": "Quote Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Add at least one item to the quote\" is visible"
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Quotes\" link in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"New Quote\" button"
+      },
+      {
+        "type": "action",
+        "description": "Select the first available client from the client dropdown"
+      },
+      {
+        "type": "action",
+        "description": "Add an item with description \"Oil change\", quantity \"1\", and unit price \"100\""
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Validation: attempt to save a quote without items",
+    "description": "Verifies the quote cannot be saved without at least one item and a validation error is shown.",
+    "category": "Quote Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify URL contains \"/quotes/new\""
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Quotes\" link in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"New Quote\" button"
+      },
+      {
+        "type": "action",
+        "description": "Select the first available client from the client dropdown"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Save Quote\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"item\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Filter quotes by status in pipeline/list view",
+    "description": "Verifies filtering by a status updates the visible quotes list/pipeline to match the selected status filter.",
+    "category": "Quote Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Quotes\" link in the main navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Quotes\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Select a specific status in the status filter (e.g., \"Draft\" or \"Sent\")"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Open a quote from the quotes list and view quote details",
+    "description": "Verifies clicking a quote row/card opens the quote details page and shows quote detail content.",
+    "category": "Quote Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Quotes\" link in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the first quote row/card in the quotes list or pipeline view"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Quote\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Generate PDF\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Edit an existing quote and save changes",
+    "description": "Verifies a user can open edit mode for an existing quote, update fields, save, and see the updated details.",
+    "category": "Quote Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Quotes\" link in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the first quote row/card in the quotes list or pipeline view"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Edit\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Edit Quote\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Updated note\" into the notes or description field"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Update company name and address and save successfully",
+    "description": "Verifies a logged-in user can edit company name and address on the profile page and save changes.",
+    "category": "Profile Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Profile\" in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Edit the company name and address fields with new values"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Save\" button"
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Save confirmation is shown after updating profile",
+    "description": "Verifies the UI shows a visible success state after saving profile changes.",
+    "category": "Profile Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Profile\" in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Edit the company name field with a new value"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Save\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Saved\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "Customize proposal layout settings and save",
+    "description": "Verifies a logged-in user can adjust proposal layout settings (logo size and position) and save them.",
+    "category": "Profile Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Profile\" in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Customize proposal layout (logo size, position)"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Save\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Saved\" is visible"
       }
     ]
   },
   {
     "id": "TC021",
-    "title": "Error handling: PDF generation server action failure shows user-facing error",
-    "description": "Verifies the UI shows an error message when PDF generation fails for a quote.",
-    "category": "Quotes (Creation, Editing, PDF Generation)",
-    "priority": "Medium",
+    "title": "Change password from profile settings successfully",
+    "description": "Verifies a logged-in user can change their password from the profile/account settings area and sees a success state.",
+    "category": "Profile Management",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /quotes"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Quotes\" is visible"
+        "description": "Navigate to /app/login"
       },
       {
         "type": "action",
-        "description": "Click on a quote that is known to fail PDF generation (test data prepared for failure)"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Generate PDF\" is visible"
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
       },
       {
         "type": "action",
-        "description": "Click on \"Generate PDF\""
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Profile\" in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Change password using valid new password values"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Unable to generate PDF, try again\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Generate PDF\" is visible"
+        "description": "Verify text \"Password updated\" is visible"
       }
     ]
   },
   {
     "id": "TC022",
-    "title": "Toggle warranty off after enabling and confirm warranty section visibility changes",
-    "description": "Verifies the warranty option can be toggled on and off and the warranty section reflects the toggle state visually.",
-    "category": "Quotes (Creation, Editing, PDF Generation)",
-    "priority": "Low",
+    "title": "Password change shows validation error when confirmation does not match",
+    "description": "Verifies the UI shows a visible validation error when new password and confirmation do not match.",
+    "category": "Profile Management",
+    "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /quotes"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Quotes\" is visible"
+        "description": "Navigate to /app/login"
       },
       {
         "type": "action",
-        "description": "Click on \"New Quote\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/quotes/new\""
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
       },
       {
         "type": "action",
-        "description": "Select an existing client from the client selector"
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
       },
       {
         "type": "action",
-        "description": "Click to enable the \"Warranty\" box toggle"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Warranty\" is visible"
+        "description": "Click the \"Sign in\" button"
       },
       {
         "type": "action",
-        "description": "Click to disable the \"Warranty\" box toggle"
+        "description": "Click on \"Profile\" in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Change password using mismatched new password and confirmation values"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Warranty\" is visible"
+        "description": "Verify text \"Passwords do not match\" is visible"
       }
     ]
   },
   {
     "id": "TC023",
-    "title": "Update company address successfully and see confirmation",
-    "description": "Verifies a user can edit the company address on the Profile page and see a success confirmation.",
-    "category": "Profile & Settings",
-    "priority": "High",
+    "title": "Cancel subscription from profile and confirm cancellation prompt",
+    "description": "Verifies a logged-in user can initiate subscription cancellation and sees a confirmation step in the UI.",
+    "category": "Profile Management",
+    "priority": "Low",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /profile"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Company\" is visible"
+        "description": "Navigate to /app/login"
       },
       {
         "type": "action",
-        "description": "Click on \"Edit\""
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
       },
       {
         "type": "action",
-        "description": "Fill \"123 Test Street, Suite 400\" into the \"Company address\" field"
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
       },
       {
         "type": "action",
-        "description": "Click on \"Save\""
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Profile\" in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Cancel subscription\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Profile updated\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"123 Test Street, Suite 400\" is visible"
+        "description": "Verify text \"Confirm cancellation\" is visible"
       }
     ]
   },
   {
     "id": "TC024",
-    "title": "See current user and company information on Profile page",
-    "description": "Verifies the Profile page displays the current user and company information in view mode.",
-    "category": "Profile & Settings",
+    "title": "Add a new service with valid name and price",
+    "description": "Verifies a logged-in user can add a new service and see it appear in the service catalog.",
+    "category": "Service Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click \"Add new service\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"Brake inspection\" into the service name field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"120\" into the price field"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Save\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Brake inspection\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC025",
+    "title": "Prevent saving a service with a negative price",
+    "description": "Verifies validation blocks saving when the user enters a negative price for a service.",
+    "category": "Service Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click \"Add new service\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"Oil change\" into the service name field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"-50\" into the price field"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Save\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"must be\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC026",
+    "title": "Edit an existing service and update its price",
+    "description": "Verifies a logged-in user can edit a service and see the updated price reflected in the catalog.",
+    "category": "Service Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click on an existing service in the catalog"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Edit\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"199\" into the price field"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Save\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"199\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC027",
+    "title": "Cancel adding a new service does not create a catalog entry",
+    "description": "Verifies dismissing the add-service form does not create a new service entry.",
+    "category": "Service Management",
     "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /profile"
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click \"Add new service\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"Temporary service\" into the service name field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"10\" into the price field"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Cancel\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Temporary service\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC028",
+    "title": "Open notification center from dashboard and see notification list",
+    "description": "Verifies that an authenticated user can open the notification center and see a visible list of notifications.",
+    "category": "Notifications",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the bell icon"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Notifications\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"notifications list\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC029",
+    "title": "Open a notification from the notification center",
+    "description": "Verifies that clicking a notification opens its related content or details view.",
+    "category": "Notifications",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the bell icon"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"notifications list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the first notification in the list"
+      }
+    ]
+  },
+  {
+    "id": "TC030",
+    "title": "Mark a notification as read updates the unread badge count",
+    "description": "Verifies that marking a notification as read updates the unread count badge on the bell icon.",
+    "category": "Notifications",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"unread notifications badge\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the bell icon"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Mark as read\" action for the first unread notification"
+      }
+    ]
+  },
+  {
+    "id": "TC031",
+    "title": "Unread badge disappears when there are no unread notifications (after marking read)",
+    "description": "Verifies that when unread notifications are cleared, the unread badge is no longer visible.",
+    "category": "Notifications",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the bell icon"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"notifications list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Mark all as read\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"unread notifications badge\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC032",
+    "title": "Notification center shows empty state when there are no notifications",
+    "description": "Verifies that the notification center renders a clear empty state when the list is empty.",
+    "category": "Notifications",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the bell icon"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"No notifications\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC033",
+    "title": "Unread badge count matches number of unread items displayed",
+    "description": "Verifies that the unread badge number corresponds to the number of unread notifications shown in the list.",
+    "category": "Notifications",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"unread notifications badge\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the bell icon"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"unread notification item\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC034",
+    "title": "Pricing page shows plan comparison content",
+    "description": "Verifies the Pricing page renders a visible plan comparison section for authenticated users.",
+    "category": "Subscription & Pricing",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Pricing\" in the app navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"pricing plans comparison\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Upgrade\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC035",
+    "title": "Profile shows subscription section for management",
+    "description": "Verifies the Profile page contains a visible subscription management section for authenticated users.",
+    "category": "Subscription & Pricing",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Profile\" in the app navigation"
       },
       {
         "type": "assertion",
@@ -851,461 +1578,1190 @@
       },
       {
         "type": "assertion",
-        "description": "Verify text \"User\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Company\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Edit\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC025",
-    "title": "Invalid company registration number shows field validation error",
-    "description": "Verifies invalid registration number format is rejected and a field-level validation message is shown.",
-    "category": "Profile & Settings",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /profile"
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Edit\""
-      },
-      {
-        "type": "action",
-        "description": "Fill \"INVALID-###\" into the \"Company registration number\" field"
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Save\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"invalid\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Company registration number\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC026",
-    "title": "Validation prevents saving when registration number is invalid (no success toast)",
-    "description": "Verifies that an invalid registration number does not produce a success message and keeps the user on the edit form.",
-    "category": "Profile & Settings",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /profile"
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Edit\""
-      },
-      {
-        "type": "action",
-        "description": "Fill \"bad\" into the \"Company registration number\" field"
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Save\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Profile updated\" is not visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Save\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC027",
-    "title": "Cancel editing does not persist changes",
-    "description": "Verifies that canceling out of edit mode does not save modifications to the company address.",
-    "category": "Profile & Settings",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /profile"
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Edit\""
-      },
-      {
-        "type": "action",
-        "description": "Fill \"999 Cancel Ave\" into the \"Company address\" field"
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Cancel\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Edit\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"999 Cancel Ave\" is not visible"
-      }
-    ]
-  },
-  {
-    "id": "TC028",
-    "title": "Save button disabled or blocked when required fields are cleared",
-    "description": "Verifies the form blocks saving when a required company field is emptied and shows a visible validation message.",
-    "category": "Profile & Settings",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /profile"
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Edit\""
-      },
-      {
-        "type": "action",
-        "description": "Fill \"\" into the \"Company name\" field"
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Save\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"required\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Save\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC029",
-    "title": "Edit mode can be entered and exited without errors",
-    "description": "Verifies the user can enter edit mode and return to view mode with no visible errors.",
-    "category": "Profile & Settings",
-    "priority": "Low",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /profile"
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Edit\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Save\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Cancel\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Edit\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC030",
-    "title": "Company logo upload flow is not covered due to file upload restriction",
-    "description": "Explicitly skips testing logo upload because file upload interactions are excluded by the test constraints.",
-    "category": "Profile & Settings",
-    "priority": "Low",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /profile"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Company\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Logo\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Upload\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC031",
-    "title": "View notifications list from the notifications center",
-    "description": "Verifies the user can open the notification center and see a list of recent notifications.",
-    "category": "Notifications & Support",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to the application home page."
-      },
-      {
-        "type": "action",
-        "description": "Click the Notifications (bell) icon in the header or top navigation."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Notifications\" is visible."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify a list of notifications is visible."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify at least one notification item is visible."
-      }
-    ]
-  },
-  {
-    "id": "TC032",
-    "title": "Open a quote approval notification and verify navigation attempt",
-    "description": "Verifies clicking a quote approval notification triggers navigation toward the quote detail page.",
-    "category": "Notifications & Support",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to the application home page."
-      },
-      {
-        "type": "action",
-        "description": "Click the Notifications (bell) icon in the header or top navigation."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Notifications\" is visible."
-      },
-      {
-        "type": "action",
-        "description": "Click the notification item that mentions quote approval."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/quotes/\"."
-      }
-    ]
-  },
-  {
-    "id": "TC033",
-    "title": "Open support widget and submit a support ticket successfully",
-    "description": "Verifies the user can submit a support ticket from the support widget and see a success confirmation.",
-    "category": "Notifications & Support",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to the application home page."
-      },
-      {
-        "type": "action",
-        "description": "Click the Support widget button or help icon to open the Support widget."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Support\" is visible."
-      },
-      {
-        "type": "action",
-        "description": "Type \"Issue creating a quote\" into the Subject field."
-      },
-      {
-        "type": "action",
-        "description": "Type \"I am seeing an error when trying to save a new quote. Please help.\" into the Description field."
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Submit ticket\" button."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Ticket submitted\" is visible."
-      }
-    ]
-  },
-  {
-    "id": "TC034",
-    "title": "After submitting a ticket, verify it appears in Support area",
-    "description": "Verifies a newly submitted ticket is visible in the support tickets list.",
-    "category": "Notifications & Support",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to the application home page."
-      },
-      {
-        "type": "action",
-        "description": "Click the Support widget button or help icon to open the Support widget."
-      },
-      {
-        "type": "action",
-        "description": "Type \"Billing question\" into the Subject field."
-      },
-      {
-        "type": "action",
-        "description": "Type \"Can you clarify how the subscription is billed monthly?\" into the Description field."
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Submit ticket\" button."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Ticket submitted\" is visible."
-      },
-      {
-        "type": "action",
-        "description": "Click the link or button to view tickets in Support (for example, \"View tickets\" or \"Go to Support\")."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Billing question\" is visible."
-      }
-    ]
-  },
-  {
-    "id": "TC035",
-    "title": "Support widget validation: prevent submitting with empty required fields",
-    "description": "Verifies the support widget blocks ticket submission and shows validation when required fields are empty.",
-    "category": "Notifications & Support",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to the application home page."
-      },
-      {
-        "type": "action",
-        "description": "Click the Support widget button or help icon to open the Support widget."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Support\" is visible."
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Submit ticket\" button."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Subject\" is visible."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Description\" is visible."
+        "description": "Verify element \"subscription\" is visible"
       }
     ]
   },
   {
     "id": "TC036",
-    "title": "Support widget handles submission error state gracefully",
-    "description": "Verifies the UI shows an error message when ticket submission fails.",
-    "category": "Notifications & Support",
+    "title": "Cancel subscription from Profile and confirm cancellation",
+    "description": "Verifies a user can cancel their subscription from the Profile page and see a cancellation confirmation.",
+    "category": "Subscription & Pricing",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to the application home page."
+        "description": "Navigate to /app/login"
       },
       {
         "type": "action",
-        "description": "Click the Support widget button or help icon to open the Support widget."
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
       },
       {
         "type": "action",
-        "description": "Type \"Cannot access support\" into the Subject field."
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
       },
       {
         "type": "action",
-        "description": "Type \"Submitting a ticket does not work from my account.\" into the Description field."
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Submit ticket\" button."
+        "description": "Click the \"Sign in\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Unable to submit ticket, try again\" is visible."
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Profile\" in the app navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Cancel subscription\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Confirm cancellation\" button"
       }
     ]
   },
   {
     "id": "TC037",
-    "title": "Support widget cancel/close behavior without losing page context",
-    "description": "Verifies the user can close the support widget and remain on the current page context.",
-    "category": "Notifications & Support",
-    "priority": "Low",
+    "title": "Cancellation confirmation is visible after canceling subscription",
+    "description": "Verifies that after confirming cancellation, the UI shows a visible canceled status or confirmation message.",
+    "category": "Subscription & Pricing",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to the application home page."
+        "description": "Navigate to /app/login"
       },
       {
         "type": "action",
-        "description": "Click the Support widget button or help icon to open the Support widget."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Support\" is visible."
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
       },
       {
         "type": "action",
-        "description": "Click the close button on the Support widget."
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify the Support widget is not visible."
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Profile\" in the app navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Cancel subscription\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"canceled\" is visible"
       }
     ]
   },
   {
     "id": "TC038",
-    "title": "Open a support-message notification and verify navigation toward support ticket detail",
-    "description": "Verifies clicking an in-app notification about a new message opens the related support ticket detail page.",
-    "category": "Notifications & Support",
+    "title": "Cancellation confirmation dialog can be dismissed without canceling",
+    "description": "Verifies a user can open cancellation confirmation and then back out without completing cancellation.",
+    "category": "Subscription & Pricing",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Profile\" in the app navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Cancel subscription\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Close\" button on the cancellation confirmation dialog"
+      }
+    ]
+  },
+  {
+    "id": "TC039",
+    "title": "Pricing upgrade button remains available when user is not yet subscribed",
+    "description": "Verifies that an eligible user viewing Pricing can see and use an Upgrade button (not disabled or hidden).",
+    "category": "Subscription & Pricing",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Pricing\" in the app navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Upgrade\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Current plan\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC040",
+    "title": "Open global search using click entry point",
+    "description": "Verifies the search can be opened via a clickable UI entry (not only keyboard shortcut).",
+    "category": "Global Search",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the search entry control (such as \"Search\" or a magnifying-glass button) in the header"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Search\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC041",
+    "title": "Submit a valid support ticket and see it appear in ticket history",
+    "description": "Verifies a user can submit a support ticket from the support widget and then find it in ticket history.",
+    "category": "Support System",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to the application home page."
+        "description": "Navigate to /app/login"
       },
       {
         "type": "action",
-        "description": "Click the Notifications (bell) icon in the header or top navigation."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Notifications\" is visible."
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
       },
       {
         "type": "action",
-        "description": "Click the notification item that mentions a new message or support reply."
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify URL contains \"/support/\"."
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the support widget button to open the support widget"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Tickets\" option in the support widget"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Ticket history\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC042",
+    "title": "Browse FAQ by category from the support widget",
+    "description": "Verifies FAQ categories can be browsed and corresponding FAQ content is displayed.",
+    "category": "Support System",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the support widget button to open the support widget"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"FAQ\" option in the support widget"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"FAQ\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC043",
+    "title": "Submit support ticket with type and description and confirm success message",
+    "description": "Verifies the support ticket form accepts a valid type and description and shows a submission confirmation.",
+    "category": "Support System",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the support widget button to open the support widget"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Contact support\" option in the support widget"
+      },
+      {
+        "type": "action",
+        "description": "Select \"Bug\" from the ticket type dropdown"
+      }
+    ]
+  },
+  {
+    "id": "TC044",
+    "title": "Submit support ticket end-to-end and verify it is listed in history",
+    "description": "Verifies an end-to-end ticket submission including entering a description and then locating the ticket in ticket history.",
+    "category": "Support System",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the support widget button to open the support widget"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Contact support\" option in the support widget"
+      },
+      {
+        "type": "action",
+        "description": "Select \"Doubt\" from the ticket type dropdown"
+      }
+    ]
+  },
+  {
+    "id": "TC045",
+    "title": "Validation error when submitting a support ticket without description",
+    "description": "Verifies the ticket form blocks submission and shows a validation error when the description is empty.",
+    "category": "Support System",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the support widget button to open the support widget"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Contact support\" option in the support widget"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Submit\" button"
+      }
+    ]
+  },
+  {
+    "id": "TC046",
+    "title": "Submit a feature suggestion from the support widget",
+    "description": "Verifies a user can submit a feature suggestion and see a confirmation that it was submitted.",
+    "category": "Support System",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the support widget button to open the support widget"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Feature suggestions\" option in the support widget"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Suggestions\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC047",
+    "title": "Vote on an existing feature suggestion",
+    "description": "Verifies a user can vote on a feature suggestion and the UI reflects the vote action.",
+    "category": "Support System",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the support widget button to open the support widget"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Feature suggestions\" option in the support widget"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Vote\" button for the first visible suggestion"
+      }
+    ]
+  },
+  {
+    "id": "TC048",
+    "title": "View ticket history list loads successfully",
+    "description": "Verifies ticket history can be opened and shows a list area for past tickets (even if empty).",
+    "category": "Support System",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the support widget button to open the support widget"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Tickets\" option in the support widget"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Ticket list\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC049",
+    "title": "Create a new folder from Quotes page and verify it appears",
+    "description": "Verifies an authenticated user can create a new folder and see it listed in the Quotes area.",
+    "category": "Folder Organization",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Quotes\" item in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Create new folder\" control"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Folder\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC050",
+    "title": "Create folder with empty name shows validation error",
+    "description": "Verifies creating a folder without a name is blocked and a visible validation error is shown.",
+    "category": "Folder Organization",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Quotes\" item in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Create new folder\" control"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Save\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"required\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC051",
+    "title": "Rename an existing folder and verify the new name is displayed",
+    "description": "Verifies a user can rename a folder and the updated folder name is visible in the folder list.",
+    "category": "Folder Organization",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Quotes\" item in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Create new folder\" control"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Rename folder\" control"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Rename\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC052",
+    "title": "Delete a folder and verify it is no longer visible in the list",
+    "description": "Verifies a user can delete a folder and it disappears from the Quotes folders list.",
+    "category": "Folder Organization",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Quotes\" item in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Create new folder\" control"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Delete folder\" control"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Delete\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC053",
+    "title": "Cancel folder deletion leaves the folder visible",
+    "description": "Verifies canceling a delete action does not remove the folder from the list.",
+    "category": "Folder Organization",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Quotes\" item in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Create new folder\" control"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Delete folder\" control"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Cancel\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Folders list\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC054",
+    "title": "Attempt to create a folder with only spaces shows validation error",
+    "description": "Verifies whitespace-only folder names are rejected with a visible validation message.",
+    "category": "Folder Organization",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Quotes\" item in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Create new folder\" control"
+      },
+      {
+        "type": "action",
+        "description": "Type \"   \" into the folder name field"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"invalid\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC055",
+    "title": "Invite a team member with a valid email and see a pending invite",
+    "description": "Verifies a logged-in user can send an invite and the pending invite appears in the team members list.",
+    "category": "Team Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Profile\" item in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Invite team member\" button"
+      },
+      {
+        "type": "action",
+        "description": "Type \"invitee.valid@example.com\" into the invite email field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Invite\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Pending\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC056",
+    "title": "Invite team member with invalid email shows validation error",
+    "description": "Verifies email validation prevents sending an invite and displays an error message.",
+    "category": "Team Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Profile\" item in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Invite team member\" button"
+      },
+      {
+        "type": "action",
+        "description": "Type \"not-an-email\" into the invite email field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Invite\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"invalid\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC057",
+    "title": "View team members list on Profile page",
+    "description": "Verifies the team members section is visible and can be viewed from the Profile page.",
+    "category": "Team Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Profile\" item in the main navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Team\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Team members\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC058",
+    "title": "Cancel out of the invite flow without sending an invite",
+    "description": "Verifies the user can open the invite UI and close it without creating a pending invite.",
+    "category": "Team Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Profile\" item in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Invite team member\" button"
+      },
+      {
+        "type": "action",
+        "description": "Press \"Escape\" key"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Invite\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC059",
+    "title": "Attempt to invite with empty email shows required-field error",
+    "description": "Verifies the invite form requires an email before submission and shows a visible validation message.",
+    "category": "Team Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Profile\" item in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Invite team member\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Invite\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"required\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC060",
+    "title": "Remove an existing team member from the list",
+    "description": "Verifies a user can remove a team member and the removed member no longer appears in the team list.",
+    "category": "Team Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Profile\" item in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Remove team member\" button for \"remove.me@example.com\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Confirm\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"remove.me@example.com\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC061",
+    "title": "Invite a team member and ensure the invited email is shown in the pending list",
+    "description": "Verifies the pending invite entry includes the invitee email after sending an invite.",
+    "category": "Team Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Profile\" item in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Invite team member\" button"
+      },
+      {
+        "type": "action",
+        "description": "Type \"pending.check@example.com\" into the invite email field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Invite\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"pending.check@example.com\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC062",
+    "title": "Prevent duplicate invite by inviting the same email twice",
+    "description": "Verifies the UI shows an error (or prevents) when attempting to invite an email that is already invited.",
+    "category": "Team Management",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /app/login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Sign in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/app\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Profile\" item in the main navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Invite team member\" button"
+      },
+      {
+        "type": "action",
+        "description": "Type \"duplicate.invite@example.com\" into the invite email field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Invite\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Invite team member\" button"
+      },
+      {
+        "type": "action",
+        "description": "Type \"duplicate.invite@example.com\" into the invite email field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Invite\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"already\" is visible"
       }
     ]
   }

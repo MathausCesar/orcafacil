@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { LayoutList, KanbanSquare, FileText, ChevronDown, GripVertical } from 'lucide-react'
+import { LayoutList, KanbanSquare, FileText, ChevronDown, ChevronLeft, ChevronRight, GripVertical } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { QuoteStatusBadge } from '@/components/quotes/quote-status-badge'
 import { updateQuoteStatus } from '@/app/actions/quotes'
@@ -15,7 +15,6 @@ import {
     DndContext,
     DragOverlay,
     PointerSensor,
-    TouchSensor,
     useSensor,
     useSensors,
     pointerWithin,
@@ -99,17 +98,16 @@ function getColumnId(status: string): string {
 }
 
 // ===========================
-// Draggable Card Component
+// Draggable Card (Desktop only)
 // ===========================
 function DraggableQuoteCard({
-    quote, colAccent, colColor, fmt, fmtDate, variant = 'kanban'
+    quote, colAccent, colColor, fmt, fmtDate
 }: {
     quote: Quote
     colAccent: string
     colColor: string
     fmt: (val: number) => string
     fmtDate: (dt: string) => string
-    variant?: 'kanban' | 'timeline'
 }) {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
         id: quote.id,
@@ -121,44 +119,6 @@ function DraggableQuoteCard({
         zIndex: 50,
     } : undefined
 
-    if (variant === 'timeline') {
-        return (
-            <div
-                ref={setNodeRef}
-                style={style}
-                className={`group relative bg-card rounded-xl border border-border/60 shadow-sm transition-all duration-200 ${isDragging ? 'opacity-30 scale-95' : 'hover:shadow-md hover:border-foreground/20'
-                    }`}
-            >
-                <div className={`absolute left-0 top-2 bottom-2 w-[3px] rounded-full ${colAccent} opacity-40 group-hover:opacity-100 transition-opacity`} />
-                <div className="flex items-center gap-1">
-                    {/* Drag Handle */}
-                    <button
-                        className="p-3 pr-0 cursor-grab active:cursor-grabbing touch-none shrink-0 self-stretch flex items-center"
-                        {...attributes}
-                        {...listeners}
-                    >
-                        <GripVertical className="h-4 w-4 text-muted-foreground/40 hover:text-muted-foreground transition-colors" />
-                    </button>
-                    {/* Clickable area */}
-                    <Link href={`/quotes/${quote.id}`} className="flex-1 min-w-0 flex items-center justify-between gap-3 p-3 pl-1">
-                        <div className="min-w-0">
-                            <p className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
-                                {quote.client_name}
-                            </p>
-                            <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">
-                                {fmtDate(quote.created_at)}
-                            </p>
-                        </div>
-                        <p className="font-black text-foreground text-sm tracking-tight shrink-0">
-                            {fmt(quote.total)}
-                        </p>
-                    </Link>
-                </div>
-            </div>
-        )
-    }
-
-    // Kanban variant
     return (
         <div
             ref={setNodeRef}
@@ -220,14 +180,13 @@ function DragOverlayCard({ quote, fmt, fmtDate }: { quote: Quote; fmt: (val: num
 }
 
 // ===========================
-// Droppable Zone
+// Droppable Zone (Desktop only)
 // ===========================
-function DroppableColumn({ id, children, isOver, className }: { id: string; children: React.ReactNode; isOver?: boolean; className?: string }) {
-    const { setNodeRef, isOver: dropping } = useDroppable({ id })
-    const active = isOver ?? dropping
+function DroppableColumn({ id, children, className }: { id: string; children: React.ReactNode; className?: string }) {
+    const { setNodeRef, isOver } = useDroppable({ id })
 
     return (
-        <div ref={setNodeRef} className={`${className} ${active ? 'ring-2 ring-primary/50 bg-primary/5' : ''} transition-all duration-200`}>
+        <div ref={setNodeRef} className={`${className} ${isOver ? 'ring-2 ring-primary/50 bg-primary/5' : ''} transition-all duration-200`}>
             {children}
         </div>
     )
@@ -244,14 +203,11 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
     const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
     const [overId, setOverId] = useState<string | null>(null)
 
-    // Sensors: pointer for desktop, touch for mobile
+    // Sensors: pointer only (desktop Kanban)
     const pointerSensor = useSensor(PointerSensor, {
         activationConstraint: { distance: 8 },
     })
-    const touchSensor = useSensor(TouchSensor, {
-        activationConstraint: { delay: 250, tolerance: 10 },
-    })
-    const sensors = useSensors(pointerSensor, touchSensor)
+    const sensors = useSensors(pointerSensor)
 
     const fmt = (val: number) =>
         new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
@@ -273,24 +229,45 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
         })
     }
 
-    // DnD Handlers
+    // Move quote to a specific pipeline stage (for mobile buttons)
+    const moveQuoteToStage = useCallback(async (quote: Quote, targetIdx: number) => {
+        const targetCol = PIPELINE_COLUMNS[targetIdx]
+        if (!targetCol) return
+
+        const newStatus = STATUS_MAP[targetCol.id]
+        if (!newStatus) return
+
+        // Optimistic update
+        setQuotes(prev => prev.map(q =>
+            q.id === quote.id ? { ...q, status: newStatus } : q
+        ))
+
+        toast.success(`Movido para "${targetCol.label}"`, {
+            description: `${quote.client_name} atualizado`,
+        })
+
+        try {
+            await updateQuoteStatus(quote.id, newStatus as any)
+            router.refresh()
+        } catch {
+            setQuotes(prev => prev.map(q =>
+                q.id === quote.id ? { ...q, status: quote.status } : q
+            ))
+            toast.error('Erro ao mover orçamento', {
+                description: 'Tente novamente',
+            })
+        }
+    }, [router])
+
+    // DnD Handlers (desktop only)
     const handleDragStart = useCallback((event: DragStartEvent) => {
         const quote = event.active.data.current?.quote as Quote
         if (quote) setActiveQuote(quote)
     }, [])
 
     const handleDragOver = useCallback((event: DragOverEvent) => {
-        const newOverId = event.over?.id as string || null
-        setOverId(newOverId)
-        // Auto-expand collapsed sections when dragging over them
-        if (newOverId && collapsedSections.has(newOverId)) {
-            setCollapsedSections(prev => {
-                const next = new Set(prev)
-                next.delete(newOverId)
-                return next
-            })
-        }
-    }, [collapsedSections])
+        setOverId(event.over?.id as string || null)
+    }, [])
 
     const handleDragEnd = useCallback(async (event: DragEndEvent) => {
         setActiveQuote(null)
@@ -302,22 +279,17 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
         const quoteId = active.id as string
         const targetColumnId = over.id as string
 
-        // Find the quote
         const quote = quotes.find(q => q.id === quoteId)
         if (!quote) return
 
-        // Check if it's actually a different column
         const currentColumnId = getColumnId(quote.status)
         if (currentColumnId === targetColumnId) return
 
-        // Map column id to actual status value
         const newStatus = STATUS_MAP[targetColumnId]
         if (!newStatus) return
 
-        // Get the column label for toast
         const targetCol = PIPELINE_COLUMNS.find(c => c.id === targetColumnId)
 
-        // Optimistic update
         setQuotes(prev => prev.map(q =>
             q.id === quoteId ? { ...q, status: newStatus } : q
         ))
@@ -330,7 +302,6 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
             await updateQuoteStatus(quoteId, newStatus as any)
             router.refresh()
         } catch {
-            // Revert on error
             setQuotes(prev => prev.map(q =>
                 q.id === quoteId ? { ...q, status: quote.status } : q
             ))
@@ -384,7 +355,7 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                 </div>
             </div>
 
-            {/* List View (no drag) */}
+            {/* List View */}
             {view === 'list' && (
                 <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-500">
                     {quotes.length === 0 ? (
@@ -430,20 +401,13 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                 </div>
             )}
 
-            {/* Pipeline View with DnD */}
+            {/* Pipeline View */}
             {view === 'pipeline' && (
-                <DndContext
-                    sensors={sensors}
-                    collisionDetection={pointerWithin}
-                    onDragStart={handleDragStart}
-                    onDragOver={handleDragOver}
-                    onDragEnd={handleDragEnd}
-                >
+                <>
                     {/* ====================== */}
-                    {/* MOBILE: Timeline Vertical */}
+                    {/* MOBILE: Timeline com botões avançar/regredir */}
                     {/* ====================== */}
                     <div className="md:hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        {/* Mini Progress Bar */}
                         {totalQuotes > 0 && (
                             <div className="mb-6">
                                 <div className="flex h-2 rounded-full overflow-hidden bg-muted/50 border border-border/30">
@@ -458,7 +422,6 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                             </div>
                         )}
 
-                        {/* Timeline */}
                         <div className="relative pl-10">
                             <div className="absolute left-[15px] top-2 bottom-2 w-[2px] bg-gradient-to-b from-zinc-300 via-border to-zinc-200 dark:from-zinc-600 dark:via-border dark:to-zinc-700 rounded-full" />
 
@@ -466,21 +429,22 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                                 const colQuotes = quotes.filter(q => getColumnId(q.status) === col.id)
                                 const isCollapsed = collapsedSections.has(col.id)
                                 const isLast = colIdx === PIPELINE_COLUMNS.length - 1
-                                const isDropTarget = overId === col.id
+                                const isFirst = colIdx === 0
+                                const prevCol = !isFirst ? PIPELINE_COLUMNS[colIdx - 1] : null
+                                const nextCol = !isLast ? PIPELINE_COLUMNS[colIdx + 1] : null
 
                                 return (
-                                    <DroppableColumn
+                                    <div
                                         key={col.id}
-                                        id={col.id}
-                                        className={`relative ${!isLast ? 'pb-4' : 'pb-2'} rounded-xl px-2 -mx-2 py-2 animate-in fade-in`}
+                                        className={`relative ${!isLast ? 'pb-4' : 'pb-2'} py-2 animate-in fade-in`}
                                     >
                                         {/* Dot */}
-                                        <div className="absolute -left-10 top-0 flex items-center justify-center">
-                                            <div className={`relative w-8 h-8 rounded-full ${col.accent} flex items-center justify-center shadow-lg ring-4 ${isDropTarget ? 'ring-primary scale-110' : col.dotRing} ring-offset-2 ring-offset-background transition-all duration-300`}>
+                                        <div className="absolute -left-10 top-2 flex items-center justify-center">
+                                            <div className={`relative w-8 h-8 rounded-full ${col.accent} flex items-center justify-center shadow-lg ring-4 ${col.dotRing} ring-offset-2 ring-offset-background`}>
                                                 {colQuotes.length > 0 && (
                                                     <span className="text-white text-xs font-black">{colQuotes.length}</span>
                                                 )}
-                                                {colQuotes.length > 0 && !isDropTarget && (
+                                                {colQuotes.length > 0 && (
                                                     <div className={`absolute inset-0 rounded-full ${col.accent} animate-ping opacity-20`} />
                                                 )}
                                             </div>
@@ -489,7 +453,7 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                                         {/* Section Header */}
                                         <button
                                             onClick={() => toggleSection(col.id)}
-                                            className="flex items-center gap-2 mb-3 w-full text-left group/header"
+                                            className="flex items-center gap-2 mb-3 w-full text-left"
                                         >
                                             <h3 className={`text-xs font-black tracking-widest uppercase ${col.color}`}>
                                                 {col.label}
@@ -502,9 +466,138 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                                             )}
                                         </button>
 
-                                        {/* Cards */}
+                                        {/* Cards with action buttons */}
                                         {!isCollapsed && colQuotes.length > 0 && (
                                             <div className="space-y-2.5">
+                                                {colQuotes.map((quote) => (
+                                                    <div
+                                                        key={quote.id}
+                                                        className="group relative bg-card rounded-xl border border-border/60 shadow-sm overflow-hidden"
+                                                    >
+                                                        <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${col.accent} opacity-40`} />
+
+                                                        {/* Card content - clickable */}
+                                                        <Link href={`/quotes/${quote.id}`} className="flex items-center justify-between gap-3 p-4 pl-5 hover:bg-muted/30 transition-colors">
+                                                            <div className="min-w-0">
+                                                                <p className="font-semibold text-sm text-foreground truncate">
+                                                                    {quote.client_name}
+                                                                </p>
+                                                                <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">
+                                                                    {fmtDate(quote.created_at)}
+                                                                </p>
+                                                            </div>
+                                                            <p className="font-black text-foreground text-sm tracking-tight shrink-0">
+                                                                {fmt(quote.total)}
+                                                            </p>
+                                                        </Link>
+
+                                                        {/* Stage navigation buttons */}
+                                                        <div className="flex items-stretch border-t border-border/40">
+                                                            {prevCol ? (
+                                                                <button
+                                                                    onClick={() => moveQuoteToStage(quote, colIdx - 1)}
+                                                                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors active:bg-muted/80 hover:bg-muted/50 ${prevCol.color}`}
+                                                                >
+                                                                    <ChevronLeft className="h-3.5 w-3.5" />
+                                                                    {prevCol.label}
+                                                                </button>
+                                                            ) : (
+                                                                <div className="flex-1" />
+                                                            )}
+                                                            <div className="w-px bg-border/40" />
+                                                            {nextCol ? (
+                                                                <button
+                                                                    onClick={() => moveQuoteToStage(quote, colIdx + 1)}
+                                                                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors active:bg-muted/80 hover:bg-muted/50 ${nextCol.color}`}
+                                                                >
+                                                                    {nextCol.label}
+                                                                    <ChevronRight className="h-3.5 w-3.5" />
+                                                                </button>
+                                                            ) : (
+                                                                <div className="flex-1" />
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {!isCollapsed && colQuotes.length === 0 && (
+                                            <p className="text-[11px] text-muted-foreground/50 italic pl-1">
+                                                Nenhum orçamento nesta fase
+                                            </p>
+                                        )}
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+
+                    {/* ====================== */}
+                    {/* DESKTOP: Kanban com Drag and Drop */}
+                    {/* ====================== */}
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={pointerWithin}
+                        onDragStart={handleDragStart}
+                        onDragOver={handleDragOver}
+                        onDragEnd={handleDragEnd}
+                    >
+                        <div className="hidden md:block animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            {/* Progress Bar */}
+                            {totalQuotes > 0 && (
+                                <div className="mb-6 px-1">
+                                    <div className="flex h-2.5 rounded-full overflow-hidden bg-muted/30 border border-border/30 shadow-inner">
+                                        {distribution.map(d => d.count > 0 && (
+                                            <div
+                                                key={d.id}
+                                                className={`${d.accent} transition-all duration-700 ease-out relative group/bar`}
+                                                style={{ width: `${(d.count / totalQuotes) * 100}%` }}
+                                            >
+                                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-foreground text-background text-[10px] font-bold px-2 py-0.5 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                                    {d.label}: {d.count}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex gap-3 mt-2 flex-wrap">
+                                        {distribution.filter(d => d.count > 0).map(d => (
+                                            <div key={d.id} className="flex items-center gap-1.5">
+                                                <span className={`w-2 h-2 rounded-full ${d.accent}`} />
+                                                <span className={`text-[10px] font-semibold ${d.color}`}>
+                                                    {d.label} ({d.count})
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Kanban Columns */}
+                            <div className="grid grid-cols-6 gap-3 pt-2">
+                                {PIPELINE_COLUMNS.map(col => {
+                                    const colQuotes = quotes.filter(q => getColumnId(q.status) === col.id)
+                                    const isDropTarget = overId === col.id
+
+                                    return (
+                                        <DroppableColumn
+                                            key={col.id}
+                                            id={col.id}
+                                            className={`min-w-0 flex flex-col rounded-2xl border ${col.border} ${col.bg} relative overflow-hidden transition-all duration-300 hover:shadow-lg ${isDropTarget ? 'ring-2 ring-primary shadow-xl scale-[1.02]' : ''}`}
+                                        >
+                                            <div className={`absolute top-0 left-0 right-0 h-1.5 ${col.accent} opacity-80`} />
+                                            <div className="flex items-center justify-between px-3 xl:px-4 pt-4 pb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`w-2 h-2 rounded-full ${col.accent} shadow-sm`} />
+                                                    <h3 className={`text-[10px] xl:text-xs font-black tracking-widest uppercase ${col.color}`}>
+                                                        {col.label}
+                                                    </h3>
+                                                </div>
+                                                <span className="text-[10px] xl:text-xs bg-background/80 backdrop-blur-md border border-border/50 px-2 py-0.5 rounded-full text-foreground font-bold shadow-sm">
+                                                    {colQuotes.length}
+                                                </span>
+                                            </div>
+                                            <div className="flex px-2 xl:px-3 pb-3 flex-col gap-2 overflow-y-auto max-h-[65vh] scrollbar-none min-h-[80px]">
                                                 {colQuotes.map((quote) => (
                                                     <DraggableQuoteCard
                                                         key={quote.id}
@@ -513,129 +606,32 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                                                         colColor={col.color}
                                                         fmt={fmt}
                                                         fmtDate={fmtDate}
-                                                        variant="timeline"
                                                     />
                                                 ))}
+                                                {colQuotes.length === 0 && (
+                                                    <div className={`flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-xl m-1 transition-all ${isDropTarget
+                                                        ? 'border-primary/50 bg-primary/5 text-primary'
+                                                        : 'border-current/10 opacity-60'
+                                                        }`}>
+                                                        <p className="text-xs font-bold uppercase tracking-widest text-foreground/50">
+                                                            {isDropTarget ? 'Soltar aqui' : 'Vazio'}
+                                                        </p>
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-
-                                        {!isCollapsed && colQuotes.length === 0 && (
-                                            <div className={`text-[11px] italic pl-1 py-4 rounded-xl transition-all min-h-[48px] flex items-center ${isDropTarget ? 'text-primary font-semibold bg-primary/10 border-2 border-dashed border-primary/30 justify-center' : 'text-muted-foreground/50'}`}>
-                                                {isDropTarget ? '↓ Soltar aqui' : 'Nenhum orçamento nesta fase'}
-                                            </div>
-                                        )}
-
-                                        {/* Collapsed but droppable area */}
-                                        {isCollapsed && (
-                                            <div className={`py-3 rounded-xl transition-all min-h-[40px] flex items-center justify-center ${isDropTarget ? 'text-primary text-xs font-semibold bg-primary/10 border-2 border-dashed border-primary/30' : ''}`}>
-                                                {isDropTarget && '↓ Soltar aqui'}
-                                            </div>
-                                        )}
-                                    </DroppableColumn>
-                                )
-                            })}
-                        </div>
-                    </div>
-
-                    {/* ====================== */}
-                    {/* DESKTOP: Kanban */}
-                    {/* ====================== */}
-                    <div className="hidden md:block animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        {/* Progress Bar */}
-                        {totalQuotes > 0 && (
-                            <div className="mb-6 px-1">
-                                <div className="flex h-2.5 rounded-full overflow-hidden bg-muted/30 border border-border/30 shadow-inner">
-                                    {distribution.map(d => d.count > 0 && (
-                                        <div
-                                            key={d.id}
-                                            className={`${d.accent} transition-all duration-700 ease-out relative group/bar`}
-                                            style={{ width: `${(d.count / totalQuotes) * 100}%` }}
-                                        >
-                                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-foreground text-background text-[10px] font-bold px-2 py-0.5 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                                                {d.label}: {d.count}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="flex gap-3 mt-2 flex-wrap">
-                                    {distribution.filter(d => d.count > 0).map(d => (
-                                        <div key={d.id} className="flex items-center gap-1.5">
-                                            <span className={`w-2 h-2 rounded-full ${d.accent}`} />
-                                            <span className={`text-[10px] font-semibold ${d.color}`}>
-                                                {d.label} ({d.count})
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
+                                        </DroppableColumn>
+                                    )
+                                })}
                             </div>
-                        )}
-
-                        {/* Kanban Columns */}
-                        <div className="grid grid-cols-6 gap-3 pt-2">
-                            {PIPELINE_COLUMNS.map(col => {
-                                const colQuotes = quotes.filter(q => getColumnId(q.status) === col.id)
-                                const isDropTarget = overId === col.id
-
-                                return (
-                                    <DroppableColumn
-                                        key={col.id}
-                                        id={col.id}
-                                        className={`min-w-0 flex flex-col rounded-2xl border ${col.border} ${col.bg} relative overflow-hidden transition-all duration-300 hover:shadow-lg ${isDropTarget ? 'ring-2 ring-primary shadow-xl scale-[1.02]' : ''}`}
-                                    >
-                                        {/* Top Accent */}
-                                        <div className={`absolute top-0 left-0 right-0 h-1.5 ${col.accent} opacity-80`} />
-
-                                        {/* Header */}
-                                        <div className="flex items-center justify-between px-3 xl:px-4 pt-4 pb-2">
-                                            <div className="flex items-center gap-2">
-                                                <span className={`w-2 h-2 rounded-full ${col.accent} shadow-sm`} />
-                                                <h3 className={`text-[10px] xl:text-xs font-black tracking-widest uppercase ${col.color}`}>
-                                                    {col.label}
-                                                </h3>
-                                            </div>
-                                            <span className="text-[10px] xl:text-xs bg-background/80 backdrop-blur-md border border-border/50 px-2 py-0.5 rounded-full text-foreground font-bold shadow-sm">
-                                                {colQuotes.length}
-                                            </span>
-                                        </div>
-
-                                        {/* Cards */}
-                                        <div className="flex px-2 xl:px-3 pb-3 flex-col gap-2 overflow-y-auto max-h-[65vh] scrollbar-none min-h-[80px]">
-                                            {colQuotes.map((quote) => (
-                                                <DraggableQuoteCard
-                                                    key={quote.id}
-                                                    quote={quote}
-                                                    colAccent={col.accent}
-                                                    colColor={col.color}
-                                                    fmt={fmt}
-                                                    fmtDate={fmtDate}
-                                                    variant="kanban"
-                                                />
-                                            ))}
-
-                                            {colQuotes.length === 0 && (
-                                                <div className={`flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-xl m-1 transition-all ${isDropTarget
-                                                    ? 'border-primary/50 bg-primary/5 text-primary'
-                                                    : 'border-current/10 opacity-60'
-                                                    }`}>
-                                                    <p className="text-xs font-bold uppercase tracking-widest text-foreground/50">
-                                                        {isDropTarget ? 'Soltar aqui' : 'Vazio'}
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </DroppableColumn>
-                                )
-                            })}
                         </div>
-                    </div>
 
-                    {/* Drag Overlay - the ghost card that follows cursor */}
-                    <DragOverlay dropAnimation={{ duration: 200, easing: 'ease-out' }}>
-                        {activeQuote && (
-                            <DragOverlayCard quote={activeQuote} fmt={fmt} fmtDate={fmtDate} />
-                        )}
-                    </DragOverlay>
-                </DndContext>
+                        <DragOverlay dropAnimation={{ duration: 200, easing: 'ease-out' }}>
+                            {activeQuote && (
+                                <DragOverlayCard quote={activeQuote} fmt={fmt} fmtDate={fmtDate} />
+                            )}
+                        </DragOverlay>
+                    </DndContext>
+                </>
             )}
         </div>
     )

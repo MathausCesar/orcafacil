@@ -51,6 +51,17 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
     const handleSubmit = async (formData: FormData, action: typeof login | typeof signup) => {
         setLoading(true)
         try {
+            if (action === signup) {
+                const password = formData.get('password') as string;
+                const confirmPassword = formData.get('confirmPassword') as string;
+
+                if (password !== confirmPassword) {
+                    toast.error('As senhas não coincidem.')
+                    setLoading(false)
+                    return
+                }
+            }
+
             const result = await action(formData) as any
 
             if (action === signup) {
@@ -285,6 +296,19 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                                     className="h-12 rounded-xl border-zinc-800 bg-zinc-900/50 px-4 text-white placeholder:text-zinc-600 focus:border-emerald-500/50 focus:bg-zinc-900 focus:ring-4 focus:ring-emerald-500/10 transition-all"
                                 />
                             </div>
+                            {mode === 'register' && (
+                                <div className="space-y-2">
+                                    <Label htmlFor="confirmPassword" className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Confirmar Senha</Label>
+                                    <Input
+                                        id="confirmPassword"
+                                        name="confirmPassword"
+                                        type="password"
+                                        minLength={6}
+                                        required
+                                        className="h-12 rounded-xl border-zinc-800 bg-zinc-900/50 px-4 text-white placeholder:text-zinc-600 focus:border-emerald-500/50 focus:bg-zinc-900 focus:ring-4 focus:ring-emerald-500/10 transition-all"
+                                    />
+                                </div>
+                            )}
                             {/* Aceite de Termos — somente no registro */}
                             {mode === 'register' && (
                                 <div className="flex items-start gap-3 py-1">

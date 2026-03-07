@@ -9,6 +9,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { LogoUpload } from "@/components/profile/logo-upload";
 import { extractColors } from "extract-colors";
+import { toast } from "sonner";
+import { formatDocument, validateDocument } from "@/lib/utils/document";
 
 interface WizardStep4Props {
     userId: string;
@@ -45,6 +47,11 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
     };
 
     const handleContinue = () => {
+        if (document && !validateDocument(document, documentType)) {
+            toast.error(`O ${documentType.toUpperCase()} informado é inválido. Verifique os números digitados.`);
+            return;
+        }
+
         setIsSubmitting(true);
         updateData({
             businessName,
@@ -94,7 +101,13 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
                             <Label>Como você atua?</Label>
                             <RadioGroup
                                 defaultValue={documentType}
-                                onValueChange={(val) => setDocumentType(val as "cpf" | "cnpj")}
+                                onValueChange={(val) => {
+                                    const newType = val as "cpf" | "cnpj";
+                                    setDocumentType(newType);
+                                    if (document) {
+                                        setDocument(formatDocument(document, newType));
+                                    }
+                                }}
                                 className="flex gap-4"
                             >
                                 <div className="flex items-center space-x-2">
@@ -136,8 +149,9 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
                                 <Input
                                     id="document"
                                     value={document}
-                                    onChange={(e) => setDocument(e.target.value)}
+                                    onChange={(e) => setDocument(formatDocument(e.target.value, documentType))}
                                     placeholder={documentType === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'}
+                                    maxLength={documentType === 'cpf' ? 14 : 18}
                                     className="h-10 font-mono border-primary/20 focus-visible:ring-primary"
                                 />
                             </div>

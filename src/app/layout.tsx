@@ -1,10 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner";
+import dynamic from 'next/dynamic';
 import { ThemeProvider } from "@/components/theme-provider";
-import { Analytics } from "@vercel/analytics/react";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
+
+// Carregamento dinâmico (lazy loading) de componentes globais não-críticos para initial paint
+const Toaster = dynamic(() => import("@/components/ui/sonner").then(mod => mod.Toaster), { ssr: false });
+const Analytics = dynamic(() => import("@vercel/analytics/react").then(mod => mod.Analytics), { ssr: false });
 
 const inter = Inter({
   variable: "--font-inter",

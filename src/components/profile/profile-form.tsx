@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { updateProfile, updateThemeColor } from '@/app/actions/profile'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -226,9 +227,9 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                             <div className="h-2 w-full bg-gradient-to-r from-primary to-emerald-500" />
                             <CardContent className="p-6">
                                 <div className="flex items-center gap-4 mb-6">
-                                    <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-border">
+                                    <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-border relative">
                                         {logoUrl ? (
-                                            <img src={logoUrl} alt="Logo" className="h-full w-full object-cover" />
+                                            <Image src={logoUrl} alt="Logo" fill className="object-cover" />
                                         ) : (
                                             <Building2 className="h-6 w-6 text-muted-foreground" />
                                         )}

@@ -63,7 +63,7 @@ export default async function Dashboard() {
             <h2 className="text-3xl font-bold tracking-tight">Criar Novo Orçamento</h2>
             <p className="text-teal-100 font-medium">Gere propostas profissionais em segundos.</p>
           </div>
-          <Link href="/new">
+          <Link href="/new" prefetch={true}>
             <Button size="lg" className="h-14 px-8 text-lg rounded-xl bg-background text-primary hover:bg-muted shadow-lg border-2 border-transparent transition-all hover:scale-105 active:scale-95 font-semibold">
               <Plus className="mr-2 h-6 w-6" /> Começar Agora
             </Button>
@@ -78,7 +78,7 @@ export default async function Dashboard() {
       <section className="space-y-6">
         <div className="flex items-center justify-between px-2">
           <h2 className="text-xl font-bold tracking-tight text-foreground">Últimos Orçamentos</h2>
-          <Link href="/quotes">
+          <Link href="/quotes" prefetch={true}>
             <Button variant="ghost" className="text-primary font-medium hover:text-primary/80 hover:bg-primary/10">
               Ver todos <ArrowUpRight className="ml-1 h-4 w-4" />
             </Button>

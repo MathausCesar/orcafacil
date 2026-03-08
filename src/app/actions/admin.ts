@@ -58,7 +58,7 @@ export async function getAdminUsers() {
         const { data: users, error } = await supabaseAdmin
             .from('profiles')
             .select('*')
-            .order('created_at', { ascending: false })
+            .order('updated_at', { ascending: false })
 
         if (error) throw error
 
@@ -73,10 +73,22 @@ export async function getAdminTickets() {
     try {
         const { data: tickets, error } = await supabaseAdmin
             .from('support_tickets')
-            .select('*, profiles!support_tickets_user_id_fkey(email, business_name)')
+            .select('*')
             .order('created_at', { ascending: false })
 
         if (error) throw error
+
+        if (tickets && tickets.length > 0) {
+            const userIds = tickets.map(t => t.user_id);
+            const { data: profiles } = await supabaseAdmin
+                .from('profiles')
+                .select('id, email, business_name')
+                .in('id', userIds);
+
+            tickets.forEach(ticket => {
+                ticket.profiles = profiles?.find(p => p.id === ticket.user_id) || null;
+            });
+        }
 
         return { tickets, success: true }
     } catch (error) {

@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Analytics } from "@vercel/analytics/react";
+import { PostHogProvider } from "@/components/providers/posthog-provider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -99,17 +100,19 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <OrganizationProvider>
-            {children}
-            <Toaster />
-          </OrganizationProvider>
-        </ThemeProvider>
+        <PostHogProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <OrganizationProvider>
+              {children}
+              <Toaster />
+            </OrganizationProvider>
+          </ThemeProvider>
+        </PostHogProvider>
         <Analytics />
       </body>
     </html>

@@ -58,12 +58,12 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    return { response, user }
+    return { response, user, supabase }
 }
 
 export async function middleware(request: NextRequest) {
     try {
-        const { response, user } = await updateSession(request)
+        const { response, user, supabase } = await updateSession(request)
 
         const url = request.nextUrl
         const hostname = request.headers.get('host') || ''
@@ -101,9 +101,24 @@ export async function middleware(request: NextRequest) {
             path.startsWith('/register') ||
             path.startsWith('/forgot-password');
 
+        const isAdminRoute = path.startsWith('/admin');
+
         // Se a rota for protegida e o usuário não estiver logado
-        if (isProtectedRoute && !user) {
+        if ((isProtectedRoute || isAdminRoute) && !user) {
             return NextResponse.redirect(new URL('/login', request.url))
+        }
+
+        // Bloqueia acesso à rota admin se não for superadmin
+        if (isAdminRoute && user) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('is_superadmin')
+                .eq('id', user.id)
+                .single();
+
+            if (!profile?.is_superadmin) {
+                return NextResponse.redirect(new URL('/', request.url))
+            }
         }
 
         // Se tentar acessar rota de autenticação já logado, vai pro dashboard

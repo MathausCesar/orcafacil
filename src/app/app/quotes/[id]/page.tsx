@@ -183,7 +183,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
 
     return (
         <div
-            className="force-light min-h-screen bg-slate-50 pb-20 print:bg-white print:pb-0"
+            className="force-light min-h-screen bg-slate-50 pb-20 print:bg-transparent print:p-0 print:m-0 print:[color-adjust:exact] print:[-webkit-print-color-adjust:exact]"
             style={{
                 '--theme-color': themeColor,
                 colorScheme: 'light',
@@ -325,7 +325,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                             const categoryInfo = detectItemCategory(item.description)
                                             const CategoryIcon = categoryInfo.icon
                                             return (
-                                                <tr key={item.id} className="group">
+                                                <tr key={item.id} className="group print:break-inside-avoid">
                                                     <td className="py-4 pl-2 font-medium text-foreground">
                                                         <div className="flex items-center gap-2">
                                                             <CategoryIcon
@@ -352,7 +352,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 </table>
 
                                 {/* Totals */}
-                                <div className="flex justify-end pt-4 border-t border-slate-100">
+                                <div className="flex justify-end pt-4 border-t border-slate-100 print:break-inside-avoid print:mt-4">
                                     <div className="min-w-fit space-y-2">
                                         <div className="flex justify-between gap-4 text-lg sm:text-xl font-bold bg-[var(--theme-color)] text-white p-3 rounded-md shadow-lg shadow-[var(--theme-color)]/20 whitespace-nowrap">
                                             <span>Total da Proposta</span>
@@ -540,7 +540,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                         </thead>
                                         <tbody>
                                             {quote.quote_items.map((item: any) => (
-                                                <tr key={item.id} className="border-b border-slate-100">
+                                                <tr key={item.id} className="border-b border-slate-100 print:break-inside-avoid">
                                                     <td className="py-3.5 font-medium text-slate-800">
                                                         <div>{item.description}</div>
                                                         {quote.show_detailed_items && item.details && (
@@ -559,7 +559,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                         </tbody>
                                     </table>
                                     {/* Total — Understated, right-aligned */}
-                                    <div className="flex justify-end mt-4 pt-4 border-t border-slate-200">
+                                    <div className="flex justify-end mt-4 pt-4 border-t border-slate-200 print:break-inside-avoid print:mt-6">
                                         <div className="text-right">
                                             <p className="text-[11px] uppercase tracking-widest text-slate-400 mb-1">Total da Proposta</p>
                                             <p className="text-2xl font-bold text-slate-900 whitespace-nowrap mb-2">
@@ -723,7 +723,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     </thead>
                                     <tbody>
                                         {quote.quote_items.map((item: any, idx: number) => (
-                                            <tr key={item.id} className="border-b border-slate-200">
+                                            <tr key={item.id} className="border-b border-slate-200 print:break-inside-avoid">
                                                 <td className="py-3 pl-4">
                                                     <div className="font-medium text-slate-800">{item.description}</div>
                                                     {quote.show_detailed_items && item.details && (
@@ -743,7 +743,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 </table>
 
                                 {/* Total — Double border formal block */}
-                                <div className="flex justify-end mt-4">
+                                <div className="flex justify-end mt-4 print:break-inside-avoid print:mt-6">
                                     <div className="border-2 border-slate-800 px-6 sm:px-8 py-4 text-right">
                                         <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Total a Pagar</p>
                                         <p className="text-xl sm:text-2xl font-bold text-slate-900 whitespace-nowrap mb-2">
@@ -884,7 +884,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                         {/* Items */}
                         <div className="space-y-6">
                             {quote.quote_items.map((item: any, idx: number) => (
-                                <div key={item.id} className="flex flex-col md:flex-row md:items-start justify-between gap-4 py-4 border-b border-slate-50">
+                                <div key={item.id} className="flex flex-col md:flex-row md:items-start justify-between gap-4 py-4 border-b border-slate-50 print:break-inside-avoid">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-3">
                                             <span className="text-slate-300 font-mono text-xs">{String(idx + 1).padStart(2, '0')}</span>
@@ -903,7 +903,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                         </div>
 
                         {/* Total */}
-                        <div className="flex justify-end pt-8">
+                        <div className="flex justify-end pt-8 print:break-inside-avoid print:mt-6">
                             <div className="w-full md:w-1/2 lg:w-1/3">
                                 <div className="flex justify-between items-end border-b-2 py-4" style={{ borderColor: themeColor }}>
                                     <span className="text-xs uppercase tracking-widest text-slate-500 font-bold">Total</span>
@@ -928,7 +928,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                         )}
 
                         {/* Conversion Triggers */}
-                        <div className="py-8 space-y-8">
+                        <div className="py-8 space-y-8 print:break-inside-avoid">
                             {/* Timeline */}
                             {quote.show_timeline && (
                                 <TimelineSection themeColor={themeColor} estimatedDays={quote.estimated_days ?? undefined} quoteStatus={quote.status} />
@@ -1016,7 +1016,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 <div className="space-y-4">
                                     <h3 className="text-lg font-bold text-slate-900 border-b-2 border-slate-100 pb-2 mb-6">Investimento</h3>
                                     {quote.quote_items.map((item: any) => (
-                                        <div key={item.id} className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm transition-shadow hover:shadow-md flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+                                        <div key={item.id} className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm transition-shadow hover:shadow-md flex flex-col md:flex-row gap-4 justify-between items-start md:items-center print:break-inside-avoid">
                                             <div className="flex gap-4 items-start flex-1 min-w-0">
                                                 <div className="bg-slate-50 w-10 h-10 rounded-lg flex items-center justify-center text-slate-400 font-bold shrink-0">{item.quantity}x</div>
                                                 <div className="min-w-0">
@@ -1032,7 +1032,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     ))}
                                 </div>
 
-                                <div className="mt-10 p-6 sm:p-8 rounded-3xl text-white shadow-xl relative overflow-hidden" style={{ backgroundColor: themeColor }}>
+                                <div className="mt-10 p-6 sm:p-8 rounded-3xl text-white shadow-xl relative overflow-hidden print:break-inside-avoid print:mt-10" style={{ backgroundColor: themeColor }}>
                                     <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
                                     <div className="flex flex-col sm:flex-row justify-between items-center gap-6 relative z-10">
                                         <div className="text-center sm:text-left">
@@ -1058,7 +1058,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 )}
 
                                 {/* Conversion Triggers */}
-                                <div className="mt-12 space-y-8">
+                                <div className="mt-12 space-y-8 print:break-inside-avoid">
                                     {/* Urgency Badge */}
                                     {quote.status !== 'pending' && (
                                         <div className="flex justify-center">
@@ -1169,7 +1169,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     </div>
                                     <div className="space-y-4">
                                         {quote.quote_items.map((item: any, idx: number) => (
-                                            <div key={item.id} className="grid grid-cols-4 sm:grid-cols-6 gap-4 items-start bg-slate-800/30 p-4 sm:p-5 border border-slate-800 hover:border-slate-600 transition-colors">
+                                            <div key={item.id} className="grid grid-cols-4 sm:grid-cols-6 gap-4 items-start bg-slate-800/30 p-4 sm:p-5 border border-slate-800 hover:border-slate-600 transition-colors print:break-inside-avoid print:border-slate-400">
                                                 <div className="col-span-3 sm:col-span-4 min-w-0">
                                                     <div className="flex items-start gap-4">
                                                         <div className="font-mono text-slate-600 text-sm hidden sm:block">{String(idx + 1).padStart(2, '0')}</div>
@@ -1196,7 +1196,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     </div>
                                 </div>
 
-                                <div className="mt-8 flex justify-end">
+                                <div className="mt-8 flex justify-end print:break-inside-avoid print:mt-8">
                                     <div className="w-full sm:w-80 bg-slate-800 p-6 sm:p-8 border-l-4" style={{ borderColor: themeColor }}>
                                         <p className="text-xs uppercase tracking-widest text-slate-400 mb-2">Total</p>
                                         <p className="text-4xl text-white font-black tracking-tighter whitespace-nowrap">{totalFormatted}</p>
@@ -1240,7 +1240,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 )}
 
                                 {/* Conversion Triggers in high contrast block */}
-                                <div className="mt-16 bg-slate-50 rounded-xl p-6 sm:p-10 text-slate-900 shadow-2xl space-y-8 border border-slate-200">
+                                <div className="mt-16 bg-slate-50 rounded-xl p-6 sm:p-10 text-slate-900 shadow-2xl space-y-8 border border-slate-200 print:break-inside-avoid">
                                     <h3 className="text-xl sm:text-2xl font-black tracking-tight text-center mb-8" style={{ color: themeColor }}>Detalhes da Execução</h3>
 
                                     {/* Urgency Badge */}

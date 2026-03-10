@@ -48,23 +48,23 @@ export function LayoutSelector({ currentLayout, currentColor, onLayoutChange, on
                 </div>
 
                 {isFree && (
-                    <div className="p-3 mb-2 rounded-lg bg-primary/5 border border-primary/20 flex items-start gap-3">
-                        <Lock className="w-4 h-4 text-primary mt-0.5" />
-                        <div className="text-xs text-muted-foreground">
-                            <span className="font-semibold text-primary">Detecção Automática Ativa.</span> Como usuário gratuito, extraímos a melhor cor da sua logo e ajustamos a proposta magicamente. Para escolher uma cor manual personalizada, faça o <a href="/app/settings/billing" className="text-primary font-bold hover:underline">upgrade do plano</a>.
+                    <div className="p-4 mb-4 rounded-xl bg-muted/50 border flex items-start gap-3">
+                        <Lock className="w-5 h-5 text-muted-foreground mt-0.5" />
+                        <div className="text-sm text-foreground">
+                            <span className="font-semibold">Detecção Automática Ativa.</span> Como usuário gratuito, extraímos a melhor cor da sua logo e ajustamos a proposta magicamente. Para escolher uma cor manual personalizada, faça o <a href="/app/settings/billing" className="text-primary font-bold hover:underline">upgrade do plano</a>.
                         </div>
                     </div>
                 )}
 
-                <div className={cn("flex flex-wrap gap-3 items-center", isFree && "opacity-60 pointer-events-none")}>
+                <div className={cn("flex flex-wrap gap-3 items-center", isFree && "opacity-50 pointer-events-none")}>
                     {defaultColors.map((color) => (
                         <button
                             key={color}
                             type="button"
                             onClick={() => onColorChange(color)}
                             className={cn(
-                                "h-8 w-8 rounded-full border-2 transition-all hover:scale-110",
-                                currentColor === color ? "border-slate-900 shadow-md scale-110 ring-2 ring-slate-200" : "border-transparent"
+                                "h-10 w-10 rounded-full border-2 transition-all hover:scale-110",
+                                currentColor === color ? "border-foreground shadow-sm scale-110 ring-2 ring-background" : "border-background shadow-sm"
                             )}
                             style={{ backgroundColor: color }}
                             aria-label={`Selecionar cor ${color}`}
@@ -79,10 +79,10 @@ export function LayoutSelector({ currentLayout, currentColor, onLayoutChange, on
                             className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                         />
                         <div className={cn(
-                            "h-8 w-8 rounded-full border-2 border-slate-200 flex items-center justify-center bg-white hover:border-slate-400 transition-colors",
-                            (!defaultColors.includes(currentColor) && !isFree) ? "border-slate-900" : ""
+                            "h-10 w-10 rounded-full border-2 flex items-center justify-center bg-background shadow-sm transition-colors",
+                            (!defaultColors.includes(currentColor) && !isFree) ? "border-foreground ring-2 ring-background" : "border-border hover:border-foreground/50"
                         )}>
-                            <span className="text-xs font-bold text-muted-foreground">+</span>
+                            <span className="text-sm font-bold text-muted-foreground">+</span>
                         </div>
                     </div>
                 </div>
@@ -113,49 +113,49 @@ export function LayoutSelector({ currentLayout, currentColor, onLayoutChange, on
                             </div>
 
                             {/* Mini Preview */}
-                            <div className="h-20 w-full bg-slate-50/50 rounded border border-slate-100 overflow-hidden relative pointer-events-none">
+                            <div className="h-32 w-full bg-muted/30 rounded-lg border overflow-hidden relative pointer-events-none mt-2">
                                 {layout.id === 'modern' && (
-                                    <div className="p-2 space-y-2 h-full flex flex-col">
-                                        <div className="h-3 w-1/3 rounded-sm opacity-80" style={{ backgroundColor: currentColor }}></div>
-                                        <div className="flex-1 bg-white shadow-sm rounded-sm border border-slate-100 p-1">
-                                            <div className="h-1.5 w-1/2 bg-slate-100 mb-1"></div>
-                                            <div className="h-1.5 w-3/4 bg-slate-100"></div>
+                                    <div className="p-3 space-y-3 h-full flex flex-col">
+                                        <div className="h-4 w-1/3 rounded opacity-80" style={{ backgroundColor: currentColor }}></div>
+                                        <div className="flex-1 bg-background shadow-sm rounded border p-2">
+                                            <div className="h-2 w-1/2 bg-muted mb-2 rounded-sm"></div>
+                                            <div className="h-2 w-3/4 bg-muted rounded-sm"></div>
                                         </div>
                                     </div>
                                 )}
                                 {layout.id === 'professional' && (
-                                    <div className="p-2 space-y-2 h-full flex flex-col">
-                                        <div className="flex justify-between items-center border-b border-slate-200 pb-1">
-                                            <div className="h-3 w-1/4 bg-slate-800 rounded-sm"></div>
-                                            <div className="h-3 w-3 rounded-full opacity-60" style={{ backgroundColor: currentColor }}></div>
+                                    <div className="p-3 space-y-3 h-full flex flex-col">
+                                        <div className="flex justify-between items-center border-b pb-2">
+                                            <div className="h-4 w-1/4 bg-foreground rounded-sm"></div>
+                                            <div className="h-4 w-4 rounded-full opacity-80" style={{ backgroundColor: currentColor }}></div>
                                         </div>
-                                        <div className="flex-1 bg-white border border-slate-200"></div>
+                                        <div className="flex-1 bg-background border rounded-sm"></div>
                                     </div>
                                 )}
                                 {layout.id === 'classic' && (
-                                    <div className="p-3 text-center h-full flex flex-col items-center">
-                                        <div className="h-3 w-1/2 bg-slate-900 mb-2"></div>
-                                        <div className="w-full h-px bg-slate-300 mb-1"></div>
-                                        <div className="w-full h-px bg-slate-300"></div>
+                                    <div className="p-4 text-center h-full flex flex-col items-center">
+                                        <div className="h-4 w-1/2 bg-foreground mb-3 rounded-sm"></div>
+                                        <div className="w-full h-px bg-border mb-2"></div>
+                                        <div className="w-full h-px bg-border"></div>
                                     </div>
                                 )}
                                 {layout.id === 'minimalist' && (
-                                    <div className="p-3 bg-white h-full flex flex-col items-start gap-2">
-                                        <div className="h-1 w-1/5" style={{ backgroundColor: currentColor }}></div>
-                                        <div className="h-2 w-1/3 bg-slate-200"></div>
-                                        <div className="h-1 w-full bg-slate-100 mt-2"></div>
+                                    <div className="p-4 bg-background h-full flex flex-col items-start gap-3">
+                                        <div className="h-1.5 w-1/5 rounded-full" style={{ backgroundColor: currentColor }}></div>
+                                        <div className="h-3 w-1/3 bg-muted rounded-sm mt-1"></div>
+                                        <div className="h-1.5 w-full bg-muted/50 mt-3 rounded-full"></div>
                                     </div>
                                 )}
                                 {layout.id === 'agency' && (
-                                    <div className="p-2 h-full flex flex-col gap-1 items-center bg-slate-100">
-                                        <div className="w-[90%] h-4 rounded-full" style={{ backgroundColor: currentColor }}></div>
-                                        <div className="w-full bg-white rounded-lg flex-1 shadow-sm border border-slate-200"></div>
+                                    <div className="p-3 h-full flex flex-col gap-2 items-center bg-muted/30">
+                                        <div className="w-[90%] h-6 rounded-full opacity-90" style={{ backgroundColor: currentColor }}></div>
+                                        <div className="w-full bg-background rounded-xl flex-1 shadow-sm border"></div>
                                     </div>
                                 )}
                                 {layout.id === 'impact' && (
-                                    <div className="p-2 space-y-2 h-full flex flex-col bg-slate-900">
-                                        <div className="h-3 w-1/3 rounded-sm opacity-100" style={{ backgroundColor: currentColor }}></div>
-                                        <div className="flex-1 bg-slate-800 rounded-sm border border-slate-700 p-1"></div>
+                                    <div className="p-3 space-y-3 h-full flex flex-col bg-slate-900">
+                                        <div className="h-4 w-1/3 rounded-sm opacity-100" style={{ backgroundColor: currentColor }}></div>
+                                        <div className="flex-1 bg-slate-800 rounded-sm border border-slate-700"></div>
                                     </div>
                                 )}
                             </div>

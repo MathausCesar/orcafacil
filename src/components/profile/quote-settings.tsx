@@ -44,11 +44,9 @@ export function QuoteSettings({ settings, plan, onChange, userId }: QuoteSetting
 
     return (
         <Card className="border-0 shadow-sm ring-1 ring-border relative overflow-hidden">
-            <CardHeader className="pb-4 border-b border-border bg-muted/30">
+            <CardHeader className="pb-4 border-b">
                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
-                        <Settings className="h-5 w-5" />
-                    </div>
+                    <Settings className="h-5 w-5 text-primary" />
                     Layout Avançado & Identidade
                 </CardTitle>
                 <CardDescription>
@@ -58,11 +56,11 @@ export function QuoteSettings({ settings, plan, onChange, userId }: QuoteSetting
             <CardContent className="pt-6 space-y-8">
 
                 {/* --- PREMIUM SECTION --- */}
-                <div className="relative border border-amber-200/50 rounded-2xl p-6 bg-slate-50/50 overflow-hidden">
+                <div className="relative border rounded-2xl p-6 bg-muted/20 overflow-hidden">
                     {isFree && (
-                        <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center p-6 text-center">
-                            <div className="bg-background border shadow-lg rounded-xl p-6 max-w-sm ring-1 ring-primary/20">
-                                <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div className="absolute inset-0 bg-background/80 z-10 flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm">
+                            <div className="max-w-sm flex flex-col items-center">
+                                <div className="w-12 h-12 bg-muted text-muted-foreground rounded-full flex items-center justify-center mb-4">
                                     <Lock className="w-6 h-6" />
                                 </div>
                                 <h3 className="text-lg font-bold mb-2">Recurso Premium</h3>
@@ -76,7 +74,7 @@ export function QuoteSettings({ settings, plan, onChange, userId }: QuoteSetting
                         </div>
                     )}
 
-                    <div className={cn("space-y-8", isFree && "opacity-50 pointer-events-none select-none")}>
+                    <div className={cn("space-y-8", isFree && "opacity-40 pointer-events-none select-none blur-[1px]")}>
 
                         {/* Typography Selection (Premium) */}
                         <div className="space-y-3">
@@ -84,18 +82,18 @@ export function QuoteSettings({ settings, plan, onChange, userId }: QuoteSetting
                             <RadioGroup
                                 value={currentSettings.quote_font_family}
                                 onValueChange={(val) => handleChange('quote_font_family', val)}
-                                className="grid grid-cols-2 md:grid-cols-4 gap-3"
+                                className="grid grid-cols-2 lg:grid-cols-4 gap-3"
                             >
                                 {['Inter', 'Roboto', 'Playfair Display', 'Montserrat'].map((font) => (
                                     <div key={font}>
                                         <RadioGroupItem value={font} id={`font-${font}`} className="peer sr-only" />
                                         <Label
                                             htmlFor={`font-${font}`}
-                                            className="flex flex-col items-center justify-center p-3 text-sm font-medium border rounded-md cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-muted text-muted-foreground peer-data-[state=checked]:text-foreground h-16"
+                                            className="flex flex-col items-center justify-center p-4 text-sm font-medium border rounded-xl cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-muted text-muted-foreground peer-data-[state=checked]:text-foreground h-20 transition-all"
                                             style={{ fontFamily: font === 'Inter' ? undefined : `"${font}", sans-serif` }}
                                         >
-                                            <span className="text-lg mb-1">Aa</span>
-                                            <span className="text-[10px]">{font}</span>
+                                            <span className="text-2xl mb-1 text-foreground">Aa</span>
+                                            <span className="text-xs">{font}</span>
                                         </Label>
                                     </div>
                                 ))}
@@ -103,7 +101,7 @@ export function QuoteSettings({ settings, plan, onChange, userId }: QuoteSetting
                         </div>
 
                         {/* Cover Presentation (Premium) */}
-                        <div className="space-y-4 p-4 rounded-xl border border-slate-200 bg-slate-50">
+                        <div className="space-y-4 p-5 rounded-xl border bg-background">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h4 className="font-semibold text-sm">Capa & Apresentação</h4>
@@ -128,9 +126,9 @@ export function QuoteSettings({ settings, plan, onChange, userId }: QuoteSetting
                                             value={currentSettings.quote_presentation_text}
                                             onChange={(e) => handleChange('quote_presentation_text', e.target.value)}
                                             placeholder="Ex: Olá {{cliente_nome}}, preparamos esta proposta com muito carinho e atenção às suas necessidades..."
-                                            className="resize-none h-32 text-sm focus-visible:ring-primary"
+                                            className="resize-none h-32 focus-visible:ring-primary"
                                         />
-                                        <p className="text-[10px] text-muted-foreground">Use `{`{cliente_nome}`}` para incluir o nome do cliente automaticamente.</p>
+                                        <p className="text-xs text-muted-foreground">Use `{`{cliente_nome}`}` para incluir o nome do cliente automaticamente.</p>
                                     </div>
                                 </div>
                             )}

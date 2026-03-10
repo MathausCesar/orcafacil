@@ -187,12 +187,10 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                     </Card>
 
                     {/* Unified Appearance Tab */}
-                    <Card className="border-0 shadow-sm ring-1 ring-border">
-                        <CardHeader className="pb-4 border-b border-border bg-muted/30">
+                    <Card className="shadow-sm">
+                        <CardHeader className="pb-4 border-b">
                             <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                                <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                                    <Palette className="h-5 w-5" />
-                                </div>
+                                <Palette className="h-5 w-5 text-primary" />
                                 Personalização Visual e Layout Avançado
                             </CardTitle>
                             <CardDescription>

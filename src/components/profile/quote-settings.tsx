@@ -37,68 +37,62 @@ export function QuoteSettings({ settings, plan, onChange, userId }: QuoteSetting
     }
 
     return (
-        <Card className="border-0 shadow-sm ring-1 ring-border relative overflow-hidden">
-            <CardHeader className="pb-4 border-b">
-                <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Settings className="h-5 w-5 text-primary" />
-                    Layout Avançado & Identidade
-                </CardTitle>
-                <CardDescription>
-                    Posicionamento da logo e fontes personalizadas da sua marca.
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6 space-y-8">
-
-                {/* --- PREMIUM SECTION --- */}
-                <div className="relative border rounded-2xl p-6 bg-muted/20 overflow-hidden">
-                    {isFree && (
-                        <div className="absolute inset-0 bg-background/80 z-10 flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm">
-                            <div className="max-w-sm flex flex-col items-center">
-                                <div className="w-12 h-12 bg-muted text-muted-foreground rounded-full flex items-center justify-center mb-4">
-                                    <Lock className="w-6 h-6" />
-                                </div>
-                                <h3 className="text-lg font-bold mb-2">Recurso Premium</h3>
-                                <p className="text-sm text-muted-foreground mb-4">
-                                    A tipografia premium está disponível apenas para assinantes.
-                                </p>
-                                <a href="/app/settings/billing" className="text-primary font-semibold text-sm hover:underline">
-                                    Faça um upgrade agora →
-                                </a>
+        <div className="space-y-10">
+            {/* --- PREMIUM TYPOGRAPHY SECTION --- */}
+            <div className="relative border rounded-2xl p-6 bg-muted/20 overflow-hidden">
+                {isFree && (
+                    <div className="absolute inset-0 bg-background/80 z-10 flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm">
+                        <div className="max-w-sm flex flex-col items-center">
+                            <div className="w-12 h-12 bg-muted text-muted-foreground rounded-full flex items-center justify-center mb-4">
+                                <Lock className="w-6 h-6" />
                             </div>
-                        </div>
-                    )}
-
-                    <div className={cn("space-y-8", isFree && "opacity-40 pointer-events-none select-none blur-[1px]")}>
-
-                        {/* Typography Selection (Premium) */}
-                        <div className="space-y-3">
-                            <Label className="text-sm font-semibold text-foreground">Tipografia Principal</Label>
-                            <RadioGroup
-                                value={currentSettings.quote_font_family}
-                                onValueChange={(val) => handleChange('quote_font_family', val)}
-                                className="grid grid-cols-2 lg:grid-cols-4 gap-3"
-                            >
-                                {['Inter', 'Roboto', 'Playfair Display', 'Montserrat'].map((font) => (
-                                    <div key={font}>
-                                        <RadioGroupItem value={font} id={`font-${font}`} className="peer sr-only" />
-                                        <Label
-                                            htmlFor={`font-${font}`}
-                                            className="flex flex-col items-center justify-center p-4 text-sm font-medium border rounded-xl cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-muted text-muted-foreground peer-data-[state=checked]:text-foreground h-20 transition-all"
-                                            style={{ fontFamily: font === 'Inter' ? undefined : `"${font}", sans-serif` }}
-                                        >
-                                            <span className="text-2xl mb-1 text-foreground">Aa</span>
-                                            <span className="text-xs">{font}</span>
-                                        </Label>
-                                    </div>
-                                ))}
-                            </RadioGroup>
+                            <h3 className="text-lg font-bold mb-2">Recurso Premium</h3>
+                            <p className="text-sm text-muted-foreground mb-4">
+                                A tipografia premium está disponível apenas para assinantes.
+                            </p>
+                            <a href="/app/settings/billing" className="text-primary font-semibold text-sm hover:underline">
+                                Faça um upgrade agora →
+                            </a>
                         </div>
                     </div>
+                )}
+
+                <div className={cn("space-y-8", isFree && "opacity-40 pointer-events-none select-none blur-[1px]")}>
+
+                    {/* Typography Selection (Premium) */}
+                    <div className="space-y-3">
+                        <Label className="text-sm font-semibold text-foreground">Tipografia Principal</Label>
+                        <RadioGroup
+                            value={currentSettings.quote_font_family}
+                            onValueChange={(val) => handleChange('quote_font_family', val)}
+                            className="grid grid-cols-2 lg:grid-cols-4 gap-3"
+                        >
+                            {['Inter', 'Roboto', 'Playfair Display', 'Montserrat'].map((font) => (
+                                <div key={font}>
+                                    <RadioGroupItem value={font} id={`font-${font}`} className="peer sr-only" />
+                                    <Label
+                                        htmlFor={`font-${font}`}
+                                        className="flex flex-col items-center justify-center p-4 text-sm font-medium border rounded-xl cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-muted text-muted-foreground peer-data-[state=checked]:text-foreground h-20 transition-all"
+                                        style={{ fontFamily: font === 'Inter' ? undefined : `"${font}", sans-serif` }}
+                                    >
+                                        <span className="text-2xl mb-1 text-foreground">Aa</span>
+                                        <span className="text-xs">{font}</span>
+                                    </Label>
+                                </div>
+                            ))}
+                        </RadioGroup>
+                    </div>
                 </div>
+            </div>
 
-                <div className="w-full h-px bg-border my-6"></div>
+            <div className="w-full h-px bg-border my-8"></div>
 
-                {/* Logo Size */}
+            {/* --- LOGO SETTINGS SECTION --- */}
+            <div className="space-y-6">
+                <div className="mb-4">
+                    <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider text-muted-foreground/80 mb-1">Configurações da Logo</h4>
+                    <p className="text-sm text-muted-foreground">Ajuste como e onde a logo da sua empresa aparecerá na proposta.</p>
+                </div>
                 <div className="space-y-3">
                     <Label className="text-sm font-semibold text-foreground">Tamanho da Logo na Tabela</Label>
                     <RadioGroup
@@ -175,24 +169,32 @@ export function QuoteSettings({ settings, plan, onChange, userId }: QuoteSetting
                     </div>
                 </div>
 
-                {/* Footer Text */}
-                <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                        <Label htmlFor="footerText" className="text-sm font-semibold text-foreground">Frase de Rodapé</Label>
-                        <span className="text-xs text-muted-foreground">{currentSettings.footerText.length}/200</span>
+                <div className="w-full h-px bg-border my-8"></div>
+
+                {/* --- FOOTER SECTION --- */}
+                <div className="space-y-6">
+                    <div className="mb-4">
+                        <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider text-muted-foreground/80 mb-1">Rodapé da Proposta</h4>
+                        <p className="text-sm text-muted-foreground">Adicione uma mensagem final para todos os seus orçamentos.</p>
                     </div>
-                    <Textarea
-                        id="footerText"
-                        value={currentSettings.footerText}
-                        onChange={(e) => handleChange('footerText', e.target.value.slice(0, 200))}
-                        placeholder="Ex: Agradecemos a preferência! Trabalhamos sempre para o seu melhor."
-                        className="resize-none h-24 focus-visible:ring-primary"
-                    />
-                    <p className="text-[11px] text-muted-foreground">
-                        Esta mensagem aparecerá no final de todos os seus orçamentos.
-                    </p>
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                            <Label htmlFor="footerText" className="text-sm font-semibold text-foreground">Frase de Rodapé</Label>
+                            <span className="text-xs text-muted-foreground">{currentSettings.footerText.length}/200</span>
+                        </div>
+                        <Textarea
+                            id="footerText"
+                            value={currentSettings.footerText}
+                            onChange={(e) => handleChange('footerText', e.target.value.slice(0, 200))}
+                            placeholder="Ex: Agradecemos a preferência! Trabalhamos sempre para o seu melhor."
+                            className="resize-none h-24 focus-visible:ring-primary"
+                        />
+                        <p className="text-[11px] text-muted-foreground">
+                            Esta mensagem aparecerá no final de todos os seus orçamentos.
+                        </p>
+                    </div>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     )
 }

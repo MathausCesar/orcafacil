@@ -384,11 +384,14 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                                             </div>
                                             <Label className="font-medium">Estilo da Proposta</Label>
                                         </div>
-                                        <div className="grid grid-cols-3 gap-2">
+                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                                             {[
                                                 { id: 'modern', name: 'Moderno' },
                                                 { id: 'professional', name: 'Profissional' },
                                                 { id: 'classic', name: 'Clássico' },
+                                                { id: 'minimalist', name: 'Minimalista' },
+                                                { id: 'agency', name: 'Agência' },
+                                                { id: 'impact', name: 'Impacto' },
                                             ].map((l) => (
                                                 <button
                                                     key={l.id}

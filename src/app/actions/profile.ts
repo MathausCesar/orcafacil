@@ -36,20 +36,6 @@ export async function updateProfile(formData: FormData) {
         try {
             const parsedSettings = JSON.parse(quoteSettingsStr)
             updateData.quote_settings = parsedSettings
-
-            // Explicitly set the new columns if they exist in the settings
-            if (parsedSettings.quote_font_family !== undefined) {
-                updateData.quote_font_family = parsedSettings.quote_font_family
-            }
-            if (parsedSettings.quote_has_cover !== undefined) {
-                updateData.quote_has_cover = parsedSettings.quote_has_cover
-            }
-            if (parsedSettings.quote_cover_image_url !== undefined) {
-                updateData.quote_cover_image_url = parsedSettings.quote_cover_image_url
-            }
-            if (parsedSettings.quote_presentation_text !== undefined) {
-                updateData.quote_presentation_text = parsedSettings.quote_presentation_text
-            }
         } catch (e) {
             console.error('Failed to parse quoteSettings', e)
         }

@@ -25,7 +25,6 @@ export async function updateProfile(formData: FormData) {
         phone: phone,
         email: email,
         cnpj: cnpj,
-        address: address,
         updated_at: new Date().toISOString(),
     }
 
@@ -48,7 +47,7 @@ export async function updateProfile(formData: FormData) {
 
     if (error) {
         console.error('Error updating profile:', error)
-        return { error: error.message || 'Failed to update profile' }
+        return { error: `DB Error: ${error.message} (Code: ${error.code})` || 'Failed to update profile' }
     }
 
     revalidatePath('/profile')

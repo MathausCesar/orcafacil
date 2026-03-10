@@ -673,6 +673,17 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 </div>
                             </div>
 
+                            {/* Urgency Badge */}
+                            {quote.status !== 'pending' && (
+                                <div className="flex justify-center border-t border-b border-slate-200 py-6 my-8">
+                                    <UrgencyBadge
+                                        themeColor={themeColor}
+                                        createdAt={quote.created_at}
+                                        validityDays={7}
+                                    />
+                                </div>
+                            )}
+
                             {/* Items Table — Responsive */}
                             <div>
                                 {/* Mobile Cards */}
@@ -775,6 +786,13 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 <TimelineSection themeColor="#1e293b" estimatedDays={quote.estimated_days ?? undefined} quoteStatus={quote.status} />
                             )}
 
+                            {/* Value Proposition */}
+                            {shouldShowExtra('value_proposition', detectedProfile) && (
+                                <div className="print:hidden">
+                                    <ValueProposition themeColor="#1e293b" />
+                                </div>
+                            )}
+
                             {/* Payment Options */}
                             {quote.show_payment_options && (
                                 <PaymentOptions
@@ -786,6 +804,11 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     installmentCount={quote.installment_count}
                                     total={total}
                                 />
+                            )}
+
+                            {/* Warranty Box */}
+                            {shouldShowExtra('warranty', detectedProfile) && (
+                                <WarrantyBox themeColor="#1e293b" />
                             )}
 
                             {/* Signatures */}
@@ -847,6 +870,17 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                             </div>
                         </div>
 
+                        {/* Urgency Badge */}
+                        {quote.status !== 'pending' && (
+                            <div className="flex justify-center">
+                                <UrgencyBadge
+                                    themeColor={themeColor}
+                                    createdAt={quote.created_at}
+                                    validityDays={7}
+                                />
+                            </div>
+                        )}
+
                         {/* Items */}
                         <div className="space-y-6">
                             {quote.quote_items.map((item: any, idx: number) => (
@@ -892,6 +926,39 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 {quote.notes && <p className="italic">{quote.notes}</p>}
                             </div>
                         )}
+
+                        {/* Conversion Triggers */}
+                        <div className="py-8 space-y-8">
+                            {/* Timeline */}
+                            {quote.show_timeline && (
+                                <TimelineSection themeColor={themeColor} estimatedDays={quote.estimated_days ?? undefined} quoteStatus={quote.status} />
+                            )}
+
+                            {/* Value Proposition */}
+                            {shouldShowExtra('value_proposition', detectedProfile) && (
+                                <div className="print:hidden">
+                                    <ValueProposition themeColor={themeColor} />
+                                </div>
+                            )}
+
+                            {/* Payment Options */}
+                            {quote.show_payment_options && (
+                                <PaymentOptions
+                                    themeColor={themeColor}
+                                    showCashDiscount={(quote.cash_discount_percent ?? 0) > 0 || (quote.cash_discount_fixed ?? 0) > 0}
+                                    cashDiscountPercent={quote.cash_discount_percent ?? 0}
+                                    cashDiscountFixed={quote.cash_discount_fixed ?? 0}
+                                    cashDiscountType={quote.cash_discount_type ?? 'percent'}
+                                    installmentCount={quote.installment_count}
+                                    total={total}
+                                />
+                            )}
+
+                            {/* Warranty Box */}
+                            {shouldShowExtra('warranty', detectedProfile) && (
+                                <WarrantyBox themeColor={themeColor} />
+                            )}
+                        </div>
 
                         <div className="flex justify-between items-end pt-16 mt-8 border-t border-slate-100">
                             <FooterLogoAndText />
@@ -989,6 +1056,52 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                         {quote.notes && <p className="italic">{quote.notes}</p>}
                                     </div>
                                 )}
+
+                                {/* Conversion Triggers */}
+                                <div className="mt-12 space-y-8">
+                                    {/* Urgency Badge */}
+                                    {quote.status !== 'pending' && (
+                                        <div className="flex justify-center">
+                                            <UrgencyBadge themeColor={themeColor} createdAt={quote.created_at} validityDays={7} />
+                                        </div>
+                                    )}
+
+                                    {/* Timeline */}
+                                    {quote.show_timeline && (
+                                        <div className="bg-slate-50 rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm">
+                                            <TimelineSection themeColor={themeColor} estimatedDays={quote.estimated_days ?? undefined} quoteStatus={quote.status} />
+                                        </div>
+                                    )}
+
+                                    {/* Value Proposition */}
+                                    {shouldShowExtra('value_proposition', detectedProfile) && (
+                                        <div className="print:hidden">
+                                            <ValueProposition themeColor={themeColor} />
+                                        </div>
+                                    )}
+
+                                    {/* Payment Options */}
+                                    {quote.show_payment_options && (
+                                        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100">
+                                            <PaymentOptions
+                                                themeColor={themeColor}
+                                                showCashDiscount={(quote.cash_discount_percent ?? 0) > 0 || (quote.cash_discount_fixed ?? 0) > 0}
+                                                cashDiscountPercent={quote.cash_discount_percent ?? 0}
+                                                cashDiscountFixed={quote.cash_discount_fixed ?? 0}
+                                                cashDiscountType={quote.cash_discount_type ?? 'percent'}
+                                                installmentCount={quote.installment_count}
+                                                total={total}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Warranty Box */}
+                                    {shouldShowExtra('warranty', detectedProfile) && (
+                                        <div className="bg-slate-50 rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm">
+                                            <WarrantyBox themeColor={themeColor} />
+                                        </div>
+                                    )}
+                                </div>
 
                                 <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-slate-100 pt-8">
                                     <FooterLogoAndText />
@@ -1125,6 +1238,48 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                         )}
                                     </div>
                                 )}
+
+                                {/* Conversion Triggers in high contrast block */}
+                                <div className="mt-16 bg-slate-50 rounded-xl p-6 sm:p-10 text-slate-900 shadow-2xl space-y-8 border border-slate-200">
+                                    <h3 className="text-xl sm:text-2xl font-black tracking-tight text-center mb-8" style={{ color: themeColor }}>Detalhes da Execução</h3>
+
+                                    {/* Urgency Badge */}
+                                    {quote.status !== 'pending' && (
+                                        <div className="flex justify-center border-b border-slate-200 pb-8">
+                                            <UrgencyBadge themeColor={themeColor} createdAt={quote.created_at} validityDays={7} />
+                                        </div>
+                                    )}
+
+                                    {/* Timeline */}
+                                    {quote.show_timeline && (
+                                        <TimelineSection themeColor={themeColor} estimatedDays={quote.estimated_days ?? undefined} quoteStatus={quote.status} />
+                                    )}
+
+                                    {/* Value Proposition */}
+                                    {shouldShowExtra('value_proposition', detectedProfile) && (
+                                        <div className="print:hidden">
+                                            <ValueProposition themeColor={themeColor} />
+                                        </div>
+                                    )}
+
+                                    {/* Payment Options */}
+                                    {quote.show_payment_options && (
+                                        <PaymentOptions
+                                            themeColor={themeColor}
+                                            showCashDiscount={(quote.cash_discount_percent ?? 0) > 0 || (quote.cash_discount_fixed ?? 0) > 0}
+                                            cashDiscountPercent={quote.cash_discount_percent ?? 0}
+                                            cashDiscountFixed={quote.cash_discount_fixed ?? 0}
+                                            cashDiscountType={quote.cash_discount_type ?? 'percent'}
+                                            installmentCount={quote.installment_count}
+                                            total={total}
+                                        />
+                                    )}
+
+                                    {/* Warranty Box */}
+                                    {shouldShowExtra('warranty', detectedProfile) && (
+                                        <WarrantyBox themeColor={themeColor} />
+                                    )}
+                                </div>
 
                                 <div className="mt-20 flex flex-col sm:flex-row justify-between items-end border-t border-slate-800 pt-8">
                                     <div className="text-slate-500 text-xs w-full">

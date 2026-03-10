@@ -348,8 +348,27 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 <div className="flex justify-end pt-4 border-t border-slate-100">
                                     <div className="min-w-fit space-y-2">
                                         <div className="flex justify-between gap-4 text-lg sm:text-xl font-bold bg-[var(--theme-color)] text-white p-3 rounded-md shadow-lg shadow-[var(--theme-color)]/20 whitespace-nowrap">
-                                            <span>Total</span>
-                                            <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}</span>
+                                            <span>Total da Proposta</span>
+                                            <span>{totalFormatted}</span>
+                                        </div>
+
+                                        {/* Detalhes de Desconto e Parcelamento */}
+                                        <div className="flex flex-col items-end text-sm text-foreground/80 space-y-1 pr-1">
+                                            {quote.cash_discount_type === 'percent' && (quote.cash_discount_percent ?? 0) > 0 && (
+                                                <p className="font-semibold text-[var(--theme-color)]">
+                                                    🔥 À vista: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total * (1 - (quote.cash_discount_percent ?? 0) / 100))} <span className="text-xs font-normal">({quote.cash_discount_percent}% desc.)</span>
+                                                </p>
+                                            )}
+                                            {quote.cash_discount_type === 'fixed' && (quote.cash_discount_fixed ?? 0) > 0 && (
+                                                <p className="font-semibold text-[var(--theme-color)]">
+                                                    🔥 À vista: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.max(0, total - (quote.cash_discount_fixed ?? 0)))} <span className="text-xs font-normal">({new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(quote.cash_discount_fixed ?? 0)} desc.)</span>
+                                                </p>
+                                            )}
+                                            {quote.installment_count && quote.installment_count > 1 && (
+                                                <p className="text-muted-foreground">
+                                                    💳 Ou em até <span className="font-semibold">{quote.installment_count}x</span> de <span className="font-semibold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total / quote.installment_count)}</span>
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -535,10 +554,29 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                     {/* Total — Understated, right-aligned */}
                                     <div className="flex justify-end mt-4 pt-4 border-t border-slate-200">
                                         <div className="text-right">
-                                            <p className="text-[11px] uppercase tracking-widest text-slate-400 mb-1">Total</p>
-                                            <p className="text-2xl font-bold text-slate-900 whitespace-nowrap">
-                                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
+                                            <p className="text-[11px] uppercase tracking-widest text-slate-400 mb-1">Total da Proposta</p>
+                                            <p className="text-2xl font-bold text-slate-900 whitespace-nowrap mb-2">
+                                                {totalFormatted}
                                             </p>
+
+                                            {/* Detalhes de Desconto e Parcelamento */}
+                                            <div className="flex flex-col items-end text-sm text-slate-600 space-y-1">
+                                                {quote.cash_discount_type === 'percent' && (quote.cash_discount_percent ?? 0) > 0 && (
+                                                    <p className="font-semibold text-slate-800">
+                                                        🔥 À vista: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total * (1 - (quote.cash_discount_percent ?? 0) / 100))} <span className="text-xs font-normal">({quote.cash_discount_percent}% desc.)</span>
+                                                    </p>
+                                                )}
+                                                {quote.cash_discount_type === 'fixed' && (quote.cash_discount_fixed ?? 0) > 0 && (
+                                                    <p className="font-semibold text-slate-800">
+                                                        🔥 À vista: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.max(0, total - (quote.cash_discount_fixed ?? 0)))} <span className="text-xs font-normal">({new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(quote.cash_discount_fixed ?? 0)} desc.)</span>
+                                                    </p>
+                                                )}
+                                                {quote.installment_count && quote.installment_count > 1 && (
+                                                    <p className="text-slate-500">
+                                                        💳 Ou em até <span className="font-medium text-slate-700">{quote.installment_count}x</span> de <span className="font-medium text-slate-700">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total / quote.installment_count)}</span>
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -690,9 +728,28 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                                 <div className="flex justify-end mt-4">
                                     <div className="border-2 border-slate-800 px-6 sm:px-8 py-4 text-right">
                                         <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Total a Pagar</p>
-                                        <p className="text-xl sm:text-2xl font-bold text-slate-900 whitespace-nowrap">
-                                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
+                                        <p className="text-xl sm:text-2xl font-bold text-slate-900 whitespace-nowrap mb-2">
+                                            {totalFormatted}
                                         </p>
+
+                                        {/* Detalhes de Desconto e Parcelamento */}
+                                        <div className="flex flex-col items-end text-sm text-slate-700 space-y-1 border-t border-slate-200 mt-3 pt-3">
+                                            {quote.cash_discount_type === 'percent' && (quote.cash_discount_percent ?? 0) > 0 && (
+                                                <p className="font-semibold text-slate-900">
+                                                    🔥 À vista: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total * (1 - (quote.cash_discount_percent ?? 0) / 100))} <span className="text-xs font-normal text-slate-500">({quote.cash_discount_percent}% desc.)</span>
+                                                </p>
+                                            )}
+                                            {quote.cash_discount_type === 'fixed' && (quote.cash_discount_fixed ?? 0) > 0 && (
+                                                <p className="font-semibold text-slate-900">
+                                                    🔥 À vista: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.max(0, total - (quote.cash_discount_fixed ?? 0)))} <span className="text-xs font-normal text-slate-500">({new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(quote.cash_discount_fixed ?? 0)} desc.)</span>
+                                                </p>
+                                            )}
+                                            {quote.installment_count && quote.installment_count > 1 && (
+                                                <p className="text-slate-600">
+                                                    💳 Ou em até <span className="font-bold">{quote.installment_count}x</span> de <span className="font-bold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total / quote.installment_count)}</span>
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>

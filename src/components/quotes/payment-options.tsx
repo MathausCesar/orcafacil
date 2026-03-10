@@ -3,79 +3,40 @@ import { CreditCard, Banknote, QrCode, Calendar } from 'lucide-react'
 interface PaymentOption {
     icon: typeof CreditCard
     title: string
-    description: string
 }
 
 interface PaymentOptionsProps {
     themeColor?: string
-    /** Mostrar desconto à vista? */
+    /** Mostrar PIX / Cartão etc, baseado nas seleções do DB? (Aqui pegamos por props) */
+    // To keep signature consistent, we keep props even if unused for descriptions
     showCashDiscount?: boolean
-    /** Percentual de desconto à vista (ex: 5 = 5%) */
     cashDiscountPercent?: number
-    /** Valor fixo de desconto à vista */
     cashDiscountFixed?: number
-    /** Tipo de desconto: percent ou fixed */
     cashDiscountType?: string
-    /** Número de parcelas */
     installmentCount?: number
-    /** Total do orçamento para cálculo de parcelas */
     total?: number
 }
 
 export function PaymentOptions({
     themeColor = '#0D9B5C',
-    showCashDiscount = false,
-    cashDiscountPercent = 0,
-    cashDiscountFixed = 0,
-    cashDiscountType = 'percent',
-    installmentCount,
-    total
 }: PaymentOptionsProps) {
-    const formatCurrency = (value: number) =>
-        new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-
-    const installmentValue = installmentCount && total ? total / installmentCount : null
 
     const paymentMethods: PaymentOption[] = [
         {
             icon: QrCode,
             title: 'PIX',
-            description: showCashDiscount && total && cashDiscountType === 'percent'
-                ? `À vista ${formatCurrency(total * (1 - cashDiscountPercent / 100))} (${cashDiscountPercent}% desc.)`
-                : showCashDiscount && total && cashDiscountType === 'fixed'
-                    ? `À vista ${formatCurrency(Math.max(0, total - cashDiscountFixed))} (${formatCurrency(cashDiscountFixed)} desc.)`
-                    : showCashDiscount && cashDiscountType === 'percent'
-                        ? `À vista com ${cashDiscountPercent}% de desconto`
-                        : showCashDiscount && cashDiscountType === 'fixed'
-                            ? `À vista com ${formatCurrency(cashDiscountFixed)} de desconto`
-                            : 'Pagamento instantâneo'
         },
         {
             icon: Banknote,
             title: 'Dinheiro',
-            description: showCashDiscount && total && cashDiscountType === 'percent'
-                ? `À vista ${formatCurrency(total * (1 - cashDiscountPercent / 100))} (${cashDiscountPercent}% desc.)`
-                : showCashDiscount && total && cashDiscountType === 'fixed'
-                    ? `À vista ${formatCurrency(Math.max(0, total - cashDiscountFixed))} (${formatCurrency(cashDiscountFixed)} desc.)`
-                    : showCashDiscount && cashDiscountType === 'percent'
-                        ? `À vista com ${cashDiscountPercent}% de desconto`
-                        : showCashDiscount && cashDiscountType === 'fixed'
-                            ? `À vista com ${formatCurrency(cashDiscountFixed)} de desconto`
-                            : 'Pagamento em espécie'
         },
         {
             icon: CreditCard,
             title: 'Cartão',
-            description: 'Débito ou crédito'
         },
         {
             icon: Calendar,
             title: 'Parcelado',
-            description: installmentCount && installmentValue
-                ? `Em até ${installmentCount}x de ${formatCurrency(installmentValue)}`
-                : installmentCount
-                    ? `Em até ${installmentCount}x`
-                    : 'Condições a combinar'
         }
     ]
 
@@ -96,46 +57,29 @@ export function PaymentOptions({
                     return (
                         <div
                             key={index}
-                            className="flex flex-col items-center text-center p-3 rounded-lg border bg-white print:p-2"
+                            className="flex flex-col items-center justify-center text-center p-4 rounded-lg border bg-white print:p-3"
                             style={{
                                 borderColor: `${themeColor}20`,
                             }}
                         >
                             <div
-                                className="w-10 h-10 rounded-full flex items-center justify-center mb-2 print:w-8 print:h-8 print:mb-1"
+                                className="w-12 h-12 rounded-full flex items-center justify-center mb-3 print:w-10 print:h-10 print:mb-2"
                                 style={{
                                     backgroundColor: `${themeColor}15`,
                                 }}
                             >
                                 <Icon
-                                    className="h-5 w-5 print:h-4 print:w-4"
+                                    className="h-6 w-6 print:h-5 print:w-5"
                                     style={{ color: themeColor }}
                                 />
                             </div>
-                            <h4 className="font-semibold text-sm print:text-xs">
+                            <h4 className="font-semibold text-sm print:text-xs text-slate-800">
                                 {method.title}
                             </h4>
-                            <p className="text-xs text-muted-foreground mt-1 print:text-[10px]">
-                                {method.description}
-                            </p>
                         </div>
                     )
                 })}
             </div>
-
-            {showCashDiscount && (
-                <div
-                    className="mt-4 p-3 rounded-lg text-center print:mt-3 print:p-2"
-                    style={{
-                        backgroundColor: `${themeColor}10`,
-                        borderLeft: `3px solid ${themeColor}`,
-                    }}
-                >
-                    <p className="text-sm font-semibold" style={{ color: themeColor }}>
-                        💰 {cashDiscountType === 'percent' ? `${cashDiscountPercent}%` : formatCurrency(cashDiscountFixed)} de desconto para pagamento à vista (PIX ou Dinheiro)
-                    </p>
-                </div>
-            )}
         </div>
     )
 }

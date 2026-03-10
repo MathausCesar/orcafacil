@@ -63,6 +63,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  userScalable: false,
 };
 
 import { OrganizationProvider } from "@/contexts/organization-context";

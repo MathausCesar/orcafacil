@@ -38,8 +38,8 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
 
     return (
         <div className="space-y-6 pb-24">
-            <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-foreground">Meus Clientes</h1>
+            <div className="flex flex-wrap justify-between items-center gap-3">
+                <h1 className="text-xl md:text-2xl font-bold text-foreground">Meus Clientes</h1>
                 <CreateClientDialog />
             </div>
 

@@ -11,12 +11,12 @@ interface HeaderProps {
 
 export function DashboardHeader({ className }: HeaderProps) {
     return (
-        <header className={cn("flex items-center justify-between mb-8", className)}>
-            <div className="flex items-center gap-4 w-full max-w-sm">
+        <header className={cn("flex items-center justify-between mb-6 md:mb-8 gap-3", className)}>
+            <div className="flex flex-1 items-center min-w-0">
                 <WorkspaceSwitcher />
             </div>
 
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-1.5 md:gap-2 items-center shrink-0">
                 <GlobalSearch />
                 <NotificationBell />
             </div>

@@ -237,6 +237,13 @@ export type Database = {
             profiles: {
                 Row: {
                     business_name: string | null
+                    cep: string | null
+                    address: string | null
+                    address_number: string | null
+                    complement: string | null
+                    neighborhood: string | null
+                    city: string | null
+                    state: string | null
                     cnpj: string | null
                     delivery_days: number | null
                     email: string | null
@@ -257,6 +264,13 @@ export type Database = {
                 }
                 Insert: {
                     business_name?: string | null
+                    cep?: string | null
+                    address?: string | null
+                    address_number?: string | null
+                    complement?: string | null
+                    neighborhood?: string | null
+                    city?: string | null
+                    state?: string | null
                     cnpj?: string | null
                     delivery_days?: number | null
                     email?: string | null
@@ -277,6 +291,13 @@ export type Database = {
                 }
                 Update: {
                     business_name?: string | null
+                    cep?: string | null
+                    address?: string | null
+                    address_number?: string | null
+                    complement?: string | null
+                    neighborhood?: string | null
+                    city?: string | null
+                    state?: string | null
                     cnpj?: string | null
                     delivery_days?: number | null
                     email?: string | null

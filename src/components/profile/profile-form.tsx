@@ -25,6 +25,49 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
     const [layoutStyle, setLayoutStyle] = useState(initialProfile?.layout_style || 'modern')
     const [logoUrl, setLogoUrl] = useState(initialProfile?.logo_url)
     const [businessName, setBusinessName] = useState(initialProfile?.business_name || '')
+
+    const [addressData, setAddressData] = useState({
+        cep: initialProfile?.cep || '',
+        address: initialProfile?.address || '',
+        address_number: initialProfile?.address_number || '',
+        complement: initialProfile?.complement || '',
+        neighborhood: initialProfile?.neighborhood || '',
+        city: initialProfile?.city || '',
+        state: initialProfile?.state || ''
+    })
+    const [isLoadingCep, setIsLoadingCep] = useState(false)
+
+    const handleAddressChange = (field: string, value: string) => {
+        setAddressData(prev => ({ ...prev, [field]: value }))
+    }
+
+    const handleCepLookup = async (cepValue: string) => {
+        const cleanCep = cepValue.replace(/\D/g, '')
+        if (cleanCep.length !== 8) return
+
+        setIsLoadingCep(true)
+        try {
+            const res = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`)
+            const data = await res.json()
+            if (!data.erro) {
+                setAddressData(prev => ({
+                    ...prev,
+                    address: data.logradouro || prev.address,
+                    neighborhood: data.bairro || prev.neighborhood,
+                    city: data.localidade || prev.city,
+                    state: data.uf || prev.state
+                }))
+                toast.success('Endereço encontrado!')
+            } else {
+                toast.error('CEP não encontrado')
+            }
+        } catch (error) {
+            toast.error('Erro ao buscar CEP')
+            console.error('ViaCEP Error:', error)
+        } finally {
+            setIsLoadingCep(false)
+        }
+    }
     const getInitialSettings = () => {
         if (!initialProfile?.quote_settings) return null
         if (typeof initialProfile.quote_settings === 'string') {
@@ -147,15 +190,112 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="address">Endereço</Label>
-                                        <Input
-                                            id="address"
-                                            name="address"
-                                            defaultValue={initialProfile?.address || ''}
-                                            className="focus-visible:ring-primary h-10"
-                                            placeholder="Ex: Rua Exemplo, 123 - Sala 45, São Paulo - SP"
-                                        />
+                                    {/* --- ADDRESS DETAILS --- */}
+                                    <div className="pt-6 mt-6 border-t border-border">
+                                        <h4 className="text-sm font-semibold mb-4 text-foreground/80 flex items-center gap-2">
+                                            Localização
+                                        </h4>
+                                        <div className="space-y-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                                <div className="space-y-2 md:col-span-1">
+                                                    <Label htmlFor="cep">CEP</Label>
+                                                    <div className="relative">
+                                                        <Input
+                                                            id="cep"
+                                                            name="cep"
+                                                            value={addressData.cep}
+                                                            onChange={(e) => {
+                                                                let val = e.target.value.replace(/\D/g, '')
+                                                                if (val.length > 5) {
+                                                                    val = val.substring(0, 5) + '-' + val.substring(5, 8)
+                                                                }
+                                                                handleAddressChange('cep', val)
+                                                                if (val.length === 9) handleCepLookup(val)
+                                                            }}
+                                                            className="focus-visible:ring-primary h-10 pr-8"
+                                                            placeholder="00000-000"
+                                                            maxLength={9}
+                                                        />
+                                                        {isLoadingCep && (
+                                                            <Loader2 className="h-4 w-4 absolute right-3 top-3 animate-spin text-muted-foreground" />
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2 md:col-span-3">
+                                                    <Label htmlFor="address">Logradouro / Rua</Label>
+                                                    <Input
+                                                        id="address"
+                                                        name="address"
+                                                        value={addressData.address}
+                                                        onChange={(e) => handleAddressChange('address', e.target.value)}
+                                                        className="focus-visible:ring-primary h-10"
+                                                        placeholder="Ex: Avenida Paulista"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                                <div className="space-y-2 md:col-span-1">
+                                                    <Label htmlFor="address_number">Número</Label>
+                                                    <Input
+                                                        id="address_number"
+                                                        name="address_number"
+                                                        value={addressData.address_number}
+                                                        onChange={(e) => handleAddressChange('address_number', e.target.value)}
+                                                        className="focus-visible:ring-primary h-10"
+                                                        placeholder="Ex: 1000"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2 md:col-span-3">
+                                                    <Label htmlFor="complement">Complemento</Label>
+                                                    <Input
+                                                        id="complement"
+                                                        name="complement"
+                                                        value={addressData.complement}
+                                                        onChange={(e) => handleAddressChange('complement', e.target.value)}
+                                                        className="focus-visible:ring-primary h-10"
+                                                        placeholder="Ex: Sala 42, Bloco B"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="neighborhood">Bairro</Label>
+                                                    <Input
+                                                        id="neighborhood"
+                                                        name="neighborhood"
+                                                        value={addressData.neighborhood}
+                                                        onChange={(e) => handleAddressChange('neighborhood', e.target.value)}
+                                                        className="focus-visible:ring-primary h-10"
+                                                        placeholder="Ex: Bela Vista"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="city">Cidade</Label>
+                                                    <Input
+                                                        id="city"
+                                                        name="city"
+                                                        value={addressData.city}
+                                                        onChange={(e) => handleAddressChange('city', e.target.value)}
+                                                        className="focus-visible:ring-primary h-10"
+                                                        placeholder="Ex: São Paulo"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="state">UF</Label>
+                                                    <Input
+                                                        id="state"
+                                                        name="state"
+                                                        value={addressData.state}
+                                                        onChange={(e) => handleAddressChange('state', e.target.value)}
+                                                        className="focus-visible:ring-primary h-10"
+                                                        placeholder="Ex: SP"
+                                                        maxLength={2}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

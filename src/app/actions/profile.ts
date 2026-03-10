@@ -16,6 +16,12 @@ export async function updateProfile(formData: FormData) {
     const email = formData.get('email') as string
     const cnpj = formData.get('cnpj') as string
     const address = formData.get('address') as string
+    const cep = formData.get('cep') as string
+    const addressNumber = formData.get('address_number') as string
+    const complement = formData.get('complement') as string
+    const neighborhood = formData.get('neighborhood') as string
+    const city = formData.get('city') as string
+    const state = formData.get('state') as string
     const themeColor = formData.get('themeColor') as string
     const layoutStyle = formData.get('layoutStyle') as string
     const quoteSettingsStr = formData.get('quoteSettings') as string
@@ -25,6 +31,13 @@ export async function updateProfile(formData: FormData) {
         phone: phone,
         email: email,
         cnpj: cnpj,
+        cep: cep,
+        address: address,
+        address_number: addressNumber,
+        complement: complement,
+        neighborhood: neighborhood,
+        city: city,
+        state: state,
         updated_at: new Date().toISOString(),
     }
 

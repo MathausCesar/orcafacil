@@ -134,19 +134,13 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
         logoPosition: 'header',
         logoAlignment: 'left',
         footerText: '',
-        quote_font_family: 'Inter',
-        quote_has_cover: false,
-        quote_cover_image_url: '',
-        quote_presentation_text: ''
+        quote_font_family: 'Inter'
     } : {
         logoSize: rawQuoteSettings.logoSize || 'medium',
         logoPosition: rawQuoteSettings.logoPosition || 'header',
         logoAlignment: rawQuoteSettings.logoAlignment || 'left',
         footerText: rawQuoteSettings.footerText || '',
-        quote_font_family: rawQuoteSettings.quote_font_family || 'Inter',
-        quote_has_cover: rawQuoteSettings.quote_has_cover || false,
-        quote_cover_image_url: rawQuoteSettings.quote_cover_image_url || '',
-        quote_presentation_text: rawQuoteSettings.quote_presentation_text || ''
+        quote_font_family: rawQuoteSettings.quote_font_family || 'Inter'
     };
 
     const logoSizeMap: Record<string, string> = {
@@ -238,26 +232,6 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
 
                 {(!profile?.plan || profile?.plan === 'free') && <Watermark />}
 
-                {/* --- COVER & PRESENTATION LETTER (Premium Features) --- */}
-                {quoteSettings.quote_has_cover && (
-                    <div className="space-y-6 print:break-after-page">
-                        {quoteSettings.quote_cover_image_url && (
-                            <div className="w-full h-64 md:h-96 relative rounded-xl overflow-hidden shadow-lg border border-slate-200">
-                                <Image src={quoteSettings.quote_cover_image_url} alt="Capa" fill className="object-cover" unoptimized />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
-                                    <h1 className="text-white text-3xl font-bold">{profile?.business_name || 'Proposta'}</h1>
-                                </div>
-                            </div>
-                        )}
-                        {quoteSettings.quote_presentation_text && (
-                            <Card className={cn("p-8 md:p-12 border-none shadow-lg", layout === 'professional' || layout === 'classic' || layout === 'minimalist' ? 'rounded-none' : 'rounded-2xl')}>
-                                <div className="prose prose-slate max-w-none text-foreground leading-relaxed whitespace-pre-wrap">
-                                    {quoteSettings.quote_presentation_text.replace(/\{\{cliente_nome\}\}/g, quote.client_name)}
-                                </div>
-                            </Card>
-                        )}
-                    </div>
-                )}
 
                 {/* MODERN LAYOUT */}
                 {layout === 'modern' && (

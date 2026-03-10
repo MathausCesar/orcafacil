@@ -13,9 +13,6 @@ export interface QuoteSettingsData {
     logoAlignment: 'left' | 'center' | 'right'
     footerText: string
     quote_font_family?: string
-    quote_has_cover?: boolean
-    quote_cover_image_url?: string
-    quote_presentation_text?: string
 }
 
 interface QuoteSettingsProps {
@@ -32,10 +29,7 @@ export function QuoteSettings({ settings, plan, onChange, userId }: QuoteSetting
         logoPosition: settings?.logoPosition || 'header',
         logoAlignment: settings?.logoAlignment || 'left',
         footerText: settings?.footerText || '',
-        quote_font_family: settings?.quote_font_family || 'Inter',
-        quote_has_cover: settings?.quote_has_cover || false,
-        quote_cover_image_url: settings?.quote_cover_image_url || '',
-        quote_presentation_text: settings?.quote_presentation_text || ''
+        quote_font_family: settings?.quote_font_family || 'Inter'
     }
 
     const handleChange = (key: keyof QuoteSettingsData, value: any) => {
@@ -50,7 +44,7 @@ export function QuoteSettings({ settings, plan, onChange, userId }: QuoteSetting
                     Layout Avançado & Identidade
                 </CardTitle>
                 <CardDescription>
-                    Posicionamento da logo, fontes personalizadas da sua marca e capa de apresentação.
+                    Posicionamento da logo e fontes personalizadas da sua marca.
                 </CardDescription>
             </CardHeader>
             <CardContent className="pt-6 space-y-8">
@@ -65,7 +59,7 @@ export function QuoteSettings({ settings, plan, onChange, userId }: QuoteSetting
                                 </div>
                                 <h3 className="text-lg font-bold mb-2">Recurso Premium</h3>
                                 <p className="text-sm text-muted-foreground mb-4">
-                                    Capa de apresentação e tipografia premium estão disponíveis apenas para assinantes.
+                                    A tipografia premium está disponível apenas para assinantes.
                                 </p>
                                 <a href="/app/settings/billing" className="text-primary font-semibold text-sm hover:underline">
                                     Faça um upgrade agora →
@@ -98,40 +92,6 @@ export function QuoteSettings({ settings, plan, onChange, userId }: QuoteSetting
                                     </div>
                                 ))}
                             </RadioGroup>
-                        </div>
-
-                        {/* Cover Presentation (Premium) */}
-                        <div className="space-y-4 p-5 rounded-xl border bg-background">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h4 className="font-semibold text-sm">Capa & Apresentação</h4>
-                                    <p className="text-xs text-muted-foreground">Adicione uma capa rica no topo dos orçamentos Web e PDF.</p>
-                                </div>
-                                <label className="relative inline-flex items-center cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        className="sr-only peer"
-                                        checked={currentSettings.quote_has_cover}
-                                        onChange={(e) => handleChange('quote_has_cover', e.target.checked)}
-                                    />
-                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                                </label>
-                            </div>
-
-                            {currentSettings.quote_has_cover && (
-                                <div className="space-y-4 pt-4 border-t border-slate-200 animate-in fade-in slide-in-from-top-2">
-                                    <div className="space-y-3">
-                                        <Label className="text-sm">Texto de Apresentação (Carta do Consultor)</Label>
-                                        <Textarea
-                                            value={currentSettings.quote_presentation_text}
-                                            onChange={(e) => handleChange('quote_presentation_text', e.target.value)}
-                                            placeholder="Ex: Olá {{cliente_nome}}, preparamos esta proposta com muito carinho e atenção às suas necessidades..."
-                                            className="resize-none h-32 focus-visible:ring-primary"
-                                        />
-                                        <p className="text-xs text-muted-foreground">Use `{`{cliente_nome}`}` para incluir o nome do cliente automaticamente.</p>
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>

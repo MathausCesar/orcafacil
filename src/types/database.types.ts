@@ -250,10 +250,6 @@ export type Database = {
                     plan: string | null
                     primary_color: string | null
                     quote_settings: Json | null
-                    quote_font_family: string | null
-                    quote_has_cover: boolean | null
-                    quote_cover_image_url: string | null
-                    quote_presentation_text: string | null
                     stripe_customer_id: string | null
                     subscription_status: string | null
                     theme_color: string | null
@@ -274,10 +270,6 @@ export type Database = {
                     plan?: string | null
                     primary_color?: string | null
                     quote_settings?: Json | null
-                    quote_font_family?: string | null
-                    quote_has_cover?: boolean | null
-                    quote_cover_image_url?: string | null
-                    quote_presentation_text?: string | null
                     stripe_customer_id?: string | null
                     subscription_status?: string | null
                     theme_color?: string | null
@@ -298,10 +290,6 @@ export type Database = {
                     plan?: string | null
                     primary_color?: string | null
                     quote_settings?: Json | null
-                    quote_font_family?: string | null
-                    quote_has_cover?: boolean | null
-                    quote_cover_image_url?: string | null
-                    quote_presentation_text?: string | null
                     stripe_customer_id?: string | null
                     subscription_status?: string | null
                     theme_color?: string | null

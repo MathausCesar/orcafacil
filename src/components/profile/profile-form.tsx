@@ -186,35 +186,40 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                         </CardContent>
                     </Card>
 
-                    {/* Visual Style */}
+                    {/* Unified Appearance Tab */}
                     <Card className="border-0 shadow-sm ring-1 ring-border">
                         <CardHeader className="pb-4 border-b border-border bg-muted/30">
                             <CardTitle className="text-lg font-semibold flex items-center gap-2">
                                 <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
                                     <Palette className="h-5 w-5" />
                                 </div>
-                                Personalização Visual
+                                Personalização Visual e Layout Avançado
                             </CardTitle>
                             <CardDescription>
-                                Escolha como seus clientes verão suas propostas.
+                                Escolha como seus clientes verão suas propostas. Cores, fontes e capas exclusivas.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="pt-6">
+                        <CardContent className="pt-6 space-y-8">
+
                             <LayoutSelector
                                 currentLayout={layoutStyle}
                                 currentColor={themeColor}
                                 onLayoutChange={setLayoutStyle}
                                 onColorChange={setThemeColor}
+                                plan={initialProfile?.plan}
                             />
+
+                            <div className="w-full h-px bg-border my-6"></div>
+
+                            <QuoteSettings
+                                settings={quoteSettings}
+                                plan={initialProfile?.plan}
+                                onChange={setQuoteSettings}
+                                userId={userId}
+                            />
+
                         </CardContent>
                     </Card>
-
-                    {/* Componente de Configurações Avançadas de Orçamento */}
-                    <QuoteSettings
-                        settings={quoteSettings}
-                        plan={initialProfile?.plan}
-                        onChange={setQuoteSettings}
-                    />
 
                 </div>
 

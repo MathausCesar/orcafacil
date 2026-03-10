@@ -3,19 +3,22 @@
 import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Camera, Loader2 } from 'lucide-react'
+import { Camera, Loader2, Sparkles } from 'lucide-react'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { extractPrimaryColor } from '@/lib/color-extractor'
 
 interface LogoUploadProps {
     currentLogoUrl: string | null
     userId: string
-    onUploadComplete?: (url: string) => void // New prop
+    onUploadComplete?: (url: string) => void
+    onColorExtracted?: (color: string) => void
 }
 
-export function LogoUpload({ currentLogoUrl, userId, onUploadComplete }: LogoUploadProps) {
+export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorExtracted }: LogoUploadProps) {
     const [uploading, setUploading] = useState(false)
+    const [extractingColor, setExtractingColor] = useState(false)
     const [previewUrl, setPreviewUrl] = useState(currentLogoUrl)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const router = useRouter()
@@ -59,19 +62,37 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete }: LogoUpl
             // Add cache-busting param so browsers/CDN always fetch the new image
             const urlWithCacheBust = `${publicUrl}?v=${Date.now()}`
 
+            setExtractingColor(true)
+            toast.info('Analisando cores da logo...', { icon: <Sparkles className="h-4 w-4 text-amber-500" /> })
+            let extractedColor = null
+
+            try {
+                extractedColor = await extractPrimaryColor(urlWithCacheBust)
+            } catch (colorError) {
+                console.warn('Could not extract color. Fallback to default.', colorError)
+            }
+
+            const updatePayload: any = { logo_url: urlWithCacheBust }
+            if (extractedColor) {
+                updatePayload.primary_color = extractedColor
+            }
+
             const { error: updateError } = await supabase
                 .from('profiles')
-                .update({ logo_url: urlWithCacheBust })
+                .update(updatePayload)
                 .eq('id', userId)
 
             if (updateError) throw updateError
 
             setPreviewUrl(urlWithCacheBust)
-            toast.success('Logo atualizada!')
+            toast.success('Logo e paleta atualizadas!')
 
             // Notify parent about new URL for color extraction
             if (onUploadComplete) {
-                onUploadComplete(urlWithCacheBust) // Or raw publicUrl depending on CORS needs. Usually cache bust is fine if query param ignored.
+                onUploadComplete(urlWithCacheBust)
+            }
+            if (extractedColor && onColorExtracted) {
+                onColorExtracted(extractedColor)
             }
 
             router.refresh()
@@ -80,6 +101,7 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete }: LogoUpl
             toast.error('Erro ao enviar a logo.')
         } finally {
             setUploading(false)
+            setExtractingColor(false)
         }
     }
 
@@ -103,7 +125,7 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete }: LogoUpl
                     </div>
                 )}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    {uploading ? (
+                    {(uploading || extractingColor) ? (
                         <Loader2 className="h-6 w-6 text-white animate-spin" />
                     ) : (
                         <Camera className="h-6 w-6 text-white" />
@@ -125,9 +147,9 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete }: LogoUpl
                 size="sm"
                 className="text-xs border-primary/20 text-primary hover:bg-primary/10"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
+                disabled={uploading || extractingColor}
             >
-                {uploading ? 'Enviando...' : 'Alterar Logo'}
+                {(uploading || extractingColor) ? 'Processando...' : 'Alterar Logo'}
             </Button>
         </div>
     )

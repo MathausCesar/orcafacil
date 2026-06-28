@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, BadgeCheck, CalendarDays, Clock3, MessageCircle, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, CalendarDays, Clock3, ListChecks, MessageCircle, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { QuoteOwnerActions } from '@/components/quotes/quote-owner-actions'
@@ -9,11 +9,16 @@ import { PrintButton } from '@/components/quotes/print-button'
 import { PdfDownloadButton } from '@/components/quotes/pdf-download-button'
 import { QuoteStatusActions } from '@/components/quotes/quote-status-actions'
 import { QuoteStockActions } from '@/components/quotes/quote-stock-actions'
+import { QuoteNextSteps } from '@/components/quotes/quote-next-steps'
+import { QuotePaymentActions } from '@/components/quotes/quote-payment-actions'
+import { QuoteReminderNotice } from '@/components/quotes/quote-reminder-notice'
 import { ApproveQuoteClient } from '@/components/quotes/approve-quote-client'
 import { PaymentOptions } from '@/components/quotes/payment-options'
 import { QRCodeGenerator } from '@/components/quotes/qr-code-generator'
 import { TimelineSection } from '@/components/quotes/timeline-section'
 import { Watermark } from '@/components/quotes/watermark'
+import { getProfessionalContext } from '@/lib/professional-context'
+import { buildQuoteFollowUpMessage, getQuoteReminder } from '@/lib/quote-reminders'
 import {
     ProposalFont,
     ProposalModelId,
@@ -46,8 +51,13 @@ export type ProposalQuote = {
     layout_style?: string | null
     notes: string | null
     organization_id: string
+    amount_paid?: number | null
+    paid_at?: string | null
+    payment_status?: string | null
+    payment_updated_at?: string | null
     payment_methods?: string[] | null
     payment_terms: string | null
+    professional_context?: string | null
     public_token: string
     quote_items: QuoteItem[]
     client_response_note?: string | null
@@ -57,6 +67,7 @@ export type ProposalQuote = {
     show_timeline: boolean | null
     status: string | null
     total: number | null
+    updated_at?: string | null
     user_id: string
     cash_discount_percent?: number | null
     cash_discount_fixed?: number | null
@@ -314,6 +325,13 @@ function getWhatsappQuestionUrl(phone: string | null | undefined, clientName: st
     return `https://wa.me/${digits}?text=${message}`
 }
 
+function getWhatsappFollowUpUrl(phone: string | null | undefined, message: string) {
+    const digits = phone?.replace(/\D/g, '')
+    if (!digits) return null
+
+    return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`
+}
+
 export function ProposalCanvas({
     quote,
     profile,
@@ -345,6 +363,11 @@ export function ProposalCanvas({
     const deductedStockItems = stockLinkedItems.length - pendingStockItems
     const total = quote.total ?? itemTotal
     const discount = Math.max(itemTotal - total, 0)
+    const professionalContext = getProfessionalContext(quote.professional_context)
+    const reminder = isOwner ? getQuoteReminder(quote) : null
+    const followUpUrl = reminder?.kind === 'follow_up'
+        ? getWhatsappFollowUpUrl(quote.client_phone, buildQuoteFollowUpMessage(quote.client_name, approvalUrl))
+        : null
 
     return (
         <div
@@ -482,6 +505,32 @@ export function ProposalCanvas({
                         </div>
                     </section>
 
+                    <section className={cn('border-b px-4 py-6 sm:px-10 lg:px-12', skin.infoSectionClass)}>
+                        <div className="grid gap-5 lg:grid-cols-[260px_1fr] lg:items-start">
+                            <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <ListChecks className="h-5 w-5" style={{ color: themeColor }} />
+                                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Plano de execucao</p>
+                                </div>
+                                <h3 className="mt-2 break-words text-2xl font-black tracking-tight text-slate-950">
+                                    {professionalContext.name}
+                                </h3>
+                                <p className="mt-2 text-sm leading-6 text-slate-500">
+                                    {professionalContext.description}
+                                </p>
+                            </div>
+
+                            <div className="grid gap-3 sm:grid-cols-3">
+                                {professionalContext.proposalBullets.map((bullet) => (
+                                    <div key={bullet} className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4">
+                                        <span className="mb-3 block h-1.5 w-10 rounded-full" style={{ backgroundColor: themeColor }} />
+                                        <p className="text-sm font-semibold leading-6 text-slate-700">{bullet}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
                     <section className="grid min-w-0 gap-8 px-4 py-8 sm:px-10 lg:grid-cols-[1.55fr_0.75fr] lg:px-12">
                         <div className="min-w-0 space-y-6">
                             <div>
@@ -599,6 +648,7 @@ export function ProposalCanvas({
 
                     <section className={cn('border-t px-4 py-8 sm:px-10 lg:px-12', skin.bottomSectionClass)}>
                         <div className="grid min-w-0 gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
+                            <div className="min-w-0 space-y-4">
                             <div className={cn('border p-6', skin.bottomCardClass)}>
                                 <div className="mb-5 flex items-start gap-3">
                                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl" style={{ backgroundColor: `${themeColor}18` }}>
@@ -644,6 +694,31 @@ export function ProposalCanvas({
                                         <MessageCircle className="h-4 w-4" />
                                         Tirar dúvida pelo WhatsApp
                                     </a>
+                                )}
+                            </div>
+
+                                {isOwner && reminder && (
+                                    <QuoteReminderNotice reminder={reminder} followUpUrl={followUpUrl} />
+                                )}
+
+                                {isOwner && (
+                                    <QuoteNextSteps
+                                        status={status}
+                                        paymentStatus={quote.payment_status}
+                                        amountPaid={quote.amount_paid}
+                                        total={total}
+                                        pendingStockItems={pendingStockItems}
+                                        deductedStockItems={deductedStockItems}
+                                    />
+                                )}
+
+                                {isOwner && (
+                                    <QuotePaymentActions
+                                        quoteId={quote.id}
+                                        total={total}
+                                        paymentStatus={quote.payment_status}
+                                        amountPaid={quote.amount_paid}
+                                    />
                                 )}
                             </div>
 

@@ -118,16 +118,16 @@ async function checkExpiringQuotesBatch(userId: string, orgId: string) {
 
     const { data: quotes } = await supabase
         .from('quotes')
-        .select('id, client_name, valid_until')
+        .select('id, client_name, expiration_date')
         .in('status', ['pending', 'sent', 'draft'])
-        .not('valid_until', 'is', null)
+        .not('expiration_date', 'is', null)
         .eq('organization_id', orgId)
 
     if (!quotes || quotes.length === 0) return
 
     const now = new Date()
     const quoteLinks = quotes
-        .filter(q => q.valid_until)
+        .filter(q => q.expiration_date)
         .map(q => `/quotes/${q.id}`)
 
     if (quoteLinks.length === 0) return
@@ -146,9 +146,9 @@ async function checkExpiringQuotesBatch(userId: string, orgId: string) {
     const toInsert: NotificationInsert[] = []
 
     for (const quote of quotes) {
-        if (!quote.valid_until) continue
+        if (!quote.expiration_date) continue
 
-        const expiryDate = new Date(quote.valid_until)
+        const expiryDate = new Date(quote.expiration_date)
         const diffTime = expiryDate.getTime() - now.getTime()
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 

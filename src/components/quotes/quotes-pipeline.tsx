@@ -5,10 +5,11 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { LayoutList, KanbanSquare, FileText, ChevronDown, ChevronLeft, ChevronRight, GripVertical } from 'lucide-react'
+import { BellRing, ChevronDown, ChevronLeft, ChevronRight, FileText, GripVertical, KanbanSquare, LayoutList, WalletCards } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { QuoteStatusBadge } from '@/components/quotes/quote-status-badge'
 import { updateQuoteStatus } from '@/app/actions/quotes'
+import { getQuoteReminder } from '@/lib/quote-reminders'
 import { toast } from 'sonner'
 
 import {
@@ -31,6 +32,10 @@ interface Quote {
     total: number
     status: string
     created_at: string
+    updated_at?: string | null
+    expiration_date?: string | null
+    payment_status?: string | null
+    amount_paid?: number | null
 }
 
 interface QuotesViewProps {
@@ -123,6 +128,36 @@ function getOwnerMoveTarget(quote: Quote, direction: 'prev' | 'next') {
     return candidates.find(col => canOwnerMoveToStatus(quote.status, STATUS_MAP[col.id])) || null
 }
 
+const reminderToneClass = {
+    amber: 'border-amber-200 bg-amber-50 text-amber-800',
+    red: 'border-red-200 bg-red-50 text-red-800',
+    blue: 'border-blue-200 bg-blue-50 text-blue-800',
+    emerald: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+}
+
+function ReminderPill({ quote }: { quote: Quote }) {
+    const reminder = getQuoteReminder(quote)
+    if (!reminder) return null
+
+    return (
+        <span className={`inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-bold ${reminderToneClass[reminder.tone]}`}>
+            <BellRing className="h-3 w-3 shrink-0" />
+            <span className="truncate">{reminder.label}</span>
+        </span>
+    )
+}
+
+function PaymentPill({ quote }: { quote: Quote }) {
+    if (quote.payment_status !== 'partial' && quote.payment_status !== 'paid') return null
+
+    return (
+        <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold text-slate-700">
+            <WalletCards className="h-3 w-3 shrink-0" />
+            <span className="truncate">{quote.payment_status === 'paid' ? 'Recebido' : 'Recebido parcial'}</span>
+        </span>
+    )
+}
+
 // ===========================
 // Draggable Card (Desktop only)
 // ===========================
@@ -172,6 +207,10 @@ function DraggableQuoteCard({
                             <p className="text-xs text-muted-foreground mt-1.5 font-medium">
                                 {fmtDate(quote.created_at)}
                             </p>
+                            <div className="mt-2 flex min-w-0 flex-wrap gap-1.5">
+                                <ReminderPill quote={quote} />
+                                <PaymentPill quote={quote} />
+                            </div>
                         </div>
                         <div className="flex items-end justify-between border-t border-border/40 pt-2 mt-1">
                             <div className={`text-[9px] xl:text-[10px] uppercase font-bold tracking-wider ${colColor} bg-background px-1.5 py-0.5 rounded-md border border-inherit truncate`}>
@@ -424,6 +463,10 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                                                     <p className="text-xs sm:text-sm font-medium text-muted-foreground">
                                                         {fmtDate(quote.created_at)}
                                                     </p>
+                                                    <div className="mt-2 flex min-w-0 flex-wrap gap-1.5">
+                                                        <ReminderPill quote={quote} />
+                                                        <PaymentPill quote={quote} />
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div className="p-5 sm:py-5 sm:pl-0 sm:pr-6 flex items-center justify-between sm:justify-end gap-6 bg-muted/10 sm:bg-transparent border-t border-border/50 sm:border-0">
@@ -528,6 +571,10 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                                                                     <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">
                                                                         {fmtDate(quote.created_at)}
                                                                     </p>
+                                                                    <div className="mt-2 flex min-w-0 flex-wrap gap-1.5">
+                                                                        <ReminderPill quote={quote} />
+                                                                        <PaymentPill quote={quote} />
+                                                                    </div>
                                                                 </div>
                                                                 <p className="font-black text-foreground text-sm tracking-tight shrink-0">
                                                                     {fmt(quote.total)}

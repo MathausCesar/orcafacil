@@ -67,6 +67,7 @@ export default async function EditQuotePage(props: PageProps) {
         paymentMethods: quote.payment_methods || [],
         installmentCount: quote.installment_count || '',
         layoutStyle: quote.layout_style || 'professional',
+        professionalContext: quote.professional_context || 'general',
         items: (quote.quote_items as QuoteItemRecord[]).map((item): QuoteItem => ({
             id: item.id, // Or generate random if needed, but ID is fine
             serviceId: item.service_id || null,

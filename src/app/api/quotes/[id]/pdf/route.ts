@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import type { Database } from '@/types/database.types'
+import { getProfessionalContext } from '@/lib/professional-context'
 
 export const runtime = 'nodejs'
 
@@ -67,6 +68,7 @@ async function renderQuotePdf(quote: QuoteWithItems, profile: ProfileRow | null)
     })
 
     const businessName = profile?.business_name || 'Zacly'
+    const professionalContext = getProfessionalContext(quote.professional_context)
     const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right
     const left = doc.page.margins.left
     const right = doc.page.width - doc.page.margins.right
@@ -117,7 +119,17 @@ async function renderQuotePdf(quote: QuoteWithItems, profile: ProfileRow | null)
     }
 
     doc.y = Math.max(doc.y, 238)
+    ensureSpace(doc, 86)
     doc.moveDown(1)
+    doc.fillColor('#0f172a').font('Helvetica-Bold').fontSize(13).text(`Plano de execucao: ${professionalContext.name}`)
+    doc.moveDown(0.3)
+    doc.fillColor('#334155').font('Helvetica').fontSize(9).text(professionalContext.description, { width: pageWidth })
+    doc.moveDown(0.3)
+    professionalContext.proposalBullets.forEach((bullet) => {
+        doc.fillColor('#334155').font('Helvetica').fontSize(9).text(`- ${bullet}`, { width: pageWidth })
+    })
+    doc.moveDown(1)
+
     doc.fillColor('#0f172a').font('Helvetica-Bold').fontSize(14).text('Itens e servicos')
     doc.moveDown(0.5)
 

@@ -30,7 +30,7 @@ export default async function QuotesListPage({ searchParams }: { searchParams: P
 
     let query = supabase
         .from('quotes')
-        .select('id, client_name, total, status, created_at')
+        .select('id, client_name, total, status, created_at, updated_at, expiration_date, payment_status, amount_paid')
         .eq('organization_id', orgId)
 
     if (params.q) query = query.ilike('client_name', `%${params.q}%`)

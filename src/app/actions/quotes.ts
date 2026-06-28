@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createNotification } from './notifications'
 import { getAuthContext } from '@/lib/get-auth-context'
 import { PRICING } from '@/lib/pricing-copy'
+import { normalizeProfessionalContext } from '@/lib/professional-context'
 
 type QuoteFormItem = {
     serviceId?: string | null
@@ -44,7 +45,14 @@ type QuoteUpdatePayload = {
     payment_methods: string[]
     installment_count: number | null
     layout_style: string | null
+    professional_context: string
     status?: 'draft'
+}
+
+type PaymentStatus = 'unpaid' | 'partial' | 'paid'
+
+function normalizePaymentStatus(value: string): PaymentStatus {
+    return ['unpaid', 'partial', 'paid'].includes(value) ? value as PaymentStatus : 'unpaid'
 }
 
 function parseQuoteItems(itemsJson: string): QuoteFormItem[] {
@@ -146,6 +154,7 @@ export async function createQuote(formData: FormData) {
     const paymentMethodsStr = formData.get('payment_methods') as string
     const paymentMethods = paymentMethodsStr ? JSON.parse(paymentMethodsStr) : []
     const layoutStyle = formData.get('layout_style') as string || null
+    const professionalContext = normalizeProfessionalContext(formData.get('professional_context') as string | null)
 
     const items = parseQuoteItems(itemsJson)
 
@@ -174,7 +183,8 @@ export async function createQuote(formData: FormData) {
             cash_discount_fixed: cashDiscountFixed,
             payment_methods: paymentMethods,
             installment_count: installmentCount,
-            layout_style: layoutStyle
+            layout_style: layoutStyle,
+            professional_context: professionalContext
         })
         .select()
         .single()
@@ -253,6 +263,7 @@ export async function updateQuote(id: string, formData: FormData) {
     const paymentMethodsStr = formData.get('payment_methods') as string
     const paymentMethods = paymentMethodsStr ? JSON.parse(paymentMethodsStr) : []
     const layoutStyle = formData.get('layout_style') as string || null
+    const professionalContext = normalizeProfessionalContext(formData.get('professional_context') as string | null)
 
     const items = parseQuoteItems(itemsJson)
     const total = items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0)
@@ -275,7 +286,8 @@ export async function updateQuote(id: string, formData: FormData) {
         cash_discount_fixed: cashDiscountFixed,
         payment_methods: paymentMethods,
         installment_count: installmentCount,
-        layout_style: layoutStyle
+        layout_style: layoutStyle,
+        professional_context: professionalContext
     }
 
     // Reset decided quotes back to draft for re-approval
@@ -425,4 +437,77 @@ export async function deductQuoteStock(id: string) {
     revalidatePath('/')
 
     return { success: true, deductedItems }
+}
+
+export async function updateQuotePayment(id: string, status: string, amountPaid?: number) {
+    const { supabase, user, orgId } = await getAuthContext()
+
+    if (!user || !orgId) {
+        throw new Error('Unauthorized')
+    }
+
+    const paymentStatus = normalizePaymentStatus(status)
+
+    const { data: quote } = await supabase
+        .from('quotes')
+        .select('id, client_name, total, organization_id, user_id')
+        .eq('id', id)
+        .eq('organization_id', orgId)
+        .single()
+
+    if (!quote) {
+        throw new Error('Quote not found or Unauthorized')
+    }
+
+    const total = Number(quote.total || 0)
+    const cleanAmount = Math.max(0, Number.isFinite(Number(amountPaid)) ? Number(amountPaid) : 0)
+    const nextAmount = paymentStatus === 'paid'
+        ? total
+        : paymentStatus === 'partial'
+            ? Math.min(cleanAmount, total)
+            : 0
+
+    const { error } = await supabase
+        .from('quotes')
+        .update({
+            payment_status: paymentStatus,
+            amount_paid: nextAmount,
+            paid_at: paymentStatus === 'paid' ? new Date().toISOString() : null,
+            payment_updated_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .eq('organization_id', orgId)
+
+    if (error) {
+        console.error('Error updating quote payment:', error)
+        throw new Error('Failed to update payment')
+    }
+
+    const statusMessages: Record<PaymentStatus, { title: string; message: string; type: 'info' | 'success' }> = {
+        unpaid: {
+            title: 'Recebimento em aberto',
+            message: `O recebimento de ${quote.client_name} foi marcado como em aberto.`,
+            type: 'info',
+        },
+        partial: {
+            title: 'Recebimento parcial registrado',
+            message: `Voce registrou recebimento parcial de ${quote.client_name}.`,
+            type: 'info',
+        },
+        paid: {
+            title: 'Recebimento confirmado',
+            message: `O recebimento de ${quote.client_name} foi marcado como pago.`,
+            type: 'success',
+        },
+    }
+
+    const notification = statusMessages[paymentStatus]
+    await createNotification(quote.user_id, notification.title, notification.message, `/quotes/${id}`, notification.type)
+
+    revalidatePath(`/quotes/${id}`)
+    revalidatePath('/quotes')
+    revalidatePath('/')
+
+    return { success: true }
 }

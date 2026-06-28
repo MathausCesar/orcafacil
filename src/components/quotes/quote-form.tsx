@@ -9,12 +9,20 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
 import { Trash2, Save, ArrowLeft, FileText, Loader2, Settings2, Wallet, Clock, CheckCircle2, AlignLeft, LayoutTemplate, Check, Package, Wrench } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { ClientAutocomplete } from '@/components/clients/client-autocomplete'
 import { useRouter } from 'next/navigation'
 import { PROPOSAL_MODELS } from '@/lib/proposal-style'
+import { PROFESSIONAL_CONTEXTS, getProfessionalContext } from '@/lib/professional-context'
 
 export interface QuoteItem {
     id: string;
@@ -46,6 +54,7 @@ interface QuoteFormProps {
         paymentMethods?: string[]
         installmentCount?: string
         layoutStyle?: string
+        professionalContext?: string
         items: QuoteItem[]
     }
 }
@@ -57,6 +66,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
     const [date, setDate] = useState<string>(initialData?.expirationDate || '')
     const [clientName, setClientName] = useState(initialData?.clientName || '')
     const [clientPhone, setClientPhone] = useState(initialData?.clientPhone || '')
+    const [notes, setNotes] = useState(initialData?.notes || '')
 
     // Customization states
     // In a real app, these could come from initialData too if persisted
@@ -73,6 +83,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
     const [paymentMethods, setPaymentMethods] = useState<string[]>(initialData?.paymentMethods || [])
     const [installmentCount, setInstallmentCount] = useState(initialData?.installmentCount || '')
     const [layoutStyle, setLayoutStyle] = useState(initialData?.layoutStyle || 'professional')
+    const [professionalContext, setProfessionalContext] = useState(initialData?.professionalContext || 'general')
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(!quickMode)
 
     const router = useRouter()
@@ -115,6 +126,24 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
         setItems(items.map(i => i.id === id ? { ...i, [field]: value } : i))
     }
 
+    const handleProfessionalContextChange = (contextId: string) => {
+        const context = getProfessionalContext(contextId)
+
+        setProfessionalContext(context.id)
+        setShowTimeline(true)
+        setEstimatedDays((current) => current || String(context.defaultEstimatedDays))
+        setShowPaymentOptions(true)
+        setPaymentMethods((current) => current.length > 0 ? current : [...context.suggestedPaymentMethods])
+
+        if ((context.suggestedPaymentMethods as readonly string[]).includes('installment') && !installmentCount) {
+            setInstallmentCount('3')
+        }
+
+        if (!notes.trim()) {
+            setNotes(context.defaultNotes)
+        }
+    }
+
     const handleSubmit = async (formData: FormData) => {
         if (isSubmitting.current) return;
 
@@ -133,6 +162,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
         formData.set('items', JSON.stringify(items))
         formData.set('clientName', clientName)
         if (clientPhone) formData.set('clientPhone', clientPhone)
+        formData.set('notes', notes)
 
         // Add customization fields
         formData.set('show_detailed_items', String(showDetailedItems))
@@ -160,7 +190,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
             }
         }
         formData.set('layout_style', layoutStyle)
-        if (initialData?.notes) formData.set('notes', initialData.notes) // Persist existing if not changed, form gets it from textarea
+        formData.set('professional_context', professionalContext)
 
         try {
             let result;
@@ -231,6 +261,33 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
 
                 {/* Main Column (Left) */}
                 <div className="lg:col-span-2 space-y-6">
+                    <Card className="border-0 shadow-sm ring-1 ring-border">
+                        <CardHeader className="pb-4 border-b border-border">
+                            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                                <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-lg">
+                                    <Wrench className="h-5 w-5" />
+                                </div>
+                                Modelo da Operacao
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6 space-y-3">
+                            <Select value={professionalContext} onValueChange={handleProfessionalContextChange}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Escolha o tipo de servico" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {PROFESSIONAL_CONTEXTS.map((context) => (
+                                        <SelectItem key={context.id} value={context.id}>
+                                            {context.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <p className="text-sm leading-6 text-muted-foreground">
+                                O Zacly ajusta textos, prazo e pagamento sugeridos sem engessar sua proposta.
+                            </p>
+                        </CardContent>
+                    </Card>
 
                     {/* Client Data */}
                     <Card className="border-0 shadow-sm ring-1 ring-border">
@@ -379,7 +436,8 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                             <Textarea
                                 id="notes"
                                 name="notes"
-                                defaultValue={initialData?.notes}
+                                value={notes}
+                                onChange={(event) => setNotes(event.target.value)}
                                 placeholder="Ex: Garantia de 3 meses, condições especiais de entrega..."
                                 className="min-h-[120px] resize-none"
                             />

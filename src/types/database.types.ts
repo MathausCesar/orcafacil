@@ -395,7 +395,10 @@ export type Database = {
             }
             quotes: {
                 Row: {
+                    amount_paid: number
+                    cash_discount_fixed: number | null
                     cash_discount_percent: number | null
+                    cash_discount_type: string | null
                     client_responded_at: string | null
                     client_response_note: string | null
                     client_company_name: string | null
@@ -411,8 +414,12 @@ export type Database = {
                     layout_style: string | null
                     notes: string | null
                     organization_id: string
+                    paid_at: string | null
                     payment_methods: string[] | null
                     payment_terms: string | null
+                    payment_status: string
+                    payment_updated_at: string | null
+                    professional_context: string
                     public_token: string
                     show_detailed_items: boolean | null
                     show_payment_options: boolean | null
@@ -423,7 +430,10 @@ export type Database = {
                     user_id: string
                 }
                 Insert: {
+                    amount_paid?: number
+                    cash_discount_fixed?: number | null
                     cash_discount_percent?: number | null
+                    cash_discount_type?: string | null
                     client_responded_at?: string | null
                     client_response_note?: string | null
                     client_company_name?: string | null
@@ -439,8 +449,12 @@ export type Database = {
                     layout_style?: string | null
                     notes?: string | null
                     organization_id: string
+                    paid_at?: string | null
                     payment_methods?: string[] | null
                     payment_terms?: string | null
+                    payment_status?: string
+                    payment_updated_at?: string | null
+                    professional_context?: string
                     public_token?: string
                     show_detailed_items?: boolean | null
                     show_payment_options?: boolean | null
@@ -451,7 +465,10 @@ export type Database = {
                     user_id: string
                 }
                 Update: {
+                    amount_paid?: number
+                    cash_discount_fixed?: number | null
                     cash_discount_percent?: number | null
+                    cash_discount_type?: string | null
                     client_responded_at?: string | null
                     client_response_note?: string | null
                     client_company_name?: string | null
@@ -467,8 +484,12 @@ export type Database = {
                     layout_style?: string | null
                     notes?: string | null
                     organization_id?: string
+                    paid_at?: string | null
                     payment_methods?: string[] | null
                     payment_terms?: string | null
+                    payment_status?: string
+                    payment_updated_at?: string | null
+                    professional_context?: string
                     public_token?: string
                     show_detailed_items?: boolean | null
                     show_payment_options?: boolean | null

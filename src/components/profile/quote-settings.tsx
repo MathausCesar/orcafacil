@@ -15,6 +15,7 @@ import {
 import { BriefcaseBusiness, Lock, MessageSquareQuote, Sparkles, SquarePen } from 'lucide-react'
 
 export interface QuoteSettingsData {
+    [key: string]: unknown
     visualTone?: VisualToneId
     footerText: string
     quote_font_family?: ProposalFont
@@ -38,6 +39,7 @@ const toneIcons: Record<VisualToneId, typeof BriefcaseBusiness> = {
 export function QuoteSettings({ settings, plan, onChange }: QuoteSettingsProps) {
     const isFree = !plan || plan === 'free'
     const currentSettings: QuoteSettingsData = {
+        ...settings,
         visualTone: normalizeVisualTone(settings?.visualTone),
         footerText: settings?.footerText || '',
         quote_font_family: normalizeProposalFont(settings?.quote_font_family),

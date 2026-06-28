@@ -1,7 +1,9 @@
+import type { OnboardingPricingTier } from "@/lib/onboarding-catalog";
+
 export type OnboardingData = {
     category: { id: string; name: string; slug: string } | null;
     specialties: string[];
-    pricingTier: "autonomous" | "standard" | "premium" | null;
+    pricingTier: OnboardingPricingTier | null;
     businessName: string;
     phone: string;
     documentType: "cpf" | "cnpj";

@@ -2,7 +2,11 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
-import type { Database } from "@/types/database.types"
+import type { Database, Json } from "@/types/database.types"
+import {
+    getDefaultProfessionalContext,
+    type OnboardingPricingTier,
+} from "@/lib/onboarding-catalog"
 
 export type OnboardingCategory = {
     id: string
@@ -11,7 +15,7 @@ export type OnboardingCategory = {
     slug: string
 }
 
-export type PricingTier = "autonomous" | "standard" | "premium"
+export type PricingTier = OnboardingPricingTier
 
 const PRICING_MULTIPLIERS = {
     autonomous: 0.8, // 20% discount
@@ -45,14 +49,36 @@ const OnboardingSchema = z.object({
     specialties: z.array(z.string()),
     pricingTier: z.enum(["autonomous", "standard", "premium"]),
     businessProfile: z.object({
-        businessName: z.string().optional(),
+        businessName: z.string().trim().min(1).optional(),
         phone: z.string().optional(),
         documentType: z.enum(["cpf", "cnpj"]).optional(),
         document: z.string().optional(),
         email: z.string().optional(),
-        logoUrl: z.string().nullable().optional()
+        logoUrl: z.string().nullable().optional(),
+        themeColor: z.string().nullable().optional(),
     }).optional()
 })
+
+type JsonObject = { [key: string]: Json | undefined }
+
+function parseQuoteSettings(value: unknown): JsonObject {
+    if (!value) return {}
+
+    try {
+        if (typeof value === 'string') {
+            const parsed = JSON.parse(value)
+            return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+                ? parsed as JsonObject
+                : {}
+        }
+
+        return typeof value === 'object' && !Array.isArray(value)
+            ? value as JsonObject
+            : {}
+    } catch {
+        return {}
+    }
+}
 
 export async function applyOnboardingKit(
     categoryId: string,
@@ -76,6 +102,11 @@ export async function applyOnboardingKit(
         return { success: false, error: "Invalid input data" }
     }
 
+    const businessName = businessProfile?.businessName?.trim()
+    if (businessProfile && !businessName) {
+        return { success: false, error: "Informe seu nome ou o nome do negocio." }
+    }
+
     const multiplier = PRICING_MULTIPLIERS[pricingTier] || 1.0
 
     try {
@@ -95,26 +126,38 @@ export async function applyOnboardingKit(
 
             const { data: newOrg, error: orgCreateError } = await supabase
                 .from('organizations')
-                .insert({ name: businessProfile?.businessName || 'Meu Workspace' })
+                .insert({ name: businessName || 'Meu Workspace' })
                 .select('id')
                 .single()
 
             if (orgCreateError || !newOrg) {
-                throw new Error('Falha ao criar organização: ' + (orgCreateError?.message || 'erro desconhecido'))
+                throw new Error('Falha ao criar organizacao: ' + (orgCreateError?.message || 'erro desconhecido'))
             }
 
             const { error: memberInsertError } = await supabase
                 .from('organization_members')
-                .insert({ user_id: userId, organization_id: newOrg.id })
+                .insert({ user_id: userId, organization_id: newOrg.id, role: 'owner' })
 
             if (memberInsertError) {
-                throw new Error('Falha ao vincular organização: ' + memberInsertError.message)
+                throw new Error('Falha ao vincular organizacao: ' + memberInsertError.message)
             }
 
             memberData = { organization_id: newOrg.id }
         }
 
         const organizationId = memberData.organization_id
+
+        const { data: category, error: categoryError } = await supabase
+            .from("template_categories")
+            .select("id, name, slug")
+            .eq("id", categoryId)
+            .single()
+
+        if (categoryError || !category) {
+            throw new Error('Categoria de onboarding nao encontrada.')
+        }
+
+        const professionalContext = getDefaultProfessionalContext(category.slug, specialties)
 
         // 2. Fetch Template Services
         const { data: services, error: servicesError } = await supabase
@@ -172,13 +215,46 @@ export async function applyOnboardingKit(
 
         const itemsToInsert = Array.from(uniqueItemsMap.values());
 
+        const { data: existingItems, error: existingItemsError } = await supabase
+            .from("services")
+            .select("description")
+            .eq("organization_id", organizationId)
+
+        if (existingItemsError) throw existingItemsError
+
+        const existingDescriptions = new Set(
+            (existingItems || []).map(item => item.description.trim().toLowerCase())
+        )
+        const newItemsToInsert = itemsToInsert.filter(item => {
+            return !existingDescriptions.has(item.description.trim().toLowerCase())
+        })
+
         // 5. Execute Inserts
-        if (itemsToInsert.length > 0) {
+        if (newItemsToInsert.length > 0) {
             const { error: insertError } = await supabase
                 .from("services")
-                .insert(itemsToInsert)
+                .insert(newItemsToInsert)
 
             if (insertError) throw insertError
+        }
+
+        const { data: existingProfile } = await supabase
+            .from("profiles")
+            .select("quote_settings")
+            .eq("id", userId)
+            .maybeSingle()
+
+        const quoteSettings: Json = {
+            ...parseQuoteSettings(existingProfile?.quote_settings),
+            onboarding: {
+                categoryId: category.id,
+                categorySlug: category.slug,
+                categoryName: category.name,
+                specialties,
+                pricingTier,
+                professionalContext,
+                completedAt: new Date().toISOString(),
+            },
         }
 
         // 5. Mark user as onboarded (upsert to handle missing profiles)
@@ -187,11 +263,12 @@ export async function applyOnboardingKit(
         // First, ensure profile exists (fallback in case trigger didn't fire)
         const profileDataToUpsert: ProfileInsert = {
             id: userId,
-            onboarded_at: new Date().toISOString()
+            onboarded_at: new Date().toISOString(),
+            quote_settings: quoteSettings,
         };
 
         if (businessProfile) {
-            if (businessProfile.businessName) profileDataToUpsert.business_name = businessProfile.businessName;
+            if (businessName) profileDataToUpsert.business_name = businessName;
             if (businessProfile.phone) profileDataToUpsert.phone = businessProfile.phone;
             if (businessProfile.document) profileDataToUpsert.cnpj = businessProfile.document;
             if (businessProfile.email) profileDataToUpsert.email = businessProfile.email;
@@ -222,7 +299,7 @@ export async function applyOnboardingKit(
 
             if (orgData?.organization_id) {
                 await supabase.from('organizations').update({
-                    name: businessProfile.businessName || 'Meu Workspace',
+                    name: businessName || 'Meu Workspace',
                     document_type: businessProfile.documentType || 'cpf',
                     document: businessProfile.document || null,
                     logo_url: businessProfile.logoUrl || null

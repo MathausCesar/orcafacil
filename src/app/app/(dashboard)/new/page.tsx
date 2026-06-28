@@ -2,6 +2,8 @@ import { QuoteForm } from '@/components/quotes/quote-form'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveOrganizationId } from '@/lib/get-active-organization'
 import { normalizeProposalModel } from '@/lib/proposal-style'
+import { getProfessionalContext } from '@/lib/professional-context'
+import { parseOnboardingQuoteSettings } from '@/lib/onboarding-catalog'
 
 type NewQuotePageProps = {
     searchParams: Promise<{ clientName?: string; quick?: string }>
@@ -17,7 +19,7 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
         ? await Promise.all([
             supabase
                 .from('profiles')
-                .select('layout_style')
+                .select('layout_style, quote_settings')
                 .eq('id', user.id)
                 .maybeSingle(),
             orgId
@@ -31,6 +33,11 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
 
     const profile = profileResult.data
     const quickMode = quick === '1' || (quoteCountResult.count ?? 0) === 0
+    const onboardingSettings = quickMode
+        ? parseOnboardingQuoteSettings(profile?.quote_settings)
+        : null
+    const professionalContext = getProfessionalContext(onboardingSettings?.professionalContext)
+    const suggestedPaymentMethods = [...professionalContext.suggestedPaymentMethods]
 
     return (
         <QuoteForm
@@ -38,6 +45,13 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
             initialData={{
                 clientName: clientName || '',
                 layoutStyle: normalizeProposalModel(profile?.layout_style),
+                professionalContext: quickMode ? professionalContext.id : 'general',
+                showTimeline: quickMode,
+                estimatedDays: quickMode ? String(professionalContext.defaultEstimatedDays) : '',
+                showPaymentOptions: quickMode && suggestedPaymentMethods.length > 0,
+                paymentMethods: quickMode ? suggestedPaymentMethods : [],
+                installmentCount: quickMode && suggestedPaymentMethods.includes('installment') ? '3' : '',
+                notes: quickMode ? professionalContext.defaultNotes : '',
                 items: []
             }}
         />

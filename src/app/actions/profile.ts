@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getAuthContext } from '@/lib/get-auth-context'
+import type { Json } from '@/types/database.types'
 
 type ProfileUpdateData = {
     business_name: string
@@ -19,7 +20,28 @@ type ProfileUpdateData = {
     updated_at: string
     theme_color?: string
     layout_style?: string
-    quote_settings?: unknown
+    quote_settings?: Json
+}
+
+type JsonObject = { [key: string]: Json | undefined }
+
+function parseJsonObject(value: unknown): JsonObject {
+    if (!value) return {}
+
+    try {
+        if (typeof value === 'string') {
+            const parsed = JSON.parse(value)
+            return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+                ? parsed as JsonObject
+                : {}
+        }
+
+        return typeof value === 'object' && !Array.isArray(value)
+            ? value as JsonObject
+            : {}
+    } catch {
+        return {}
+    }
 }
 
 export async function updateProfile(formData: FormData) {
@@ -64,8 +86,17 @@ export async function updateProfile(formData: FormData) {
 
     if (quoteSettingsStr) {
         try {
-            const parsedSettings = JSON.parse(quoteSettingsStr)
-            updateData.quote_settings = parsedSettings
+            const parsedSettings = parseJsonObject(quoteSettingsStr)
+            const { data: currentProfile } = await supabase
+                .from('profiles')
+                .select('quote_settings')
+                .eq('id', user.id)
+                .maybeSingle()
+
+            updateData.quote_settings = {
+                ...parseJsonObject(currentProfile?.quote_settings),
+                ...parsedSettings,
+            }
         } catch (e) {
             console.error('Failed to parse quoteSettings', e)
         }

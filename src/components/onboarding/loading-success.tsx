@@ -1,24 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { ArrowRight, CheckCircle2, Home, Loader2, RotateCcw } from "lucide-react";
 import { useOnboarding } from "@/components/onboarding/onboarding-context";
 import { applyOnboardingKit } from "@/app/actions/onboarding";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
 export function LoadingSuccess() {
-    const { data } = useOnboarding();
-    const router = useRouter();
+    const { data, prevStep } = useOnboarding();
     const [progress, setProgress] = useState(0);
     const [status, setStatus] = useState("Iniciando setup...");
     const [complete, setComplete] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const startedRef = useRef(false);
 
     useEffect(() => {
+        if (startedRef.current) return;
+        startedRef.current = true;
+
+        let active = true;
+
         const runSetup = async () => {
-            // 10% - Getting User
             setProgress(10);
             setStatus("Identificando perfil...");
 
@@ -26,19 +32,19 @@ export function LoadingSuccess() {
             const { data: { user } } = await supabase.auth.getUser();
 
             if (!user) {
-                setStatus("Erro: Usuário não identificado.");
+                if (!active) return;
+                setError("Usuario nao identificado. Entre novamente para concluir.");
                 return;
             }
 
-            // 30% - Preparing Data
             setProgress(30);
-            setStatus("Selecionando melhores serviços...");
+            setStatus("Selecionando melhores servicos...");
 
-            await new Promise(r => setTimeout(r, 800)); // Fake delay for UX
+            await new Promise(resolve => setTimeout(resolve, 500));
+            if (!active) return;
 
-            // 60% - Applying Kit
             setProgress(60);
-            setStatus(`Configurando preços para ${data.category?.name}...`);
+            setStatus(`Configurando catalogo para ${data.category?.name || "seu negocio"}...`);
 
             const res = await applyOnboardingKit(
                 data.category!.id,
@@ -51,42 +57,43 @@ export function LoadingSuccess() {
                     document: data.document,
                     email: data.email,
                     logoUrl: data.logoUrl,
-                    themeColor: data.themeColor,   // pass extracted logo color
+                    themeColor: data.themeColor,
                 }
             );
 
+            if (!active) return;
+
             if (res.success) {
                 setProgress(100);
-                setStatus("Tudo pronto!");
+                setStatus("Catalogo inicial criado.");
                 setComplete(true);
-
-                setTimeout(() => {
-                    // Force a hard navigation to ensure fresh server state
-                    window.location.href = "/";
-                }, 1500);
             } else {
                 console.error("Onboarding error:", res.error);
-                setStatus(`Deu erro: ${JSON.stringify(res.error)}`);
+                setError(typeof res.error === "string" ? res.error : "Nao foi possivel concluir o onboarding.");
             }
         };
 
         runSetup();
-    }, [data, router]);
+
+        return () => {
+            active = false;
+        };
+    }, [data]);
 
     return (
-        <div className="text-center space-y-8 max-w-md w-full mx-auto p-4">
+        <div className="mx-auto w-full max-w-md space-y-8 p-4 text-center">
             <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.5 }}
             >
                 {complete ? (
-                    <div className="flex justify-center mb-6">
-                        <CheckCircle2 className="w-24 h-24 text-green-500" />
+                    <div className="mb-6 flex justify-center">
+                        <CheckCircle2 className="h-24 w-24 text-green-500" />
                     </div>
                 ) : (
-                    <div className="flex justify-center mb-6 relative">
-                        <Loader2 className="w-24 h-24 text-primary animate-spin" />
+                    <div className="relative mb-6 flex justify-center">
+                        <Loader2 className="h-24 w-24 animate-spin text-primary" />
                         <div className="absolute inset-0 flex items-center justify-center text-xs font-bold">
                             {progress}%
                         </div>
@@ -96,14 +103,45 @@ export function LoadingSuccess() {
 
             <div className="space-y-2">
                 <h2 className="text-2xl font-bold">
-                    {complete ? "Sua oficina está pronta!" : "Quase lá..."}
+                    {complete ? "Seu Zacly esta pronto" : error ? "Algo impediu a conclusao" : "Quase la..."}
                 </h2>
-                <p className="text-muted-foreground animate-pulse">
-                    {status}
+                <p className="text-muted-foreground">
+                    {complete
+                        ? "Criamos seu catalogo inicial. Agora o melhor proximo passo e gerar seu primeiro orcamento."
+                        : error || status}
                 </p>
             </div>
 
-            <Progress value={progress} className="h-2 w-full" />
+            {!complete && !error && <Progress value={progress} className="h-2 w-full" />}
+
+            {complete && (
+                <div className="grid gap-3 sm:grid-cols-2">
+                    <Link href="/new?quick=1" className="sm:col-span-2">
+                        <Button className="h-12 w-full font-semibold">
+                            Criar primeiro orcamento
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                    </Link>
+                    <Link href="/">
+                        <Button variant="outline" className="h-11 w-full">
+                            <Home className="mr-2 h-4 w-4" />
+                            Ir ao painel
+                        </Button>
+                    </Link>
+                    <Link href="/profile">
+                        <Button variant="ghost" className="h-11 w-full">
+                            Ajustar catalogo
+                        </Button>
+                    </Link>
+                </div>
+            )}
+
+            {error && (
+                <Button type="button" variant="outline" onClick={prevStep} className="w-full">
+                    <RotateCcw className="mr-2 h-4 w-4" />
+                    Revisar dados
+                </Button>
+            )}
         </div>
     );
 }

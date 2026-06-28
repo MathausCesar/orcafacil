@@ -115,16 +115,16 @@ export async function toggleVote(suggestionId: string) {
 
     if (existing) {
         // Remove voto
-        await supabase.from('suggestion_votes').delete().eq('id', existing.id)
-        await supabase.rpc('decrement_votes', { suggestion_id: suggestionId })
+        const { error } = await supabase.from('suggestion_votes').delete().eq('id', existing.id)
+        if (error) throw new Error(error.message)
         return { voted: false }
     } else {
         // Adiciona voto
-        await supabase.from('suggestion_votes').insert({
+        const { error } = await supabase.from('suggestion_votes').insert({
             suggestion_id: suggestionId,
             user_id: user.id,
         })
-        await supabase.rpc('increment_votes', { suggestion_id: suggestionId })
+        if (error) throw new Error(error.message)
         return { voted: true }
     }
 }

@@ -1,5 +1,5 @@
-import { cookies } from "next/headers"
 import { createClient } from "@/lib/supabase/server"
+import { getActiveOrganizationId } from "@/lib/get-active-organization"
 
 type AuthContext = {
     supabase: Awaited<ReturnType<typeof createClient>>
@@ -15,20 +15,7 @@ export async function getAuthContext(): Promise<AuthContext> {
         return { supabase, user: null, orgId: null }
     }
 
-    const cookieStore = await cookies()
-    const orgId = cookieStore.get("active_organization_id")?.value || null
+    const orgId = await getActiveOrganizationId(supabase)
 
-    if (orgId) {
-        return { supabase, user, orgId }
-    }
-
-    // Fallback: query only if cookie is missing
-    const { data: orgData } = await supabase
-        .from("organizations")
-        .select("id")
-        .order("created_at", { ascending: true })
-        .limit(1)
-        .single()
-
-    return { supabase, user, orgId: orgData?.id || null }
+    return { supabase, user, orgId }
 }

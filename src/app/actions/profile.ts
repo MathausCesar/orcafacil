@@ -4,6 +4,24 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getAuthContext } from '@/lib/get-auth-context'
 
+type ProfileUpdateData = {
+    business_name: string
+    phone: string
+    email: string
+    cnpj: string
+    cep: string
+    address: string
+    address_number: string
+    complement: string
+    neighborhood: string
+    city: string
+    state: string
+    updated_at: string
+    theme_color?: string
+    layout_style?: string
+    quote_settings?: unknown
+}
+
 export async function updateProfile(formData: FormData) {
     const { supabase, user } = await getAuthContext()
 
@@ -26,7 +44,7 @@ export async function updateProfile(formData: FormData) {
     const layoutStyle = formData.get('layoutStyle') as string
     const quoteSettingsStr = formData.get('quoteSettings') as string
 
-    const updateData: any = {
+    const updateData: ProfileUpdateData = {
         business_name: businessName,
         phone: phone,
         email: email,

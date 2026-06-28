@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
+  serverExternalPackages: ['pdfkit'],
   experimental: {
     optimizePackageImports: ['lucide-react', 'date-fns', 'framer-motion', 'react-hook-form', 'posthog-js'],
   },

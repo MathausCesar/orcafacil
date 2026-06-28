@@ -1,6 +1,6 @@
 'use server';
 
-import { resend } from '@/lib/resend';
+import { getResend } from '@/lib/resend';
 import { BasicEmailTemplate } from '@/components/emails/BasicEmailTemplate';
 import * as React from 'react';
 
@@ -14,6 +14,7 @@ interface SendEmailParams {
 
 export async function sendEmail({ to, subject, firstName, message, text }: SendEmailParams) {
     try {
+        const resend = getResend();
         const data = await resend.emails.send({
             // Lembre-se de verificar seu domínio no Resend!
             // Substituir pelo e-mail verificado no painel (ex: contato@zacly.com.br)

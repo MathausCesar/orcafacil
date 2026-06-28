@@ -8,14 +8,15 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Plus, UserPlus, Loader2 } from 'lucide-react'
+import { UserPlus, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { CepInput } from './cep-input'
+import type { ClientOption } from '@/components/clients/client-autocomplete'
 
 interface CreateClientDialogProps {
     trigger?: React.ReactNode;
-    onSuccess?: (client: any) => void;
+    onSuccess?: (client: ClientOption | null) => void;
 }
 
 export function CreateClientDialog({ trigger, onSuccess }: CreateClientDialogProps) {
@@ -37,7 +38,7 @@ export function CreateClientDialog({ trigger, onSuccess }: CreateClientDialogPro
                 router.refresh()
                 if (onSuccess) onSuccess(result.client)
             }
-        } catch (e) {
+        } catch {
             toast.error('Erro ao cadastrar cliente')
         } finally {
             setLoading(false)

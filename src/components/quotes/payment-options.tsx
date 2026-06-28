@@ -1,85 +1,99 @@
 import { CreditCard, Banknote, QrCode, Calendar } from 'lucide-react'
 
 interface PaymentOption {
+    id: string
     icon: typeof CreditCard
     title: string
+    detail?: string
 }
 
 interface PaymentOptionsProps {
     themeColor?: string
-    /** Mostrar PIX / Cartão etc, baseado nas seleções do DB? (Aqui pegamos por props) */
-    // To keep signature consistent, we keep props even if unused for descriptions
+    paymentMethods?: string[] | null
     showCashDiscount?: boolean
     cashDiscountPercent?: number
     cashDiscountFixed?: number
     cashDiscountType?: string
-    installmentCount?: number
+    installmentCount?: number | null
     total?: number
+}
+
+const methodCatalog: PaymentOption[] = [
+    { id: 'pix', icon: QrCode, title: 'PIX', detail: 'Confirmação rápida' },
+    { id: 'cash', icon: Banknote, title: 'Dinheiro', detail: 'Pagamento à vista' },
+    { id: 'card', icon: CreditCard, title: 'Cartão', detail: 'Crédito ou débito' },
+    { id: 'installment', icon: Calendar, title: 'Parcelado', detail: 'Parcelamento combinado' },
+]
+
+function formatCurrency(value: number) {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 }
 
 export function PaymentOptions({
     themeColor = '#0D9B5C',
+    paymentMethods,
+    showCashDiscount,
+    cashDiscountPercent = 0,
+    cashDiscountFixed = 0,
+    cashDiscountType = 'percent',
+    installmentCount,
+    total = 0,
 }: PaymentOptionsProps) {
+    const selectedMethods = paymentMethods && paymentMethods.length > 0
+        ? methodCatalog.filter(method => paymentMethods.includes(method.id))
+        : methodCatalog
 
-    const paymentMethods: PaymentOption[] = [
-        {
-            icon: QrCode,
-            title: 'PIX',
-        },
-        {
-            icon: Banknote,
-            title: 'Dinheiro',
-        },
-        {
-            icon: CreditCard,
-            title: 'Cartão',
-        },
-        {
-            icon: Calendar,
-            title: 'Parcelado',
-        }
-    ]
+    const discountValue = cashDiscountType === 'fixed'
+        ? cashDiscountFixed
+        : total * (cashDiscountPercent / 100)
+
+    const cashTotal = Math.max(total - discountValue, 0)
+    const installmentValue = installmentCount && installmentCount > 1 ? total / installmentCount : null
 
     return (
-        <div
-            className="bg-slate-50 rounded-lg p-6 print:p-4 border border-slate-200 print:break-inside-avoid"
-            style={{
-                pageBreakInside: 'avoid',
-            }}
-        >
-            <h3 className="font-bold text-lg mb-4 print:mb-3 print:text-base">
-                Formas de Pagamento
-            </h3>
+        <section className="break-inside-avoid rounded-2xl border border-slate-200 bg-white p-5 shadow-sm print:border-slate-300 print:p-4">
+            <div className="mb-4 flex items-center justify-between gap-4">
+                <div>
+                    <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-slate-900">
+                        Pagamento
+                    </h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                        Condições aceitas nesta proposta
+                    </p>
+                </div>
+                {showCashDiscount && discountValue > 0 && (
+                    <div className="rounded-full px-3 py-1 text-xs font-bold text-white" style={{ backgroundColor: themeColor }}>
+                        À vista {formatCurrency(cashTotal)}
+                    </div>
+                )}
+            </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 print:gap-2">
-                {paymentMethods.map((method, index) => {
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 print:grid-cols-2">
+                {selectedMethods.map((method) => {
                     const Icon = method.icon
+                    const detail = method.id === 'installment' && installmentValue
+                        ? `${installmentCount}x de ${formatCurrency(installmentValue)}`
+                        : method.detail
+
                     return (
                         <div
-                            key={index}
-                            className="flex flex-col items-center justify-center text-center p-4 rounded-lg border bg-white print:p-3"
-                            style={{
-                                borderColor: `${themeColor}20`,
-                            }}
+                            key={method.id}
+                            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-4"
                         >
                             <div
-                                className="w-12 h-12 rounded-full flex items-center justify-center mb-3 print:w-10 print:h-10 print:mb-2"
-                                style={{
-                                    backgroundColor: `${themeColor}15`,
-                                }}
+                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                                style={{ backgroundColor: `${themeColor}18` }}
                             >
-                                <Icon
-                                    className="h-6 w-6 print:h-5 print:w-5"
-                                    style={{ color: themeColor }}
-                                />
+                                <Icon className="h-5 w-5" style={{ color: themeColor }} />
                             </div>
-                            <h4 className="font-semibold text-sm print:text-xs text-slate-800">
-                                {method.title}
-                            </h4>
+                            <div className="min-w-0">
+                                <h4 className="text-sm font-bold text-slate-900">{method.title}</h4>
+                                {detail && <p className="text-xs text-slate-500">{detail}</p>}
+                            </div>
                         </div>
                     )
                 })}
             </div>
-        </div>
+        </section>
     )
 }

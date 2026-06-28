@@ -20,6 +20,7 @@ import {
     createSuggestion,
     toggleVote,
 } from '@/app/actions/support'
+import { PRICING } from '@/lib/pricing-copy'
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Types
@@ -58,7 +59,7 @@ const FAQ_ITEMS = [
     { category: 'Orçamentos', q: 'O que significa o status "Em Análise"?', a: 'É o status padrão quando o orçamento é gerado. Significa que está válido e aguardando aprovação. Quando o cliente aprovar pelo link, o status muda para "Aprovado" automaticamente.' },
     { category: 'Orçamentos', q: 'Posso editar um orçamento já criado?', a: 'Sim! Acesse o orçamento na lista e clique em Editar. Você pode alterar itens, valores, datas e condições. O link de aprovação se mantém o mesmo.' },
     { category: 'Orçamentos', q: 'Como adiciono desconto no orçamento?', a: 'No formulário de criação, há um campo "Desconto (%)". Você também pode configurar desconto automático para pagamento PIX/Dinheiro em Perfil → Configurações.' },
-    { category: 'Orçamentos', q: 'Quantos orçamentos posso criar no plano gratuito?', a: 'O plano gratuito permite até 5 orçamentos por mês. Para orçamentos ilimitados, assine o plano Pro.' },
+    { category: 'Orçamentos', q: 'Quantos orçamentos posso criar no plano gratuito?', a: `O plano gratuito permite ate ${PRICING.freeQuotesPerMonth} orcamentos por mes. Para orcamentos ilimitados, assine o plano Pro.` },
     // Clientes
     { category: 'Clientes', q: 'Como cadastrar um novo cliente?', a: 'Vá em Clientes → Novo Cliente. Preencha Nome e WhatsApp (essenciais para o envio do orçamento) e clique em Salvar.' },
     { category: 'Clientes', q: 'Como cadastrar serviços e produtos?', a: 'Acesse Serviços/Produtos. Você pode cadastrar itens frequentes com o preço padrão. Ao montar um orçamento, eles aparecem na busca rápida — sem precisar redigitar toda vez.' },
@@ -70,7 +71,7 @@ const FAQ_ITEMS = [
     // PDF & Aprovação
     { category: 'PDF & Aprovação', q: 'Como personalizo o visual do PDF?', a: 'Em Perfil → Configurações você pode: adicionar a logo da empresa, escolher a cor principal, definir CNPJ/site e configurar o layout (Clássico, Moderno ou Profissional).' },
     { category: 'PDF & Aprovação', q: 'Meu cliente aprovou — o que acontece?', a: 'Você recebe uma notificação e o status do orçamento muda para "Aprovado". É sinal de negócio fechado! 🎉' },
-    { category: 'PDF & Aprovação', q: 'O PDF sai com marca d\'água no plano gratuito?', a: 'No plano gratuito, o PDF é gerado sem marca d\'água mas sem a logo da empresa. Com o plano Pro, a logo aparece em todos os PDFs.' },
+    { category: 'PDF & Aprovação', q: 'O PDF sai com marca d\'água no plano gratuito?', a: 'No plano gratuito, o PDF mantem a marca Zacly e limita a personalizacao. Com o plano Pro, a logo da empresa aparece com visual premium e sem marca Zacly.' },
 ]
 
 const TICKET_TYPES: { value: TicketType; label: string; icon: React.ReactNode; color: string }[] = [
@@ -174,7 +175,7 @@ function FaqTab() {
     )
 }
 
-function TicketTab({ onSwitchToIdeas }: { onSwitchToIdeas: () => void }) {
+function TicketTab() {
     const [loading, setLoading] = useState(false)
     const [tickets, setTickets] = useState<Ticket[]>([])
     const [showHistory, setShowHistory] = useState(false)
@@ -192,8 +193,9 @@ function TicketTab({ onSwitchToIdeas }: { onSwitchToIdeas: () => void }) {
                 description: 'Recebemos seu contato e retornaremos em breve.',
             })
             setFormKey(k => k + 1)
-        } catch (error: any) {
-            toast.error('Erro ao enviar', { description: error.message || 'Tente novamente.' })
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Tente novamente.'
+            toast.error('Erro ao enviar', { description: message })
         } finally {
             setLoading(false)
         }
@@ -336,8 +338,9 @@ function IdeasTab() {
             toast.success('Ideia enviada! 💡', { description: 'Obrigado pela sugestão!' })
             setShowForm(false)
             setFormKey(k => k + 1)
-        } catch (error: any) {
-            toast.error('Erro ao enviar', { description: error.message })
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Tente novamente.'
+            toast.error('Erro ao enviar', { description: message })
         } finally {
             setSubmitting(false)
         }
@@ -493,7 +496,7 @@ export function SupportWidget() {
                 {/* Content */}
                 <div className="max-h-[65vh] sm:max-h-[440px] overflow-y-auto p-4 bg-background scrollbar-thin scrollbar-thumb-border">
                     {activeTab === 'faq' && <FaqTab />}
-                    {activeTab === 'ticket' && <TicketTab onSwitchToIdeas={() => setActiveTab('ideas')} />}
+                    {activeTab === 'ticket' && <TicketTab />}
                     {activeTab === 'ideas' && <IdeasTab />}
                 </div>
             </PopoverContent>

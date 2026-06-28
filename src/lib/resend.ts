@@ -1,5 +1,17 @@
 import { Resend } from 'resend';
 
-// Inicializa o cliente Resend com a chave da variável de ambiente
-// O process.env.RESEND_API_KEY deve ser configurado no painel da Vercel ou .env.local
-export const resend = new Resend(process.env.RESEND_API_KEY);
+let resendClient: Resend | null = null;
+
+export function getResend() {
+    if (!resendClient) {
+        const apiKey = process.env.RESEND_API_KEY;
+
+        if (!apiKey) {
+            throw new Error('RESEND_API_KEY não configurada.');
+        }
+
+        resendClient = new Resend(apiKey);
+    }
+
+    return resendClient;
+}

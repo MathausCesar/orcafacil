@@ -19,6 +19,11 @@ import {
 import { Mail, ArrowRight, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 
+type AuthActionResult = {
+    error?: string
+    success?: boolean
+}
+
 export function ForgotPasswordForm() {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
@@ -28,7 +33,7 @@ export function ForgotPasswordForm() {
     const handleSubmit = async (formData: FormData) => {
         setLoading(true)
         try {
-            const result = await requestPasswordReset(formData) as any
+            const result = await requestPasswordReset(formData) as AuthActionResult
 
             if (result?.error) {
                 toast.error(result.error)

@@ -3,6 +3,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { getAuthContext } from '@/lib/get-auth-context'
+import type { Database } from '@/types/database.types'
+
+type NotificationInsert = Database['public']['Tables']['notifications']['Insert']
 
 export async function getNotifications() {
     const { supabase, user, orgId } = await getAuthContext()
@@ -76,7 +79,7 @@ async function checkInactiveQuotesBatch(userId: string, orgId: string) {
     )
 
     // Build batch of notifications to insert
-    const toInsert: any[] = []
+    const toInsert: NotificationInsert[] = []
 
     for (const quote of quotes) {
         const lastUpdate = new Date(quote.updated_at || quote.created_at)
@@ -140,7 +143,7 @@ async function checkExpiringQuotesBatch(userId: string, orgId: string) {
         (existingNotifications || []).map(n => `${n.link}|${n.title}`)
     )
 
-    const toInsert: any[] = []
+    const toInsert: NotificationInsert[] = []
 
     for (const quote of quotes) {
         if (!quote.valid_until) continue

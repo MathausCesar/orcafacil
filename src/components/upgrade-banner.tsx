@@ -1,12 +1,13 @@
 import Link from "next/link"
 import { Sparkles, ArrowRight, TrendingUp } from "lucide-react"
+import { PRICING } from "@/lib/pricing-copy"
 
 interface UpgradeBannerProps {
     quotesUsed?: number
     quotesLimit?: number
 }
 
-export function UpgradeBanner({ quotesUsed = 0, quotesLimit = 5 }: UpgradeBannerProps) {
+export function UpgradeBanner({ quotesUsed = 0, quotesLimit = PRICING.freeQuotesPerMonth }: UpgradeBannerProps) {
     const remaining = quotesLimit - quotesUsed
     const isNearLimit = remaining <= 2
     const isAtLimit = remaining <= 0

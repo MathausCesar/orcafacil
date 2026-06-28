@@ -32,7 +32,7 @@ export function NotificationBell() {
             const data = await getNotifications()
             if (data) {
                 setNotifications(data as Notification[])
-                setHasUnread(data.some((n: any) => !n.read))
+                setHasUnread(data.some((notification) => !notification.read))
             }
         }
 

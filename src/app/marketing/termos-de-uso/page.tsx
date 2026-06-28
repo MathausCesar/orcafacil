@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft, FileText } from 'lucide-react'
+import { PRICING } from '@/lib/pricing-copy'
 
 export const metadata: Metadata = {
     title: 'Termos de Uso | Zacly',
@@ -55,7 +56,7 @@ export default function TermsOfUsePage() {
                     <section>
                         <h2 className="text-lg font-bold text-white mb-3">4. Planos e Pagamentos</h2>
                         <ul className="list-disc pl-6 space-y-2 text-zinc-400">
-                            <li><strong className="text-zinc-200">Plano Gratuito:</strong> limitado a 5 orçamentos por mês, com marca d&apos;água Zacly nos documentos. Disponível por tempo indeterminado, podendo ter limitações alteradas mediante aviso prévio de 30 dias.</li>
+                            <li><strong className="text-zinc-200">Plano Gratuito:</strong> limitado a {PRICING.freeQuotesPerMonth} orcamentos por mes, com marca d&apos;agua Zacly nos documentos. Disponivel por tempo indeterminado, podendo ter limitacoes alteradas mediante aviso previo de 30 dias.</li>
                             <li><strong className="text-zinc-200">Plano Pro Mensal:</strong> assinatura recorrente com cobrança automática a cada 30 dias. O valor é debitado automaticamente no cartão cadastrado até que o usuário efetue o cancelamento. O cancelamento pode ser realizado a qualquer momento pela página de configurações e terá efeito ao final do período já pago.</li>
                             <li><strong className="text-zinc-200">Plano Pro Anual:</strong> pagamento único à vista, com cobrança recorrente anual automática até o cancelamento. O cancelamento pode ser feito a qualquer momento e terá efeito ao final do período já pago.</li>
                             <li>Todos os pagamentos são processados de forma segura pelo <strong className="text-zinc-200">Stripe</strong>, sujeito à sua política de uso aceitável.</li>

@@ -1,200 +1,140 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Settings, Lock, AlignLeft, AlignCenter, AlignRight, LayoutPanelTop, PanelBottom } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import {
+    PROPOSAL_FONTS,
+    ProposalFont,
+    VISUAL_TONES,
+    VisualToneId,
+    normalizeProposalFont,
+    normalizeVisualTone,
+} from '@/lib/proposal-style'
+import { BriefcaseBusiness, Lock, MessageSquareQuote, Sparkles, SquarePen } from 'lucide-react'
 
 export interface QuoteSettingsData {
-    logoSize: 'small' | 'medium' | 'large'
-    logoPosition: 'header' | 'footer'
-    logoAlignment: 'left' | 'center' | 'right'
+    visualTone?: VisualToneId
     footerText: string
-    quote_font_family?: string
+    quote_font_family?: ProposalFont
+    logoSize?: 'small' | 'medium' | 'large'
+    logoPosition?: 'header' | 'footer'
+    logoAlignment?: 'left' | 'center' | 'right'
 }
 
 interface QuoteSettingsProps {
     settings: QuoteSettingsData | null
     plan: string | null | undefined
     onChange: (settings: QuoteSettingsData) => void
-    userId?: string
 }
 
-export function QuoteSettings({ settings, plan, onChange, userId }: QuoteSettingsProps) {
+const toneIcons: Record<VisualToneId, typeof BriefcaseBusiness> = {
+    balanced: SquarePen,
+    formal: BriefcaseBusiness,
+    creative: Sparkles,
+}
+
+export function QuoteSettings({ settings, plan, onChange }: QuoteSettingsProps) {
     const isFree = !plan || plan === 'free'
     const currentSettings: QuoteSettingsData = {
-        logoSize: settings?.logoSize || 'medium',
-        logoPosition: settings?.logoPosition || 'header',
-        logoAlignment: settings?.logoAlignment || 'left',
+        visualTone: normalizeVisualTone(settings?.visualTone),
         footerText: settings?.footerText || '',
-        quote_font_family: settings?.quote_font_family || 'Inter'
+        quote_font_family: normalizeProposalFont(settings?.quote_font_family),
     }
 
-    const handleChange = (key: keyof QuoteSettingsData, value: any) => {
+    const updateSettings = <Key extends keyof QuoteSettingsData>(key: Key, value: QuoteSettingsData[Key]) => {
         onChange({ ...currentSettings, [key]: value })
     }
 
     return (
-        <div className="space-y-10">
-            {/* --- PREMIUM TYPOGRAPHY SECTION --- */}
-            <div className="relative border rounded-2xl p-6 bg-muted/20 overflow-hidden">
-                {isFree && (
-                    <div className="absolute inset-0 bg-background/80 z-10 flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm">
-                        <div className="max-w-sm flex flex-col items-center">
-                            <div className="w-12 h-12 bg-muted text-muted-foreground rounded-full flex items-center justify-center mb-4">
-                                <Lock className="w-6 h-6" />
+        <div className="space-y-8">
+            <section className="space-y-3">
+                <Label className="text-sm font-semibold text-foreground">Tom visual</Label>
+                <RadioGroup
+                    value={currentSettings.visualTone}
+                    onValueChange={(value) => updateSettings('visualTone', normalizeVisualTone(value))}
+                    className="grid grid-cols-1 gap-3 md:grid-cols-3"
+                >
+                    {VISUAL_TONES.map((tone) => {
+                        const Icon = toneIcons[tone.id]
+
+                        return (
+                            <div key={tone.id}>
+                                <RadioGroupItem value={tone.id} id={`tone-${tone.id}`} className="peer sr-only" />
+                                <Label
+                                    htmlFor={`tone-${tone.id}`}
+                                    className="flex h-full cursor-pointer flex-col rounded-2xl border p-4 transition hover:bg-muted peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
+                                >
+                                    <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-muted text-muted-foreground peer-data-[state=checked]:text-primary">
+                                        <Icon className="h-5 w-5" />
+                                    </div>
+                                    <span className="text-sm font-bold text-foreground">{tone.name}</span>
+                                    <span className="mt-1 text-xs leading-5 text-muted-foreground">{tone.description}</span>
+                                </Label>
                             </div>
-                            <h3 className="text-lg font-bold mb-2">Recurso Premium</h3>
-                            <p className="text-sm text-muted-foreground mb-4">
-                                A tipografia premium está disponível apenas para assinantes.
-                            </p>
-                            <a href="/app/settings/billing" className="text-primary font-semibold text-sm hover:underline">
-                                Faça um upgrade agora →
-                            </a>
+                        )
+                    })}
+                </RadioGroup>
+            </section>
+
+            <div className="h-px w-full bg-border" />
+
+            <section className="relative space-y-3 rounded-2xl border bg-muted/20 p-5">
+                {isFree && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-2xl bg-background/80 p-6 text-center backdrop-blur-sm">
+                        <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                            <Lock className="h-5 w-5" />
                         </div>
+                        <h3 className="text-base font-bold text-foreground">Tipografia premium</h3>
+                        <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+                            Fontes alternativas ficam disponíveis nos planos pagos.
+                        </p>
                     </div>
                 )}
 
-                <div className={cn("space-y-8", isFree && "opacity-40 pointer-events-none select-none blur-[1px]")}>
-
-                    {/* Typography Selection (Premium) */}
-                    <div className="space-y-3">
-                        <Label className="text-sm font-semibold text-foreground">Tipografia Principal</Label>
-                        <RadioGroup
-                            value={currentSettings.quote_font_family}
-                            onValueChange={(val) => handleChange('quote_font_family', val)}
-                            className="grid grid-cols-2 lg:grid-cols-4 gap-3"
-                        >
-                            {['Inter', 'Roboto', 'Playfair Display', 'Montserrat'].map((font) => (
-                                <div key={font}>
-                                    <RadioGroupItem value={font} id={`font-${font}`} className="peer sr-only" />
-                                    <Label
-                                        htmlFor={`font-${font}`}
-                                        className="flex flex-col items-center justify-center p-4 text-sm font-medium border rounded-xl cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-muted text-muted-foreground peer-data-[state=checked]:text-foreground h-20 transition-all"
-                                        style={{ fontFamily: font === 'Inter' ? undefined : `"${font}", sans-serif` }}
-                                    >
-                                        <span className="text-2xl mb-1 text-foreground">Aa</span>
-                                        <span className="text-xs">{font}</span>
-                                    </Label>
-                                </div>
-                            ))}
-                        </RadioGroup>
-                    </div>
-                </div>
-            </div>
-
-            <div className="w-full h-px bg-border my-8"></div>
-
-            {/* --- LOGO SETTINGS SECTION --- */}
-            <div className="space-y-6">
-                <div className="mb-4">
-                    <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider text-muted-foreground/80 mb-1">Configurações da Logo</h4>
-                    <p className="text-sm text-muted-foreground">Ajuste como e onde a logo da sua empresa aparecerá na proposta.</p>
-                </div>
-                <div className="space-y-3">
-                    <Label className="text-sm font-semibold text-foreground">Tamanho da Logo na Tabela</Label>
+                <div className={cn('space-y-3', isFree && 'pointer-events-none select-none opacity-40 blur-[1px]')}>
+                    <Label className="text-sm font-semibold text-foreground">Tipografia</Label>
                     <RadioGroup
-                        value={currentSettings.logoSize}
-                        onValueChange={(val) => handleChange('logoSize', val)}
-                        className="grid grid-cols-3 gap-3"
+                        value={currentSettings.quote_font_family}
+                        onValueChange={(value) => updateSettings('quote_font_family', normalizeProposalFont(value))}
+                        className="grid grid-cols-2 gap-3 lg:grid-cols-4"
                     >
-                        {['small', 'medium', 'large'].map((size) => (
-                            <div key={size}>
-                                <RadioGroupItem value={size} id={`size-${size}`} className="peer sr-only" />
+                        {PROPOSAL_FONTS.map((font) => (
+                            <div key={font}>
+                                <RadioGroupItem value={font} id={`font-${font}`} className="peer sr-only" />
                                 <Label
-                                    htmlFor={`size-${size}`}
-                                    className="flex flex-col items-center justify-center p-3 text-sm font-medium border rounded-md cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-muted text-muted-foreground peer-data-[state=checked]:text-foreground"
+                                    htmlFor={`font-${font}`}
+                                    className="flex h-20 cursor-pointer flex-col items-center justify-center rounded-xl border p-4 text-sm font-medium text-muted-foreground transition hover:bg-muted peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-foreground"
+                                    style={{ fontFamily: font === 'Inter' ? undefined : `"${font}", sans-serif` }}
                                 >
-                                    {size === 'small' && 'Pequena'}
-                                    {size === 'medium' && 'Média'}
-                                    {size === 'large' && 'Grande'}
+                                    <span className="mb-1 text-2xl text-foreground">Aa</span>
+                                    <span className="text-xs">{font}</span>
                                 </Label>
                             </div>
                         ))}
                     </RadioGroup>
                 </div>
+            </section>
 
-                {/* Logo Position & Alignment */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                        <Label className="text-sm font-semibold text-foreground">Posição da Logo Secundária</Label>
-                        <RadioGroup
-                            value={currentSettings.logoPosition}
-                            onValueChange={(val) => handleChange('logoPosition', val)}
-                            className="grid grid-cols-2 gap-3"
-                        >
-                            {[
-                                { id: 'header', label: 'Cabeçalho', icon: LayoutPanelTop },
-                                { id: 'footer', label: 'Rodapé', icon: PanelBottom }
-                            ].map((pos) => (
-                                <div key={pos.id}>
-                                    <RadioGroupItem value={pos.id} id={`pos-${pos.id}`} className="peer sr-only" />
-                                    <Label
-                                        htmlFor={`pos-${pos.id}`}
-                                        className="flex flex-col gap-2 items-center justify-center p-3 text-sm font-medium border rounded-md cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-muted text-muted-foreground peer-data-[state=checked]:text-foreground"
-                                    >
-                                        <pos.icon className="h-5 w-5" />
-                                        {pos.label}
-                                    </Label>
-                                </div>
-                            ))}
-                        </RadioGroup>
-                    </div>
+            <div className="h-px w-full bg-border" />
 
-                    <div className="space-y-3">
-                        <Label className="text-sm font-semibold text-foreground">Alinhamento</Label>
-                        <RadioGroup
-                            value={currentSettings.logoAlignment}
-                            onValueChange={(val) => handleChange('logoAlignment', val)}
-                            className="grid grid-cols-3 gap-3"
-                        >
-                            {[
-                                { id: 'left', icon: AlignLeft },
-                                { id: 'center', icon: AlignCenter },
-                                { id: 'right', icon: AlignRight }
-                            ].map((align) => (
-                                <div key={align.id}>
-                                    <RadioGroupItem value={align.id} id={`align-${align.id}`} className="peer sr-only" />
-                                    <Label
-                                        htmlFor={`align-${align.id}`}
-                                        className="flex items-center justify-center p-3 text-sm font-medium border rounded-md cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-muted text-muted-foreground peer-data-[state=checked]:text-foreground"
-                                    >
-                                        <align.icon className="h-5 w-5" />
-                                    </Label>
-                                </div>
-                            ))}
-                        </RadioGroup>
-                    </div>
+            <section className="space-y-3">
+                <div className="flex items-center justify-between gap-4">
+                    <Label htmlFor="footerText" className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                        <MessageSquareQuote className="h-4 w-4" />
+                        Mensagem final
+                    </Label>
+                    <span className="text-xs text-muted-foreground">{currentSettings.footerText.length}/160</span>
                 </div>
-
-                <div className="w-full h-px bg-border my-8"></div>
-
-                {/* --- FOOTER SECTION --- */}
-                <div className="space-y-6">
-                    <div className="mb-4">
-                        <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider text-muted-foreground/80 mb-1">Rodapé da Proposta</h4>
-                        <p className="text-sm text-muted-foreground">Adicione uma mensagem final para todos os seus orçamentos.</p>
-                    </div>
-                    <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                            <Label htmlFor="footerText" className="text-sm font-semibold text-foreground">Frase de Rodapé</Label>
-                            <span className="text-xs text-muted-foreground">{currentSettings.footerText.length}/200</span>
-                        </div>
-                        <Textarea
-                            id="footerText"
-                            value={currentSettings.footerText}
-                            onChange={(e) => handleChange('footerText', e.target.value.slice(0, 200))}
-                            placeholder="Ex: Agradecemos a preferência! Trabalhamos sempre para o seu melhor."
-                            className="resize-none h-24 focus-visible:ring-primary"
-                        />
-                        <p className="text-[11px] text-muted-foreground">
-                            Esta mensagem aparecerá no final de todos os seus orçamentos.
-                        </p>
-                    </div>
-                </div>
-            </div>
+                <Textarea
+                    id="footerText"
+                    value={currentSettings.footerText}
+                    onChange={(event) => updateSettings('footerText', event.target.value.slice(0, 160))}
+                    placeholder="Ex: Obrigado pela confiança. Será um prazer realizar este serviço."
+                    className="h-24 resize-none focus-visible:ring-primary"
+                />
+            </section>
         </div>
     )
 }

@@ -5,7 +5,7 @@ import { SupportWidget } from '@/components/support/support-widget'
 import { createClient } from '@/lib/supabase/server'
 import { UpgradeBanner } from '@/components/upgrade-banner'
 import { PwaInstallPrompt } from '@/components/pwa-install-prompt'
-import { cookies } from 'next/headers'
+import { getActiveOrganizationId } from '@/lib/get-active-organization'
 
 export default async function DashboardLayout({
     children,
@@ -19,9 +19,7 @@ export default async function DashboardLayout({
         redirect('/login')
     }
 
-    // Read orgId from cookie (zero latency) instead of calling getActiveOrganizationId()
-    const cookieStore = await cookies()
-    const orgId = cookieStore.get("active_organization_id")?.value || null
+    const orgId = await getActiveOrganizationId(supabase)
 
     // Single parallel fetch: profile + quotes count (instead of 3 sequential calls)
     const [profileResult, quotesCountResult] = await Promise.all([

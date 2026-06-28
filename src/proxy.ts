@@ -61,7 +61,7 @@ export async function updateSession(request: NextRequest) {
     return { response, user, supabase }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     try {
         const { response, user, supabase } = await updateSession(request)
 
@@ -133,6 +133,7 @@ export async function middleware(request: NextRequest) {
             // Fazemos o rewrite invisível para a pasta /app (path === '/' vira /app, não /app/dashboard)
             const appPath = path === '/' ? '' : path;
             const appUrl = new URL(`/app${appPath}`, request.url);
+            appUrl.search = url.search;
 
             const rewriteResponse = NextResponse.rewrite(appUrl);
 
@@ -150,6 +151,7 @@ export async function middleware(request: NextRequest) {
         // Se for o domínio de Marketing (ou localhost base)
         if (isMarketingDomain) {
             const marketingUrl = new URL(`/marketing${path === '/' ? '' : path}`, request.url);
+            marketingUrl.search = url.search;
             const rewriteResponse = NextResponse.rewrite(marketingUrl);
 
             // Repassamos os cookies da sessão atualizados pelo supabase

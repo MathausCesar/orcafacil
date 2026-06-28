@@ -14,7 +14,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Trash2, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
@@ -39,7 +39,7 @@ export function DeleteClientButton({ clientId, clientName }: DeleteClientButtonP
                 setOpen(false)
                 router.refresh()
             }
-        } catch (e) {
+        } catch {
             toast.error('Erro ao excluir cliente')
         } finally {
             setLoading(false)

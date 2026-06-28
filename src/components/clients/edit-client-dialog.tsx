@@ -43,7 +43,7 @@ export function EditClientDialog({ client, trigger }: EditClientDialogProps) {
                 setOpen(false)
                 setTimeout(() => router.refresh(), 100)
             }
-        } catch (e) {
+        } catch {
             toast.error('Erro ao atualizar cliente')
         } finally {
             setLoading(false)

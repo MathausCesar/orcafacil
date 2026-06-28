@@ -2,6 +2,8 @@ import { getAdminDashboardStats } from "@/app/actions/admin"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Users, CreditCard, FileText, MessageSquare } from "lucide-react"
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminDashboardPage() {
     const stats = await getAdminDashboardStats()
 

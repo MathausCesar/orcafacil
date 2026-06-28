@@ -8,22 +8,27 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
-import { Trash2, Save, ArrowLeft, Calendar as CalendarIcon, FileText, Loader2, Settings2, Wallet, Clock, CheckCircle2, AlignLeft, LayoutTemplate, Check } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Trash2, Save, ArrowLeft, FileText, Loader2, Settings2, Wallet, Clock, CheckCircle2, AlignLeft, LayoutTemplate, Check, Package, Wrench } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { ClientAutocomplete } from '@/components/clients/client-autocomplete'
 import { useRouter } from 'next/navigation'
+import { PROPOSAL_MODELS } from '@/lib/proposal-style'
 
 export interface QuoteItem {
     id: string;
+    serviceId?: string | null;
+    itemType?: 'service' | 'product';
     description: string;
     details?: string | null;
     quantity: number;
     unitPrice: number;
+    unitCost?: number;
 }
 
 interface QuoteFormProps {
+    quickMode?: boolean
     initialData?: {
         id?: string
         clientName: string
@@ -45,7 +50,7 @@ interface QuoteFormProps {
     }
 }
 
-export function QuoteForm({ initialData }: QuoteFormProps) {
+export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
     const [items, setItems] = useState<QuoteItem[]>(initialData?.items || [])
     const [loading, setLoading] = useState(false)
     const isSubmitting = useRef(false)
@@ -67,7 +72,8 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
     )
     const [paymentMethods, setPaymentMethods] = useState<string[]>(initialData?.paymentMethods || [])
     const [installmentCount, setInstallmentCount] = useState(initialData?.installmentCount || '')
-    const [layoutStyle, setLayoutStyle] = useState(initialData?.layoutStyle || 'modern')
+    const [layoutStyle, setLayoutStyle] = useState(initialData?.layoutStyle || 'professional')
+    const [showAdvancedSettings, setShowAdvancedSettings] = useState(!quickMode)
 
     const router = useRouter()
 
@@ -79,13 +85,24 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
         }
     }, [date])
 
-    const handleAddItem = (product: { name: string; price: number; quantity: number; details?: string | null }) => {
+    const handleAddItem = (product: {
+        serviceId?: string | null
+        itemType?: 'service' | 'product'
+        name: string
+        price: number
+        quantity: number
+        details?: string | null
+        unitCost?: number
+    }) => {
         const newItem: QuoteItem = {
             id: Math.random().toString(36).substr(2, 9),
+            serviceId: product.serviceId || null,
+            itemType: product.itemType || 'service',
             description: product.name,
             details: product.details || null,
             quantity: product.quantity,
-            unitPrice: product.price
+            unitPrice: product.price,
+            unitCost: product.unitCost || 0
         }
         setItems([...items, newItem])
     }
@@ -94,7 +111,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
         setItems(items.filter(i => i.id !== id))
     }
 
-    const handleUpdateItem = (id: string, field: keyof QuoteItem, value: any) => {
+    const handleUpdateItem = <Field extends keyof QuoteItem>(id: string, field: Field, value: QuoteItem[Field]) => {
         setItems(items.map(i => i.id === id ? { ...i, [field]: value } : i))
     }
 
@@ -154,7 +171,9 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
             }
 
             if (result?.error === 'LIMIT_REACHED') {
-                const limitMessage = (result as any).message || 'Limite de orçamentos atingido.'
+                const limitMessage = 'message' in result && typeof result.message === 'string'
+                    ? result.message
+                    : 'Limite de orçamentos atingido.'
                 toast.error(limitMessage, {
                     action: {
                         label: 'Ver Planos',
@@ -172,7 +191,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                     router.push(result.redirect)
                 }
             }
-        } catch (e) {
+        } catch {
             toast.error('Erro ao salvar orçamento.')
         } finally {
             isSubmitting.current = false;
@@ -199,6 +218,15 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                 </div>
             </div>
 
+            {quickMode && (
+                <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+                    <p className="font-semibold">Modo rapido para o primeiro orcamento</p>
+                    <p className="mt-1 text-emerald-800/80">
+                        Comece com cliente, itens e observacoes. Layout, pagamento e cronograma continuam disponiveis nas configuracoes avancadas.
+                    </p>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 
                 {/* Main Column (Left) */}
@@ -219,7 +247,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                                 defaultValue={clientName}
                                 onSelect={(client) => {
                                     setClientName(client.name)
-                                    setClientPhone(client.phone)
+                                    setClientPhone(client.phone || '')
                                 }}
                             />
                             <input type="hidden" name="clientPhone" value={clientPhone} />
@@ -254,6 +282,18 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                                             <div key={item.id} className="grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-2 items-center bg-card p-4 rounded-xl border border-border shadow-sm group hover:border-primary/30 hover:shadow-md transition-all">
 
                                                 <div className="lg:col-span-5 min-w-0">
+                                                    <div className="mb-1 flex items-center gap-2">
+                                                        <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${item.itemType === 'product'
+                                                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                                                            : 'border-slate-200 bg-slate-50 text-slate-600'
+                                                            }`}>
+                                                            {item.itemType === 'product' ? <Package className="h-3 w-3" /> : <Wrench className="h-3 w-3" />}
+                                                            {item.itemType === 'product' ? 'Produto' : 'Servico'}
+                                                        </span>
+                                                        {item.itemType === 'product' && item.serviceId && (
+                                                            <span className="text-[10px] text-muted-foreground">vinculado ao estoque</span>
+                                                        )}
+                                                    </div>
                                                     <Input
                                                         value={item.description}
                                                         onChange={(e) => handleUpdateItem(item.id, 'description', e.target.value)}
@@ -368,6 +408,24 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                         </Card>
 
                         {/* Customization Options */}
+                        {quickMode && !showAdvancedSettings ? (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="h-auto w-full justify-start gap-3 rounded-2xl border-dashed p-4 text-left"
+                                onClick={() => setShowAdvancedSettings(true)}
+                            >
+                                <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                                    <Settings2 className="h-4 w-4" />
+                                </div>
+                                <span className="flex min-w-0 flex-col items-start">
+                                    <span className="font-semibold text-foreground">Mostrar configuracoes avancadas</span>
+                                    <span className="text-xs font-normal text-muted-foreground">
+                                        Escolha layout, pagamento, cronograma e detalhes extras.
+                                    </span>
+                                </span>
+                            </Button>
+                        ) : (
                         <Card className="border-0 shadow-sm ring-1 ring-border">
                             <CardHeader className="pb-3 border-b border-border bg-muted/30">
                                 <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
@@ -385,14 +443,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                                             <Label className="font-medium">Estilo da Proposta</Label>
                                         </div>
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                            {[
-                                                { id: 'modern', name: 'Moderno' },
-                                                { id: 'professional', name: 'Profissional' },
-                                                { id: 'classic', name: 'Clássico' },
-                                                { id: 'minimalist', name: 'Minimalista' },
-                                                { id: 'agency', name: 'Agência' },
-                                                { id: 'impact', name: 'Impacto' },
-                                            ].map((l) => (
+                                            {PROPOSAL_MODELS.map((l) => (
                                                 <button
                                                     key={l.id}
                                                     type="button"
@@ -546,6 +597,7 @@ export function QuoteForm({ initialData }: QuoteFormProps) {
                                 </div>
                             </CardContent>
                         </Card>
+                        )}
                     </div>
                 </div>
 

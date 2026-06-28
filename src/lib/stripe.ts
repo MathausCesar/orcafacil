@@ -1,9 +1,23 @@
 import Stripe from 'stripe';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy_key_for_build', {
-    apiVersion: '2026-02-25.clover' as any, // Use a versão mais recente
-    appInfo: {
-        name: 'Zacly App',
-        version: '0.1.0',
-    },
-});
+let stripeClient: Stripe | null = null;
+
+export function getStripe() {
+    if (!stripeClient) {
+        const secretKey = process.env.STRIPE_SECRET_KEY;
+
+        if (!secretKey) {
+            throw new Error('STRIPE_SECRET_KEY não configurada.');
+        }
+
+        stripeClient = new Stripe(secretKey, {
+            apiVersion: '2026-02-25.clover' as Stripe.LatestApiVersion,
+            appInfo: {
+                name: 'Zacly App',
+                version: '0.1.0',
+            },
+        });
+    }
+
+    return stripeClient;
+}

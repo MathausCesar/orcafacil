@@ -3,6 +3,93 @@
 import { revalidatePath } from 'next/cache'
 import { createNotification } from './notifications'
 import { getAuthContext } from '@/lib/get-auth-context'
+import { PRICING } from '@/lib/pricing-copy'
+
+type QuoteFormItem = {
+    serviceId?: string | null
+    itemType?: 'service' | 'product'
+    description: string
+    details: string | null
+    quantity: number
+    unitPrice: number
+    unitCost?: number
+}
+
+type QuoteItemPayload = {
+    quote_id: string
+    service_id?: string | null
+    item_type: 'service' | 'product'
+    description: string
+    details: string | null
+    quantity: number
+    unit_price: number
+    unit_cost: number
+}
+
+type QuoteUpdatePayload = {
+    client_name: string
+    client_phone: string
+    expiration_date: string | null
+    payment_terms: string
+    notes: string
+    total: number
+    updated_at: string
+    show_timeline: boolean
+    show_payment_options: boolean
+    show_detailed_items: boolean
+    estimated_days: number | null
+    cash_discount_type: string
+    cash_discount_percent: number
+    cash_discount_fixed: number
+    payment_methods: string[]
+    installment_count: number | null
+    layout_style: string | null
+    status?: 'draft'
+}
+
+function parseQuoteItems(itemsJson: string): QuoteFormItem[] {
+    const parsed: unknown = JSON.parse(itemsJson)
+
+    if (!Array.isArray(parsed)) {
+        return []
+    }
+
+    return parsed.map((item) => {
+        const record = item as Record<string, unknown>
+        const description = typeof record.description === 'string' ? record.description : ''
+        const details = typeof record.details === 'string' && record.details.trim() ? record.details : null
+        const quantity = Number(record.quantity)
+        const unitPrice = Number(record.unitPrice)
+        const unitCost = Number(record.unitCost)
+        const serviceId = typeof record.serviceId === 'string' && record.serviceId.trim()
+            ? record.serviceId
+            : null
+        const itemType = record.itemType === 'product' ? 'product' : 'service'
+
+        return {
+            serviceId,
+            itemType,
+            description,
+            details,
+            quantity: Number.isFinite(quantity) ? quantity : 0,
+            unitPrice: Number.isFinite(unitPrice) ? unitPrice : 0,
+            unitCost: Number.isFinite(unitCost) ? unitCost : 0,
+        }
+    })
+}
+
+function buildQuoteItems(quoteId: string, items: QuoteFormItem[]): QuoteItemPayload[] {
+    return items.map((item) => ({
+        quote_id: quoteId,
+        service_id: item.serviceId || null,
+        item_type: item.itemType || 'service',
+        description: item.description,
+        details: item.details,
+        quantity: item.quantity,
+        unit_price: item.unitPrice,
+        unit_cost: item.unitCost || 0
+    }))
+}
 
 export async function createQuote(formData: FormData) {
     const { supabase, user, orgId } = await getAuthContext()
@@ -34,8 +121,8 @@ export async function createQuote(formData: FormData) {
             .eq('organization_id', orgId)
             .gte('created_at', firstDayOfMonth.toISOString())
 
-        if (!countError && count !== null && count >= 5) {
-            return { error: 'LIMIT_REACHED', message: 'Você atingiu o limite de 5 orçamentos grátis neste mês.' }
+        if (!countError && count !== null && count >= PRICING.freeQuotesPerMonth) {
+            return { error: 'LIMIT_REACHED', message: `Voce atingiu o limite de ${PRICING.freeQuotesPerMonth} orcamentos gratis neste mes.` }
         }
     }
     // ----------------------
@@ -60,10 +147,10 @@ export async function createQuote(formData: FormData) {
     const paymentMethods = paymentMethodsStr ? JSON.parse(paymentMethodsStr) : []
     const layoutStyle = formData.get('layout_style') as string || null
 
-    const items = JSON.parse(itemsJson)
+    const items = parseQuoteItems(itemsJson)
 
     // Calcule Total
-    const total = items.reduce((acc: number, item: any) => acc + (item.quantity * item.unitPrice), 0)
+    const total = items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0)
 
     // 1. Create Quote
     const { data: quote, error: quoteError } = await supabase
@@ -98,13 +185,7 @@ export async function createQuote(formData: FormData) {
     }
 
     // 2. Create Items
-    const quoteItems = items.map((item: any) => ({
-        quote_id: quote.id,
-        description: item.description,
-        details: item.details || null,
-        quantity: item.quantity,
-        unit_price: item.unitPrice
-    }))
+    const quoteItems = buildQuoteItems(quote.id, items)
 
     const { error: itemsError } = await supabase
         .from('quote_items')
@@ -150,8 +231,8 @@ export async function updateQuote(id: string, formData: FormData) {
         return { error: 'Orçamentos em execução ou concluídos não podem ser editados.' }
     }
 
-    // If approved, reset to draft for re-approval
-    const shouldResetStatus = currentQuote.status === 'approved'
+    // If the client already decided or requested changes, editing creates a new version for re-approval.
+    const shouldResetStatus = ['approved', 'changes_requested'].includes(currentQuote.status || '')
 
     const clientName = formData.get('clientName') as string
     const clientPhone = formData.get('clientPhone') as string
@@ -173,11 +254,11 @@ export async function updateQuote(id: string, formData: FormData) {
     const paymentMethods = paymentMethodsStr ? JSON.parse(paymentMethodsStr) : []
     const layoutStyle = formData.get('layout_style') as string || null
 
-    const items = JSON.parse(itemsJson)
-    const total = items.reduce((acc: number, item: any) => acc + (item.quantity * item.unitPrice), 0)
+    const items = parseQuoteItems(itemsJson)
+    const total = items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0)
 
     // 1. Update Quote Info
-    const updateData: any = {
+    const updateData: QuoteUpdatePayload = {
         client_name: clientName,
         client_phone: clientPhone,
         expiration_date: expirationDate,
@@ -197,7 +278,7 @@ export async function updateQuote(id: string, formData: FormData) {
         layout_style: layoutStyle
     }
 
-    // Reset approved quotes back to draft for re-approval
+    // Reset decided quotes back to draft for re-approval
     if (shouldResetStatus) {
         updateData.status = 'draft'
     }
@@ -224,13 +305,7 @@ export async function updateQuote(id: string, formData: FormData) {
         return { error: 'Failed to update items' }
     }
 
-    const quoteItems = items.map((item: any) => ({
-        quote_id: id,
-        description: item.description,
-        details: item.details || null,
-        quantity: item.quantity,
-        unit_price: item.unitPrice
-    }))
+    const quoteItems = buildQuoteItems(id, items)
 
     const { error: insertError } = await supabase
         .from('quote_items')
@@ -269,10 +344,14 @@ export async function deleteQuote(id: string) {
     return { success: true }
 }
 
-export async function updateQuoteStatus(id: string, status: 'draft' | 'pending' | 'sent' | 'approved' | 'rejected' | 'in_progress' | 'completed') {
+export async function updateQuoteStatus(id: string, status: 'sent' | 'in_progress' | 'completed') {
     const { supabase } = await getAuthContext()
 
-    // Calls the security definer RPC function to allow public updates
+    if (!['sent', 'in_progress', 'completed'].includes(status)) {
+        throw new Error('Status change is not allowed for quote owners')
+    }
+
+    // Owner-controlled transitions only; client decisions use approveQuotePublic.
     const { error } = await supabase.rpc('update_quote_status', {
         quote_id: id,
         new_status: status
@@ -291,24 +370,19 @@ export async function updateQuoteStatus(id: string, status: 'draft' | 'pending' 
         .single()
 
     if (quote) {
-        const statusMessages: Record<string, { title: string; message: string; type: 'info' | 'success' | 'warning' | 'alert' }> = {
-            approved: {
-                title: '✅ Orçamento Aprovado',
-                message: `O orçamento para ${quote.client_name} foi aprovado!`,
-                type: 'success'
-            },
-            rejected: {
-                title: '❌ Orçamento Recusado',
-                message: `O orçamento para ${quote.client_name} foi recusado.`,
-                type: 'alert'
+        const statusMessages: Record<'sent' | 'in_progress' | 'completed', { title: string; message: string; type: 'info' | 'success' }> = {
+            sent: {
+                title: 'Orçamento enviado',
+                message: `O orçamento para ${quote.client_name} foi marcado como enviado.`,
+                type: 'info'
             },
             in_progress: {
-                title: '🚀 Orçamento Em Execução',
+                title: 'Orçamento em execução',
                 message: `O orçamento para ${quote.client_name} entrou em fase de execução.`,
                 type: 'info'
             },
             completed: {
-                title: '🏆 Orçamento Concluído',
+                title: 'Orçamento concluído',
                 message: `O orçamento para ${quote.client_name} foi concluído com sucesso!`,
                 type: 'success'
             }
@@ -322,4 +396,33 @@ export async function updateQuoteStatus(id: string, status: 'draft' | 'pending' 
 
     revalidatePath(`/quotes/${id}`)
     return { success: true }
+}
+
+export async function deductQuoteStock(id: string) {
+    const { supabase, user } = await getAuthContext()
+
+    if (!user) {
+        return { error: 'Unauthorized', redirect: '/login' }
+    }
+
+    const { data, error } = await supabase.rpc('consume_quote_stock', {
+        p_quote_id: id
+    })
+
+    if (error) {
+        console.error('Error consuming quote stock:', error)
+        return { error: 'Nao foi possivel baixar o estoque deste orcamento.' }
+    }
+
+    const deductedItems = typeof data === 'object' && data && 'deducted_items' in data
+        ? Number((data as { deducted_items?: unknown }).deducted_items || 0)
+        : 0
+
+    revalidatePath(`/quotes/${id}`)
+    revalidatePath('/quotes')
+    revalidatePath('/catalog')
+    revalidatePath('/profile')
+    revalidatePath('/')
+
+    return { success: true, deductedItems }
 }

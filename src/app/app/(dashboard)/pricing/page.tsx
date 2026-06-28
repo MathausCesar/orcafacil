@@ -3,13 +3,20 @@
 import { useState } from "react"
 import { CheckCircle2, Zap, Loader2, TrendingDown } from "lucide-react"
 import { toast } from "sonner"
+import {
+    PRICING,
+    YEARLY_DISCOUNT_PCT,
+    YEARLY_MONTHLY_EQUIV as YEARLY_MONTHLY_EQUIV_VALUE,
+    YEARLY_SAVINGS,
+    formatNumberBR,
+} from "@/lib/pricing-copy"
 
 // Valores fixos — altere aqui se mudar o preço
-const MONTHLY_PRICE = 49.90
-const YEARLY_PRICE = 358.80
-const YEARLY_MONTHLY_EQUIV = (YEARLY_PRICE / 12).toFixed(2)  // ~29.90
-const SAVINGS = ((MONTHLY_PRICE * 12) - YEARLY_PRICE).toFixed(2) // ~240.00
-const DISCOUNT_PCT = Math.round(((MONTHLY_PRICE * 12 - YEARLY_PRICE) / (MONTHLY_PRICE * 12)) * 100) // ~40%
+const MONTHLY_PRICE = PRICING.monthly
+const YEARLY_PRICE = PRICING.yearly
+const YEARLY_MONTHLY_EQUIV = formatNumberBR(YEARLY_MONTHLY_EQUIV_VALUE)
+const SAVINGS = formatNumberBR(YEARLY_SAVINGS)
+const DISCOUNT_PCT = YEARLY_DISCOUNT_PCT
 
 async function redirectToCheckout(plan: "monthly" | "yearly") {
     const formData = new FormData()
@@ -49,8 +56,9 @@ export default function PricingPage() {
         setLoading(plan)
         try {
             await redirectToCheckout(plan)
-        } catch (err: any) {
-            toast.error(err.message || "Não foi possível abrir o checkout. Tente novamente.")
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Não foi possível abrir o checkout. Tente novamente."
+            toast.error(message)
             setLoading(null)
         }
     }

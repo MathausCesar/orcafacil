@@ -79,17 +79,6 @@ function isCorporateClient(businessName?: string | null, clientName?: string): b
 }
 
 /**
- * Calcula a complexidade do orçamento baseado nos itens
- */
-function calculateQuoteComplexity(items: QuoteData['quote_items']): 'low' | 'medium' | 'high' {
-    const itemCount = items.length
-
-    if (itemCount <= 3) return 'low'
-    if (itemCount <= 10) return 'medium'
-    return 'high'
-}
-
-/**
  * Detecta automaticamente o perfil do cliente e retorna configuração de layout
  */
 export function detectClientProfile(
@@ -98,7 +87,6 @@ export function detectClientProfile(
 ): ProfileDetectionResult {
     const total = quote.total
     const isCorporate = isCorporateClient(profile.business_name, quote.client_name)
-    const complexity = calculateQuoteComplexity(quote.quote_items)
 
     // === CORPORATE (Alto Ticket ou Razão Social Corporativa) ===
     if (total > 5000 || isCorporate) {

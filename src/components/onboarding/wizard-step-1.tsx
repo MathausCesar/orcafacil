@@ -5,10 +5,10 @@ import { motion } from "framer-motion";
 import { Car, Hammer, Zap, Scissors, GraduationCap, Briefcase, Utensils, Palette } from "lucide-react";
 import { useOnboarding } from "@/components/onboarding/onboarding-context";
 import { getOnboardingCategories, OnboardingCategory } from "@/app/actions/onboarding";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { LucideIcon } from "lucide-react";
 
-const ICONS: Record<string, any> = {
+const ICONS: Record<string, LucideIcon> = {
     car: Car,
     hammer: Hammer,
     zap: Zap,

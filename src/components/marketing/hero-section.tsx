@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { MARKETING_COPY } from "@/lib/pricing-copy";
 
 export function HeroSection() {
     return (
@@ -47,7 +48,7 @@ export function HeroSection() {
                     transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                     className="text-lg md:text-2xl text-zinc-400 max-w-2xl font-light leading-relaxed mb-12"
                 >
-                    Crie orçamentos impecáveis com a sua logo em 1 minuto. Envie pelo WhatsApp e seja aprovado na hora.
+                    {MARKETING_COPY.corePromise}
                 </motion.p>
 
                 {/* Aggressive CTA */}
@@ -70,7 +71,7 @@ export function HeroSection() {
                     </Link>
 
                     <p className="text-sm text-zinc-500 font-medium mt-4">
-                        Sem cartão de crédito. Leva 30 segundos.
+                        {MARKETING_COPY.signupHint}
                     </p>
                 </motion.div>
 

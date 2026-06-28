@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Minus } from "lucide-react";
+import { MARKETING_COPY } from "@/lib/pricing-copy";
 
 // Keep these in sync with the JSON-LD in page.tsx
 const faqs = [
@@ -14,7 +15,7 @@ const faqs = [
     {
         question: "O Zacly é gratuito?",
         answer:
-            "Sim. O Zacly possui um plano gratuito com até 5 orçamentos por mês. Para orçamentos ilimitados e sua logo nos PDFs sem marca-d'água, o plano Pro custa a partir de R$ 29,90 por mês no plano anual.",
+            `Sim. ${MARKETING_COPY.freePlan} Para orcamentos ilimitados e sua logo nos PDFs sem marca d'agua, o ${MARKETING_COPY.proPlan}`,
     },
     {
         question: "Como o Zacly ajuda autônomos a fecharem mais vendas?",

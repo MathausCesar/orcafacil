@@ -11,6 +11,18 @@ import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
+export const dynamic = 'force-dynamic'
+
+type AdminUser = {
+    id: string
+    business_name: string | null
+    cnpj: string | null
+    email: string | null
+    updated_at: string | null
+    plan: string | null
+    subscription_status: string | null
+}
+
 export default async function AdminUsersPage() {
     const { users } = await getAdminUsers()
 
@@ -36,7 +48,7 @@ export default async function AdminUsersPage() {
                     </TableHeader>
                     <TableBody>
                         {users && users.length > 0 ? (
-                            users.map((user: any) => (
+                            users.map((user: AdminUser) => (
                                 <TableRow key={user.id}>
                                     <TableCell className="font-medium">
                                         {user.business_name || 'Não informado'}
@@ -46,8 +58,8 @@ export default async function AdminUsersPage() {
                                     </TableCell>
                                     <TableCell>{user.email}</TableCell>
                                     <TableCell>
-                                        {user.created_at
-                                            ? format(new Date(user.created_at), "dd 'de' MMM, yyyy", { locale: ptBR })
+                                        {user.updated_at
+                                            ? format(new Date(user.updated_at), "dd 'de' MMM, yyyy", { locale: ptBR })
                                             : '--'}
                                     </TableCell>
                                     <TableCell>

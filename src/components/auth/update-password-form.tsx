@@ -11,6 +11,11 @@ import { Label } from '@/components/ui/label'
 import { ArrowRight, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 
+type AuthActionResult = {
+    error?: string
+    success?: boolean
+}
+
 export function UpdatePasswordForm() {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
@@ -26,7 +31,7 @@ export function UpdatePasswordForm() {
 
         setLoading(true)
         try {
-            const result = await updatePassword(formData) as any
+            const result = await updatePassword(formData) as AuthActionResult
 
             if (result?.error) {
                 toast.error(result.error)

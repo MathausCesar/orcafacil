@@ -9,7 +9,7 @@ import { Plus, FileText, ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { cookies } from 'next/headers'
+import { getActiveOrganizationId } from '@/lib/get-active-organization'
 
 export default async function Dashboard() {
   const supabase = await createClient()
@@ -20,9 +20,7 @@ export default async function Dashboard() {
     redirect('/login')
   }
 
-  // Read orgId from cookie (zero latency)
-  const cookieStore = await cookies()
-  const orgId = cookieStore.get("active_organization_id")?.value || null
+  const orgId = await getActiveOrganizationId(supabase)
 
   // Parallel fetch: profile + recent quotes
   const [profileResult, quotesResult] = await Promise.all([
@@ -63,7 +61,7 @@ export default async function Dashboard() {
             <h2 className="text-3xl font-bold tracking-tight">Criar Novo Orçamento</h2>
             <p className="text-teal-100 font-medium">Gere propostas profissionais em segundos.</p>
           </div>
-          <Link href="/new" prefetch={true}>
+          <Link href="/new?quick=1" prefetch={true}>
             <Button size="lg" className="h-14 px-8 text-lg rounded-xl bg-background text-primary hover:bg-muted shadow-lg border-2 border-transparent transition-all hover:scale-105 active:scale-95 font-semibold">
               <Plus className="mr-2 h-6 w-6" /> Começar Agora
             </Button>

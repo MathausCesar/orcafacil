@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle2, CopyPlus, LayoutTemplate, Send, Activity, Settings2 } from "lucide-react";
+import { CopyPlus, LayoutTemplate, Send, Activity, Settings2 } from "lucide-react";
 
 const features = [
     {
@@ -72,7 +72,7 @@ export function FeatureShowcase() {
                         transition={{ delay: 0.2 }}
                         className="text-zinc-400 text-lg md:text-xl font-light leading-relaxed max-w-3xl"
                     >
-                        Nós desenhamos a trilha exata para você sair do "vou pensar" para o "pode começar amanhã". Sem fricção. Sem planilhas confusas.
+                        Nós desenhamos a trilha exata para você sair do &quot;vou pensar&quot; para o &quot;pode começar amanhã&quot;. Sem fricção. Sem planilhas confusas.
                     </motion.p>
                 </div>
 

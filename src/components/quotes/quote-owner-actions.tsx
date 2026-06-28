@@ -35,7 +35,7 @@ export function QuoteOwnerActions({ quoteId, status }: QuoteOwnerActionsProps) {
             await deleteQuote(quoteId)
             toast.success('Orçamento excluído.')
             router.push('/')
-        } catch (error) {
+        } catch {
             toast.error('Erro ao excluir.')
             setLoading(false)
         }

@@ -63,7 +63,7 @@ export function CancelSubscriptionDialog({ open, onOpenChange }: CancelSubscript
                     router.refresh()
                 }, 2000)
             }
-        } catch (e) {
+        } catch {
             toast.error('Erro inesperado. Tente novamente.')
         } finally {
             setLoading(false)

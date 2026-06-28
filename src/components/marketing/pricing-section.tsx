@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Check, X, Star } from "lucide-react";
 import Link from "next/link";
+import { PRICING, YEARLY_MONTHLY_EQUIV, YEARLY_SAVINGS, formatCurrencyBR, formatNumberBR } from "@/lib/pricing-copy";
 
 export function PricingSection() {
     return (
@@ -52,7 +53,7 @@ export function PricingSection() {
                         <ul className="space-y-4 mb-8 flex-1">
                             <li className="flex items-start gap-3">
                                 <Check className="h-5 w-5 text-emerald-500 shrink-0" />
-                                <span className="text-zinc-300 text-sm">Até 5 orçamentos p/ mês</span>
+                                <span className="text-zinc-300 text-sm">Ate {PRICING.freeQuotesPerMonth} orcamentos p/ mes</span>
                             </li>
                             <li className="flex items-start gap-3">
                                 <Check className="h-5 w-5 text-emerald-500 shrink-0" />
@@ -64,7 +65,7 @@ export function PricingSection() {
                             </li>
                             <li className="flex items-start gap-3 opacity-40">
                                 <X className="h-5 w-5 text-zinc-500 shrink-0" />
-                                <span className="text-zinc-500 text-sm">Marca d'água Zacly mantida</span>
+                                <span className="text-zinc-500 text-sm">Marca d&apos;agua Zacly mantida</span>
                             </li>
                         </ul>
                         <Link href="https://app.zacly.com.br/register">
@@ -88,19 +89,19 @@ export function PricingSection() {
 
                         <div className="mb-6 text-center">
                             <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-wide">Pro Anual</h3>
-                            <p className="text-emerald-400 text-sm font-medium">Economize R$ 240 por ano</p>
+                            <p className="text-emerald-400 text-sm font-medium">Economize {formatCurrencyBR(YEARLY_SAVINGS)} por ano</p>
                         </div>
 
                         <div className="mb-8 flex flex-col items-center">
                             <div className="flex items-end gap-1 mb-1">
-                                <span className="font-black text-6xl text-white">29<span className="text-3xl text-zinc-400">,90</span></span>
+                                <span className="font-black text-6xl text-white">{formatNumberBR(YEARLY_MONTHLY_EQUIV).split(',')[0]}<span className="text-3xl text-zinc-400">,{formatNumberBR(YEARLY_MONTHLY_EQUIV).split(',')[1]}</span></span>
                                 <span className="text-zinc-400 text-sm mb-2">/mês</span>
                             </div>
                             <p className="text-sm text-zinc-400">
-                                R$ <span className="font-bold text-white">358,80</span> cobrado à vista
+                                <span className="font-bold text-white">{formatCurrencyBR(PRICING.yearly)}</span> cobrado a vista
                             </p>
                             <p className="text-xs text-emerald-400 font-semibold mt-1">
-                                vs R$ <span className="line-through text-zinc-500">598,80</span> pagando todo mês — economia de R$ 240,00
+                                vs <span className="line-through text-zinc-500">{formatCurrencyBR(PRICING.monthly * 12)}</span> pagando todo mes - economia de {formatCurrencyBR(YEARLY_SAVINGS)}
                             </p>
                         </div>
 
@@ -127,7 +128,7 @@ export function PricingSection() {
                         <Link href="https://app.zacly.com.br/pricing">
                             <button className="relative group w-full py-4 rounded-xl bg-emerald-500 text-black font-black uppercase tracking-wide overflow-hidden hover:scale-[1.02] transition-transform">
                                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-                                <span className="relative z-10">Assinar Anual — R$ 358,80 à vista</span>
+                                <span className="relative z-10">Assinar Anual - {formatCurrencyBR(PRICING.yearly)} a vista</span>
                             </button>
                         </Link>
                     </motion.div>
@@ -148,7 +149,7 @@ export function PricingSection() {
                         <div className="mb-8">
                             <div className="flex items-end gap-1">
                                 <span className="text-lg font-bold text-zinc-500 mb-1">R$</span>
-                                <span className="font-black text-4xl text-white">49<span className="text-2xl text-zinc-500">,90</span></span>
+                                <span className="font-black text-4xl text-white">{formatNumberBR(PRICING.monthly).split(',')[0]}<span className="text-2xl text-zinc-500">,{formatNumberBR(PRICING.monthly).split(',')[1]}</span></span>
                             </div>
                             <p className="text-xs text-zinc-500 mt-1">Assinatura mensal • cancele quando quiser</p>
                         </div>

@@ -1,9 +1,20 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
-import { QuoteForm } from '@/components/quotes/quote-form'
+import { QuoteForm, type QuoteItem } from '@/components/quotes/quote-form'
 
 interface PageProps {
     params: Promise<{ id: string }>
+}
+
+type QuoteItemRecord = {
+    id: string
+    service_id?: string | null
+    item_type?: 'service' | 'product' | string | null
+    description: string
+    details?: string | null
+    quantity?: number | null
+    unit_price?: number | null
+    unit_cost?: number | null
 }
 
 export default async function EditQuotePage(props: PageProps) {
@@ -55,13 +66,16 @@ export default async function EditQuotePage(props: PageProps) {
         cashDiscountType: quote.cash_discount_type || 'percent',
         paymentMethods: quote.payment_methods || [],
         installmentCount: quote.installment_count || '',
-        layoutStyle: quote.layout_style || 'modern',
-        items: quote.quote_items.map((item: any) => ({
+        layoutStyle: quote.layout_style || 'professional',
+        items: (quote.quote_items as QuoteItemRecord[]).map((item): QuoteItem => ({
             id: item.id, // Or generate random if needed, but ID is fine
+            serviceId: item.service_id || null,
+            itemType: item.item_type === 'product' ? 'product' : 'service',
             description: item.description,
             details: item.details,
-            quantity: item.quantity,
-            unitPrice: item.unit_price
+            quantity: item.quantity || 0,
+            unitPrice: item.unit_price || 0,
+            unitCost: item.unit_cost || 0
         }))
     }
 

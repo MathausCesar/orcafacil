@@ -1,25 +1,39 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Plus, Package, Folder, Wrench } from 'lucide-react'
-import { toast } from 'sonner'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { useOrganization } from '@/contexts/organization-context'
+import { Folder, Package, Plus, Wrench } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface ProductSearchProps {
-    onAddProduct: (product: { name: string; price: number; quantity: number; details?: string | null }) => void;
+    onAddProduct: (product: {
+        serviceId?: string | null
+        itemType?: 'service' | 'product'
+        name: string
+        price: number
+        quantity: number
+        details?: string | null
+        unitCost?: number
+    }) => void
 }
 
 interface SavedService {
     id: string
     description: string
     default_price: number
-    type?: 'service' | 'product'
+    type?: 'service' | 'product' | null
     details?: string | null
     folder_id?: string | null
+    unit?: string | null
+    cost_price?: number | null
+    stock_quantity?: number | null
+    min_stock?: number | null
+    track_stock?: boolean | null
 }
 
 interface ItemFolder {
@@ -27,56 +41,77 @@ interface ItemFolder {
     name: string
 }
 
+function formatBRL(value: number) {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+}
+
+function formatQty(value: number | null | undefined, unit?: string | null) {
+    return `${Number(value || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ${unit || 'un'}`
+}
+
 export function ProductSearch({ onAddProduct }: ProductSearchProps) {
+    const { organization } = useOrganization()
     const [description, setDescription] = useState('')
     const [price, setPrice] = useState('')
     const [quantity, setQuantity] = useState('1')
     const [savedServices, setSavedServices] = useState<SavedService[]>([])
     const [folders, setFolders] = useState<ItemFolder[]>([])
     const [suggestions, setSuggestions] = useState<SavedService[]>([])
+    const [selectedService, setSelectedService] = useState<SavedService | null>(null)
+    const [selectedDetails, setSelectedDetails] = useState<string | null>(null)
     const [showSuggestions, setShowSuggestions] = useState(false)
     const suggestionsRef = useRef<HTMLDivElement>(null)
 
-    // Load saved services on mount
     useEffect(() => {
         const loadServices = async () => {
+            if (!organization?.id) {
+                setSavedServices([])
+                setFolders([])
+                return
+            }
+
             const supabase = createClient()
             const { data } = await supabase
                 .from('services')
-                .select('*')
+                .select('id, description, default_price, type, details, folder_id, unit, cost_price, stock_quantity, min_stock, track_stock')
+                .eq('organization_id', organization.id)
                 .order('description')
 
             const { data: folderData } = await supabase
                 .from('item_folders')
                 .select('id, name')
+                .eq('organization_id', organization.id)
 
             if (folderData) setFolders(folderData)
             if (data) setSavedServices(data)
         }
-        loadServices()
-    }, [])
 
-    // Close suggestions on outside click
+        loadServices()
+    }, [organization?.id])
+
     useEffect(() => {
-        const handleClick = (e: MouseEvent) => {
-            if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node)) {
+        const handleClick = (event: MouseEvent) => {
+            if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node)) {
                 setShowSuggestions(false)
             }
         }
+
         document.addEventListener('mousedown', handleClick)
         return () => document.removeEventListener('mousedown', handleClick)
     }, [])
 
     const handleDescriptionChange = (value: string) => {
         setDescription(value)
+        setSelectedService(null)
+        setSelectedDetails(null)
+
         if (value.trim().length > 0) {
-            const filtered = savedServices.filter(s =>
-                s.description.toLowerCase().includes(value.toLowerCase())
+            const filtered = savedServices.filter((service) =>
+                service.description.toLowerCase().includes(value.toLowerCase())
             )
             setSuggestions(filtered)
             setShowSuggestions(filtered.length > 0)
         } else {
-            // Show all services when input is empty
             setSuggestions(savedServices)
             setShowSuggestions(savedServices.length > 0)
         }
@@ -85,57 +120,77 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
     const selectSuggestion = (service: SavedService) => {
         setDescription(service.description)
         setPrice(service.default_price.toString())
-        // Store details in state or just trigger immediately? 
-        // We can just keep a ref/state of the selected service details
         setSelectedDetails(service.details || null)
+        setSelectedService(service)
         setShowSuggestions(false)
     }
 
-    const [selectedDetails, setSelectedDetails] = useState<string | null>(null)
-
     const handleAdd = () => {
         if (!description.trim()) {
-            toast.error('Informe a descrição do item.')
+            toast.error('Informe a descricao do item.')
             return
         }
-        const priceVal = parseFloat(price.replace(',', '.')) || 0
-        const qtyVal = parseFloat(quantity) || 1
+
+        const priceVal = Number(price.replace(',', '.')) || 0
+        const qtyVal = Number(quantity.replace(',', '.')) || 1
 
         if (priceVal <= 0) {
-            toast.warning('O preço deve ser maior que zero.')
+            toast.warning('O preco deve ser maior que zero.')
             return
         }
 
-        onAddProduct({ name: description.trim(), price: priceVal, quantity: qtyVal, details: selectedDetails })
+        if (qtyVal <= 0) {
+            toast.warning('A quantidade deve ser maior que zero.')
+            return
+        }
+
+        if (
+            selectedService?.type === 'product' &&
+            selectedService.track_stock &&
+            typeof selectedService.stock_quantity === 'number' &&
+            qtyVal > selectedService.stock_quantity
+        ) {
+            toast.warning('Quantidade acima do estoque atual. O item foi adicionado para voce decidir depois.')
+        }
+
+        onAddProduct({
+            serviceId: selectedService?.id || null,
+            itemType: selectedService?.type === 'product' ? 'product' : 'service',
+            name: description.trim(),
+            price: priceVal,
+            quantity: qtyVal,
+            details: selectedDetails,
+            unitCost: selectedService?.cost_price || 0,
+        })
+
         setDescription('')
         setPrice('')
         setQuantity('1')
         setSelectedDetails(null)
+        setSelectedService(null)
         toast.success('Item adicionado!')
     }
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            e.preventDefault()
+    const handleKeyDown = (event: React.KeyboardEvent) => {
+        if (event.key === 'Enter') {
+            event.preventDefault()
             handleAdd()
         }
     }
 
-    const formatBRL = (v: number) =>
-        new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
-
     return (
-        <div className="space-y-4 p-4 bg-primary/5 rounded-lg border border-primary/10">
+        <div className="space-y-4 rounded-lg border border-primary/10 bg-primary/5 p-4">
             <div className="relative" ref={suggestionsRef}>
                 <div className="space-y-1">
-                    <Label htmlFor="itemName" className="text-xs font-medium text-muted-foreground">Descrição do Item / Serviço</Label>
+                    <Label htmlFor="itemName" className="text-xs font-medium text-muted-foreground">
+                        Item ou servico
+                    </Label>
                     <Input
                         id="itemName"
-                        placeholder="Ex: Troca de Óleo, Pastilha de Freio..."
+                        placeholder="Ex: Troca de oleo, pastilha de freio..."
                         value={description}
-                        onChange={(e) => handleDescriptionChange(e.target.value)}
+                        onChange={(event) => handleDescriptionChange(event.target.value)}
                         onFocus={() => {
-                            // Show all services on focus if input is empty
                             if (description.trim().length === 0 && savedServices.length > 0) {
                                 setSuggestions(savedServices)
                                 setShowSuggestions(true)
@@ -149,97 +204,132 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
                     />
                 </div>
 
-                {/* Suggestions dropdown */}
                 {showSuggestions && (
-                    <div className="absolute z-20 left-0 right-0 top-full mt-1 bg-card border border-primary/15 rounded-lg shadow-lg max-h-64 overflow-y-auto">
-                        {(() => {
-                            // Group suggestions by folder
-                            const grouped = suggestions.reduce((acc, curr) => {
-                                const key = curr.folder_id || 'none'
-                                if (!acc[key]) acc[key] = []
-                                acc[key].push(curr)
-                                return acc
-                            }, {} as Record<string, typeof suggestions>)
+                    <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-72 overflow-y-auto rounded-lg border border-primary/15 bg-card shadow-lg">
+                        {Object.entries(
+                            suggestions.reduce((groups, current) => {
+                                const key = current.folder_id || 'none'
+                                if (!groups[key]) groups[key] = []
+                                groups[key].push(current)
+                                return groups
+                            }, {} as Record<string, SavedService[]>)
+                        ).map(([folderId, items]) => {
+                            const folderName = folderId === 'none'
+                                ? 'Itens sem pasta'
+                                : folders.find((folder) => folder.id === folderId)?.name || 'Pasta'
 
-                            return Object.entries(grouped).map(([folderId, items]) => {
-                                const folderName = folderId === 'none' ? 'Itens sem pasta' : folders.find(f => f.id === folderId)?.name || 'Pasta Desconhecida'
+                            return (
+                                <div key={folderId} className="border-b border-primary/10 last:border-0">
+                                    <div className="sticky top-0 z-10 flex items-center gap-1.5 border-y border-border/50 bg-muted/80 px-3 py-1.5">
+                                        <Folder className="h-3 w-3 text-muted-foreground" />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                            {folderName}
+                                        </span>
+                                    </div>
 
-                                return (
-                                    <div key={folderId} className="border-b border-primary/10 last:border-0 pb-1">
-                                        <div className="px-3 py-1.5 bg-muted/50 border-y border-border/50 flex items-center gap-1.5 sticky top-0 z-10">
-                                            <Folder className="h-3 w-3 text-muted-foreground" />
-                                            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider sticky top-0">
-                                                {folderName}
-                                            </span>
-                                        </div>
-                                        {items.map((s) => (
+                                    {items.map((service) => {
+                                        const isProduct = service.type === 'product'
+                                        const hasLowStock = isProduct &&
+                                            service.track_stock &&
+                                            Number(service.stock_quantity || 0) <= Number(service.min_stock || 0)
+
+                                        return (
                                             <button
-                                                key={s.id}
+                                                key={service.id}
                                                 type="button"
-                                                className="w-full text-left px-3 py-2.5 hover:bg-primary/5 transition-colors flex flex-col items-start border-b border-border/30 last:border-0"
-                                                onClick={() => selectSuggestion(s)}
+                                                className="flex w-full flex-col items-start border-b border-border/30 px-3 py-2.5 text-left transition-colors last:border-0 hover:bg-primary/5"
+                                                onClick={() => selectSuggestion(service)}
                                             >
-                                                <div className="flex justify-between items-center w-full">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-sm font-medium text-foreground">{s.description}</span>
-                                                        <Badge variant="outline" className="text-[10px] py-0 h-4 border-border text-muted-foreground font-normal">
-                                                            {s.type === 'product' ? <Package className="h-3 w-3 mr-1" /> : <Wrench className="h-3 w-3 mr-1" />}
-                                                            {s.type === 'product' ? 'Produto' : 'Serviço'}
+                                                <div className="flex w-full items-center justify-between gap-3">
+                                                    <div className="flex min-w-0 items-center gap-2">
+                                                        <span className="truncate text-sm font-medium text-foreground">
+                                                            {service.description}
+                                                        </span>
+                                                        <Badge variant="outline" className="h-4 shrink-0 border-border py-0 text-[10px] font-normal text-muted-foreground">
+                                                            {isProduct ? <Package className="mr-1 h-3 w-3" /> : <Wrench className="mr-1 h-3 w-3" />}
+                                                            {isProduct ? 'Produto' : 'Servico'}
                                                         </Badge>
                                                     </div>
-                                                    <span className="text-xs font-semibold text-primary ml-2">{formatBRL(s.default_price)}</span>
+                                                    <span className="shrink-0 text-xs font-semibold text-primary">
+                                                        {formatBRL(service.default_price)}
+                                                    </span>
                                                 </div>
-                                                {s.details && (
-                                                    <p className="text-[10px] text-muted-foreground mt-1 truncate max-w-sm">{s.details}</p>
-                                                )}
+
+                                                <div className="mt-1 flex w-full flex-wrap items-center gap-2">
+                                                    {service.details && (
+                                                        <span className="max-w-sm truncate text-[10px] text-muted-foreground">
+                                                            {service.details}
+                                                        </span>
+                                                    )}
+                                                    {isProduct && service.track_stock && (
+                                                        <span className="text-[10px] font-semibold text-muted-foreground">
+                                                            Estoque: {formatQty(service.stock_quantity, service.unit)}
+                                                        </span>
+                                                    )}
+                                                    {hasLowStock && (
+                                                        <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                                                            baixo estoque
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </button>
-                                        ))}
-                                    </div>
-                                )
-                            })
-                        })()}
+                                        )
+                                    })}
+                                </div>
+                            )
+                        })}
                     </div>
                 )}
             </div>
 
-            <div className="flex gap-3 items-end">
-                <div className="w-24 space-y-1">
-                    <Label htmlFor="itemQty" className="text-xs font-medium text-muted-foreground">Qtd</Label>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div className="w-full space-y-1 sm:w-24">
+                    <Label htmlFor="itemQty" className="text-xs font-medium text-muted-foreground">
+                        Qtd
+                    </Label>
                     <Input
                         id="itemQty"
                         type="number"
-                        min="1"
+                        min="0.01"
+                        step="0.01"
                         value={quantity}
-                        onChange={(e) => setQuantity(e.target.value)}
+                        onChange={(event) => setQuantity(event.target.value)}
                         onKeyDown={handleKeyDown}
                         className="focus-visible:ring-primary"
                     />
                 </div>
 
                 <div className="flex-1 space-y-1">
-                    <Label htmlFor="itemPrice" className="text-xs font-medium text-muted-foreground">Valor Unit. (R$)</Label>
+                    <Label htmlFor="itemPrice" className="text-xs font-medium text-muted-foreground">
+                        Valor unitario (R$)
+                    </Label>
                     <Input
                         id="itemPrice"
                         type="number"
                         step="0.01"
                         placeholder="0,00"
                         value={price}
-                        onChange={(e) => setPrice(e.target.value)}
+                        onChange={(event) => setPrice(event.target.value)}
                         onKeyDown={handleKeyDown}
                         className="focus-visible:ring-primary"
                     />
                 </div>
 
-                <Button onClick={handleAdd} disabled={!description.trim()} className="bg-gradient-to-r from-primary to-emerald-600 text-white hover:from-primary/90 hover:to-emerald-600/90 shadow-md shadow-primary/20">
+                <Button
+                    type="button"
+                    onClick={handleAdd}
+                    disabled={!description.trim()}
+                    className="bg-gradient-to-r from-primary to-emerald-600 text-white shadow-md shadow-primary/20 hover:from-primary/90 hover:to-emerald-600/90"
+                >
                     <Plus className="mr-2 h-4 w-4" /> Adicionar
                 </Button>
             </div>
 
-            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+            <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
                 <Package className="h-3 w-3" />
                 {savedServices.length > 0
-                    ? 'Dica: Digite para buscar nos seus serviços salvos. O preço será preenchido automaticamente.'
-                    : 'Dica: Cadastre serviços no seu Perfil para agilizar seus orçamentos.'
+                    ? 'Produtos do catalogo mantem vinculo com estoque. Itens digitados manualmente ficam livres.'
+                    : 'Cadastre servicos e produtos no catalogo para agilizar os orcamentos.'
                 }
             </p>
         </div>

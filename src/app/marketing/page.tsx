@@ -6,6 +6,7 @@ import { FaqSection } from "@/components/marketing/faq-section";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import type { Metadata } from 'next';
+import { MARKETING_COPY, PRICING, YEARLY_SAVINGS, formatCurrencyBR } from "@/lib/pricing-copy";
 
 const BASE_URL = "https://zacly.com.br";
 
@@ -25,11 +26,11 @@ const jsonLdSoftware = {
             price: "0",
             priceCurrency: "BRL",
             name: "Plano Básico Grátis",
-            description: "5 orçamentos por mês sem custo.",
+            description: MARKETING_COPY.freePlan,
         },
         {
             "@type": "Offer",
-            price: "49.90",
+            price: PRICING.monthly.toFixed(2),
             priceCurrency: "BRL",
             priceSpecification: {
                 "@type": "UnitPriceSpecification",
@@ -37,14 +38,14 @@ const jsonLdSoftware = {
                 unitCode: "MON",
             },
             name: "Zacly Pro Mensal",
-            description: "Orçamentos ilimitados, sua logomarca, sem marca-d'água.",
+            description: "Orcamentos ilimitados, sua logomarca e visual Pro sem marca Zacly.",
         },
         {
             "@type": "Offer",
-            price: "358.80",
+            price: PRICING.yearly.toFixed(2),
             priceCurrency: "BRL",
             name: "Zacly Pro Anual",
-            description: "Economize R$ 240 por ano. Tudo do Pro Mensal com desconto.",
+            description: `Economize ${formatCurrencyBR(YEARLY_SAVINGS)} por ano. Tudo do Pro Mensal com desconto.`,
         },
     ],
     aggregateRating: {
@@ -79,7 +80,7 @@ const jsonLdFaq = {
             name: "O Zacly é gratuito?",
             acceptedAnswer: {
                 "@type": "Answer",
-                text: "Sim. O Zacly possui um plano gratuito com até 5 orçamentos por mês. Para orçamentos ilimitados e sua logo nos PDFs sem marca-d'água, o plano Pro custa a partir de R$ 29,90 por mês no plano anual.",
+                text: `Sim. ${MARKETING_COPY.freePlan} Para orcamentos ilimitados e sua logo nos PDFs sem marca Zacly, o ${MARKETING_COPY.proPlan}`,
             },
         },
         {

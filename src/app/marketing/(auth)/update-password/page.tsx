@@ -1,8 +1,6 @@
 import { Metadata } from 'next'
 import { UpdatePasswordForm } from '@/components/auth/update-password-form'
 import { Suspense } from 'react'
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 
 export const metadata: Metadata = {
     title: 'Redefinir Senha',

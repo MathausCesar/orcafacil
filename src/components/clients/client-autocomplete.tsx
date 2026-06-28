@@ -7,11 +7,15 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Plus, User, Search } from 'lucide-react'
 import { CreateClientDialog } from '@/components/clients/create-client-dialog'
-import { useDebounce } from '@/hooks/use-debounce'
-// Criarei useDebounce inline ou utils se nao tiver
+
+export type ClientOption = {
+    id?: string
+    name: string
+    phone?: string | null
+}
 
 interface ClientAutocompleteProps {
-    onSelect: (client: any) => void;
+    onSelect: (client: ClientOption) => void;
     defaultValue?: string;
     defaultPhone?: string;
 }
@@ -19,10 +23,15 @@ interface ClientAutocompleteProps {
 export function ClientAutocomplete({ onSelect, defaultValue, defaultPhone }: ClientAutocompleteProps) {
     const [query, setQuery] = useState(defaultValue || '')
     const [phone, setPhone] = useState(defaultPhone || '')
-    const [allClients, setAllClients] = useState<any[]>([])
-    const [suggestions, setSuggestions] = useState<any[]>([])
+    const [allClients, setAllClients] = useState<ClientOption[]>([])
     const [showSuggestions, setShowSuggestions] = useState(false)
     const [loading, setLoading] = useState(false)
+    const normalizedQuery = query.trim().toLowerCase()
+    const suggestions = normalizedQuery
+        ? allClients.filter((client) =>
+            client.name?.toLowerCase().includes(normalizedQuery) || client.phone?.includes(normalizedQuery)
+        )
+        : allClients
 
     // Load all clients on mount (once)
     useEffect(() => {
@@ -35,24 +44,7 @@ export function ClientAutocomplete({ onSelect, defaultValue, defaultPhone }: Cli
         loadAll()
     }, [])
 
-    // Filter locally as user types
-    useEffect(() => {
-        if (!showSuggestions) return
-        if (!query.trim()) {
-            setSuggestions(allClients)
-        } else {
-            const q = query.toLowerCase()
-            setSuggestions(allClients.filter(c =>
-                c.name?.toLowerCase().includes(q) || c.phone?.includes(q)
-            ))
-        }
-    }, [query, allClients, showSuggestions])
-
     const handleFocus = () => {
-        setSuggestions(query.trim()
-            ? allClients.filter(c => c.name?.toLowerCase().includes(query.toLowerCase()))
-            : allClients
-        )
         setShowSuggestions(true)
     }
 
@@ -61,14 +53,14 @@ export function ClientAutocomplete({ onSelect, defaultValue, defaultPhone }: Cli
         setTimeout(() => setShowSuggestions(false), 150)
     }
 
-    const handleSelect = (client: any) => {
+    const handleSelect = (client: ClientOption) => {
         setQuery(client.name)
         setPhone(client.phone || '')
         setShowSuggestions(false)
         onSelect(client)
     }
 
-    const handleCreateSuccess = async (newClient: any) => {
+    const handleCreateSuccess = async (newClient: ClientOption | null) => {
         setLoading(true)
         const results = await getClients('')
         setAllClients(results || [])
@@ -76,8 +68,6 @@ export function ClientAutocomplete({ onSelect, defaultValue, defaultPhone }: Cli
 
         if (newClient && newClient.name) {
             handleSelect(newClient)
-        } else {
-            setSuggestions([])
         }
     }
 

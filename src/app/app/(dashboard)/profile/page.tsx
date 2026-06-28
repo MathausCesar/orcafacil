@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, Wrench, Palette } from 'lucide-react'
+import { ArrowLeft, Boxes, Palette } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ServicesCatalog } from '@/components/profile/services-catalog'
@@ -85,10 +85,10 @@ export default async function ProfilePage() {
             <Card className="border-primary/10">
                 <CardHeader className="bg-primary/5 border-b border-primary/10">
                     <CardTitle className="text-primary flex items-center gap-2">
-                        <Wrench className="h-5 w-5" /> Meus Serviços / Produtos
+                        <Boxes className="h-5 w-5" /> Catalogo e Estoque
                     </CardTitle>
                     <p className="text-xs text-muted-foreground mt-1">
-                        Cadastre serviços e produtos para reutilizar nos orçamentos.
+                        Cadastre servicos, produtos e materiais para reutilizar nos orcamentos.
                     </p>
                 </CardHeader>
                 <CardContent className="pt-6">

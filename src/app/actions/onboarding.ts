@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import type { Database } from "@/types/database.types"
 
 export type OnboardingCategory = {
     id: string
@@ -17,6 +18,9 @@ const PRICING_MULTIPLIERS = {
     standard: 1.0,   // Base price
     premium: 1.5     // 50% markup
 }
+
+type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
+type ServiceInsert = Database['public']['Tables']['services']['Insert']
 
 export async function getOnboardingCategories(): Promise<OnboardingCategory[]> {
     const supabase = await createClient()
@@ -76,12 +80,14 @@ export async function applyOnboardingKit(
 
     try {
         // 1. Fetch the user's organization_id (required by RLS policy on services table)
-        let { data: memberData, error: memberError } = await supabase
+        const { data: initialMemberData, error: memberError } = await supabase
             .from('organization_members')
             .select('organization_id')
             .eq('user_id', userId)
             .limit(1)
             .single()
+
+        let memberData = initialMemberData
 
         // Fallback: create organization if trigger didn't fire (e.g. old accounts)
         if (memberError || !memberData?.organization_id) {
@@ -137,7 +143,7 @@ export async function applyOnboardingKit(
 
         // organization_id is required by the RLS policy "Users can insert own services"
         // which checks user_in_organization(organization_id)
-        const allItems = [
+        const allItems: ServiceInsert[] = [
             ...relevantServices.map(s => ({
                 user_id: userId,
                 organization_id: organizationId,
@@ -157,7 +163,7 @@ export async function applyOnboardingKit(
         ]
 
         // Deduplicate items by description
-        const uniqueItemsMap = new Map();
+        const uniqueItemsMap = new Map<string, ServiceInsert>();
         allItems.forEach(item => {
             if (!uniqueItemsMap.has(item.description)) {
                 uniqueItemsMap.set(item.description, item);
@@ -179,7 +185,7 @@ export async function applyOnboardingKit(
         console.log('Marking user as onboarded:', userId)
 
         // First, ensure profile exists (fallback in case trigger didn't fire)
-        const profileDataToUpsert: any = {
+        const profileDataToUpsert: ProfileInsert = {
             id: userId,
             onboarded_at: new Date().toISOString()
         };

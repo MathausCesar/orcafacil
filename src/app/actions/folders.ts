@@ -11,6 +11,12 @@ export interface ItemFolder {
     created_at: string
 }
 
+function revalidateCatalogPaths() {
+    revalidatePath('/profile')
+    revalidatePath('/catalog')
+    revalidatePath('/new')
+}
+
 export async function getFolders() {
     const { supabase, user, orgId } = await getAuthContext()
 
@@ -68,7 +74,7 @@ export async function createFolder(formData: FormData) {
         return { error: error.message }
     }
 
-    revalidatePath('/services')
+    revalidateCatalogPaths()
     return { success: true, folder: data }
 }
 
@@ -105,7 +111,7 @@ export async function updateFolder(id: string, formData: FormData) {
         return { error: error.message }
     }
 
-    revalidatePath('/services')
+    revalidateCatalogPaths()
     return { success: true, folder: data }
 }
 
@@ -130,6 +136,6 @@ export async function deleteFolder(id: string) {
         return { error: error.message }
     }
 
-    revalidatePath('/services')
+    revalidateCatalogPaths()
     return { success: true }
 }

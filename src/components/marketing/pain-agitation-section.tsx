@@ -43,7 +43,7 @@ export function PainAgitationSection() {
                             transition={{ duration: 0.6, delay: 0.2 }}
                             className="text-xl md:text-2xl text-zinc-400 font-light leading-relaxed"
                         >
-                            O cliente julga a sua capacidade técnica pela organização do seu orçamento. Mandar um texto solto no WhatsApp ou um arquivo do Excel desconfigurado é o atalho mais rápido para tomar um "Vou dar uma olhadinha e te aviso".
+                            O cliente julga a sua capacidade técnica pela organização do seu orçamento. Mandar um texto solto no WhatsApp ou um arquivo do Excel desconfigurado é o atalho mais rápido para tomar um &quot;Vou dar uma olhadinha e te aviso&quot;.
                         </motion.p>
                     </div>
 

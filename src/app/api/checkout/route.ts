@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
+import { getAppBaseUrl } from "@/lib/app-url";
+import type Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
     try {
@@ -42,9 +44,7 @@ export async function POST(req: NextRequest) {
 
         // Detecta a URL base pela origem da requisição para garantir domínio correto
         const origin = req.headers.get('origin') || req.headers.get('referer')?.split('/').slice(0, 3).join('/')
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes('localhost')
-            ? process.env.NEXT_PUBLIC_APP_URL
-            : origin || 'https://app.zacly.com.br'
+        const baseUrl = origin?.includes('localhost') ? origin : getAppBaseUrl()
 
         // Mensal = assinatura recorrente mensal
         // Anual  = assinatura recorrente anual
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
         const checkoutMode = "subscription"
 
         // Criar a Sessão de Checkout
-        const sessionPayload: any = {
+        const sessionPayload: Stripe.Checkout.SessionCreateParams = {
             payment_method_types: ["card"],
             line_items: [
                 {
@@ -78,6 +78,7 @@ export async function POST(req: NextRequest) {
             sessionPayload.customer_email = profile?.email || user.email;
         }
 
+        const stripe = getStripe();
         const stripeSession = await stripe.checkout.sessions.create(sessionPayload);
 
         if (stripeSession.url) {
@@ -88,8 +89,9 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ error: "Não foi possível criar a sessão do checkout" }, { status: 500 });
 
-    } catch (error: any) {
+    } catch (error) {
+        const message = error instanceof Error ? error.message : "Erro desconhecido";
         console.error("Stripe Checkout Error:", error);
-        return new NextResponse("Erro Interno ao abrir checkout: " + error.message, { status: 500 });
+        return new NextResponse("Erro Interno ao abrir checkout: " + message, { status: 500 });
     }
 }

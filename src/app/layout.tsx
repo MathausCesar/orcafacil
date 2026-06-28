@@ -19,6 +19,19 @@ export const metadata: Metadata = {
   description:
     "Crie orçamentos profissionais em segundos. A ferramenta ideal para autônomos e pequenos negócios gerarem propostas irresistíveis.",
   applicationName: "Zacly",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Zacly",
+    statusBarStyle: "black-translucent",
+  },
+  icons: {
+    icon: [
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   authors: [{ name: "Mathaus Cesar" }],
   keywords: ["orçamento", "proposta comercial", "gerador de orçamento", "autônomo", "freelancer", "pdf", "gestão financeira"],
   creator: "Mathaus Cesar",
@@ -93,7 +106,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
       <body
         className={`${inter.variable} font-sans antialiased`}
       >

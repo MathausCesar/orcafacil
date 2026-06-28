@@ -4,6 +4,7 @@ import { useOnboarding } from "@/components/onboarding/onboarding-context";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ArrowLeft, Check, Rocket, Store, Building2 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 export function WizardStep3() {
     const { data, updateData, nextStep, prevStep } = useOnboarding();
@@ -66,7 +67,7 @@ function TierCard({
     isSelected,
     onClick
 }: {
-    icon: any,
+    icon: LucideIcon,
     title: string,
     description: string,
     isSelected: boolean,

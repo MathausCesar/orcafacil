@@ -248,6 +248,7 @@ export type Database = {
                     delivery_days: number | null
                     email: string | null
                     id: string
+                    is_superadmin: boolean | null
                     layout_style: string | null
                     logo_url: string | null
                     onboarded_at: string | null
@@ -255,10 +256,15 @@ export type Database = {
                     phone: string | null
                     pix_discount_percent: number | null
                     plan: string | null
+                    quote_font_family: string | null
                     primary_color: string | null
                     quote_settings: Json | null
                     stripe_customer_id: string | null
+                    stripe_price_id: string | null
+                    stripe_subscription_id: string | null
                     subscription_status: string | null
+                    current_period_end: string | null
+                    cancel_at_period_end: boolean | null
                     theme_color: string | null
                     updated_at: string | null
                 }
@@ -275,6 +281,7 @@ export type Database = {
                     delivery_days?: number | null
                     email?: string | null
                     id: string
+                    is_superadmin?: boolean | null
                     layout_style?: string | null
                     logo_url?: string | null
                     onboarded_at?: string | null
@@ -282,10 +289,15 @@ export type Database = {
                     phone?: string | null
                     pix_discount_percent?: number | null
                     plan?: string | null
+                    quote_font_family?: string | null
                     primary_color?: string | null
                     quote_settings?: Json | null
                     stripe_customer_id?: string | null
+                    stripe_price_id?: string | null
+                    stripe_subscription_id?: string | null
                     subscription_status?: string | null
+                    current_period_end?: string | null
+                    cancel_at_period_end?: boolean | null
                     theme_color?: string | null
                     updated_at?: string | null
                 }
@@ -302,6 +314,7 @@ export type Database = {
                     delivery_days?: number | null
                     email?: string | null
                     id?: string
+                    is_superadmin?: boolean | null
                     layout_style?: string | null
                     logo_url?: string | null
                     onboarded_at?: string | null
@@ -309,10 +322,15 @@ export type Database = {
                     phone?: string | null
                     pix_discount_percent?: number | null
                     plan?: string | null
+                    quote_font_family?: string | null
                     primary_color?: string | null
                     quote_settings?: Json | null
                     stripe_customer_id?: string | null
+                    stripe_price_id?: string | null
+                    stripe_subscription_id?: string | null
                     subscription_status?: string | null
+                    current_period_end?: string | null
+                    cancel_at_period_end?: boolean | null
                     theme_color?: string | null
                     updated_at?: string | null
                 }
@@ -323,27 +341,39 @@ export type Database = {
                     description: string
                     details: string | null
                     id: string
+                    item_type: string
                     quantity: number | null
                     quote_id: string
+                    service_id: string | null
+                    stock_deducted_at: string | null
                     total_price: number | null
+                    unit_cost: number
                     unit_price: number | null
                 }
                 Insert: {
                     description: string
                     details?: string | null
                     id?: string
+                    item_type?: string
                     quantity?: number | null
                     quote_id: string
+                    service_id?: string | null
+                    stock_deducted_at?: string | null
                     total_price?: number | null
+                    unit_cost?: number
                     unit_price?: number | null
                 }
                 Update: {
                     description?: string
                     details?: string | null
                     id?: string
+                    item_type?: string
                     quantity?: number | null
                     quote_id?: string
+                    service_id?: string | null
+                    stock_deducted_at?: string | null
                     total_price?: number | null
+                    unit_cost?: number
                     unit_price?: number | null
                 }
                 Relationships: [
@@ -354,11 +384,20 @@ export type Database = {
                         referencedRelation: "quotes"
                         referencedColumns: ["id"]
                     },
+                    {
+                        foreignKeyName: "quote_items_service_id_fkey"
+                        columns: ["service_id"]
+                        isOneToOne: false
+                        referencedRelation: "services"
+                        referencedColumns: ["id"]
+                    },
                 ]
             }
             quotes: {
                 Row: {
                     cash_discount_percent: number | null
+                    client_responded_at: string | null
+                    client_response_note: string | null
                     client_company_name: string | null
                     client_name: string
                     client_phone: string | null
@@ -374,6 +413,7 @@ export type Database = {
                     organization_id: string
                     payment_methods: string[] | null
                     payment_terms: string | null
+                    public_token: string
                     show_detailed_items: boolean | null
                     show_payment_options: boolean | null
                     show_timeline: boolean | null
@@ -384,6 +424,8 @@ export type Database = {
                 }
                 Insert: {
                     cash_discount_percent?: number | null
+                    client_responded_at?: string | null
+                    client_response_note?: string | null
                     client_company_name?: string | null
                     client_name: string
                     client_phone?: string | null
@@ -399,6 +441,7 @@ export type Database = {
                     organization_id: string
                     payment_methods?: string[] | null
                     payment_terms?: string | null
+                    public_token?: string
                     show_detailed_items?: boolean | null
                     show_payment_options?: boolean | null
                     show_timeline?: boolean | null
@@ -409,6 +452,8 @@ export type Database = {
                 }
                 Update: {
                     cash_discount_percent?: number | null
+                    client_responded_at?: string | null
+                    client_response_note?: string | null
                     client_company_name?: string | null
                     client_name?: string
                     client_phone?: string | null
@@ -424,6 +469,7 @@ export type Database = {
                     organization_id?: string
                     payment_methods?: string[] | null
                     payment_terms?: string | null
+                    public_token?: string
                     show_detailed_items?: boolean | null
                     show_payment_options?: boolean | null
                     show_timeline?: boolean | null
@@ -445,38 +491,56 @@ export type Database = {
             services: {
                 Row: {
                     category: string | null
+                    cost_price: number
                     created_at: string | null
                     default_price: number
                     description: string
                     details: string | null
                     folder_id: string | null
                     id: string
+                    min_stock: number
                     organization_id: string
+                    stock_quantity: number
+                    stock_updated_at: string | null
+                    track_stock: boolean
                     type: string | null
+                    unit: string
                     user_id: string
                 }
                 Insert: {
                     category?: string | null
+                    cost_price?: number
                     created_at?: string | null
                     default_price?: number
                     description: string
                     details?: string | null
                     folder_id?: string | null
                     id?: string
+                    min_stock?: number
                     organization_id: string
+                    stock_quantity?: number
+                    stock_updated_at?: string | null
+                    track_stock?: boolean
                     type?: string | null
+                    unit?: string
                     user_id: string
                 }
                 Update: {
                     category?: string | null
+                    cost_price?: number
                     created_at?: string | null
                     default_price?: number
                     description?: string
                     details?: string | null
                     folder_id?: string | null
                     id?: string
+                    min_stock?: number
                     organization_id?: string
+                    stock_quantity?: number
+                    stock_updated_at?: string | null
+                    track_stock?: boolean
                     type?: string | null
+                    unit?: string
                     user_id?: string
                 }
                 Relationships: [
@@ -492,6 +556,80 @@ export type Database = {
                         columns: ["organization_id"]
                         isOneToOne: false
                         referencedRelation: "organizations"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            stock_movements: {
+                Row: {
+                    created_at: string
+                    id: string
+                    movement_type: string
+                    new_quantity: number | null
+                    note: string | null
+                    organization_id: string
+                    previous_quantity: number | null
+                    quantity_delta: number
+                    quote_id: string | null
+                    quote_item_id: string | null
+                    service_id: string
+                    user_id: string
+                }
+                Insert: {
+                    created_at?: string
+                    id?: string
+                    movement_type: string
+                    new_quantity?: number | null
+                    note?: string | null
+                    organization_id: string
+                    previous_quantity?: number | null
+                    quantity_delta: number
+                    quote_id?: string | null
+                    quote_item_id?: string | null
+                    service_id: string
+                    user_id: string
+                }
+                Update: {
+                    created_at?: string
+                    id?: string
+                    movement_type?: string
+                    new_quantity?: number | null
+                    note?: string | null
+                    organization_id?: string
+                    previous_quantity?: number | null
+                    quantity_delta?: number
+                    quote_id?: string | null
+                    quote_item_id?: string | null
+                    service_id?: string
+                    user_id?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "stock_movements_organization_id_fkey"
+                        columns: ["organization_id"]
+                        isOneToOne: false
+                        referencedRelation: "organizations"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "stock_movements_quote_id_fkey"
+                        columns: ["quote_id"]
+                        isOneToOne: false
+                        referencedRelation: "quotes"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "stock_movements_quote_item_id_fkey"
+                        columns: ["quote_item_id"]
+                        isOneToOne: false
+                        referencedRelation: "quote_items"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "stock_movements_service_id_fkey"
+                        columns: ["service_id"]
+                        isOneToOne: false
+                        referencedRelation: "services"
                         referencedColumns: ["id"]
                     },
                 ]
@@ -653,6 +791,21 @@ export type Database = {
                     email_to_check: string
                 }
                 Returns: boolean
+            }
+            consume_quote_stock: {
+                Args: {
+                    p_quote_id: string
+                }
+                Returns: Json
+            }
+            record_stock_movement: {
+                Args: {
+                    p_service_id: string
+                    p_quantity_delta: number
+                    p_movement_type?: string
+                    p_note?: string | null
+                }
+                Returns: Json
             }
             user_in_organization: {
                 Args: {

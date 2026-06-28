@@ -8,6 +8,9 @@ import Image from 'next/image'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { extractPrimaryColor } from '@/lib/color-extractor'
+import type { Database } from '@/types/database.types'
+
+type ProfileUpdate = Database['public']['Tables']['profiles']['Update']
 
 interface LogoUploadProps {
     currentLogoUrl: string | null
@@ -32,11 +35,17 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
             return
         }
 
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+        if (!allowedTypes.includes(file.type)) {
+            toast.error('Envie uma imagem PNG, JPG ou WebP.')
+            return
+        }
+
         setUploading(true)
 
         try {
             const supabase = createClient()
-            const ext = file.name.split('.').pop()
+            const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg'
             const filePath = `${userId}/logo.${ext}`
 
             // Clean up any existing logo files to avoid orphaned files (e.g. user switches from .png to .jpg)
@@ -72,7 +81,7 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
                 console.warn('Could not extract color. Fallback to default.', colorError)
             }
 
-            const updatePayload: any = { logo_url: urlWithCacheBust }
+            const updatePayload: ProfileUpdate = { logo_url: urlWithCacheBust }
             if (extractedColor) {
                 updatePayload.primary_color = extractedColor
             }
@@ -136,7 +145,7 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
             <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                accept="image/jpeg,image/png,image/webp"
                 onChange={handleUpload}
                 className="hidden"
             />

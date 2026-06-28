@@ -11,18 +11,20 @@ export async function getActiveOrganizationId(
         return activeOrgId
     }
 
-    // Fallback: query only if cookie is missing
+    // Server-rendered pages can run before the client provider writes the cookie.
+    // In that case, resolve the user's first membership explicitly.
     const supabase = existingSupabase || await createClient()
-    const { data: userData } = await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!userData.user) return null
+    if (!user) return null
 
-    const { data: orgData } = await supabase
-        .from("organizations")
-        .select("id")
+    const { data: member } = await supabase
+        .from("organization_members")
+        .select("organization_id")
+        .eq("user_id", user.id)
         .order("created_at", { ascending: true })
         .limit(1)
-        .single()
+        .maybeSingle()
 
-    return orgData?.id || null
+    return member?.organization_id || null
 }

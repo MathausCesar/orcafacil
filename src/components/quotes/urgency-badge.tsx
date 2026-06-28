@@ -1,6 +1,5 @@
 import { Clock, AlertCircle } from 'lucide-react'
-import { format, addDays } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { addDays } from 'date-fns'
 
 interface UrgencyBadgeProps {
     themeColor?: string

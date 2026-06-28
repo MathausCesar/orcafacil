@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useEffect, useState } from "react"
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Database } from "@/types/database.types"
 
@@ -20,9 +20,9 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
     const [organization, setOrganization] = useState<Organization | null>(null)
     const [organizations, setOrganizations] = useState<Organization[]>([])
     const [isLoading, setIsLoading] = useState(true)
-    const supabase = createClient()
+    const [supabase] = useState(() => createClient())
 
-    const refreshOrganizations = async () => {
+    const refreshOrganizations = useCallback(async () => {
         setIsLoading(true)
         try {
             const { data: userData } = await supabase.auth.getUser()
@@ -43,22 +43,25 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
             if (orgData && orgData.length > 0) {
                 setOrganizations(orgData)
 
-                // If no organization is currently selected or the selected one is not in the list anymore
-                if (!organization || !orgData.find(o => o.id === organization.id)) {
+                setOrganization((currentOrganization) => {
+                    if (currentOrganization && orgData.find(o => o.id === currentOrganization.id)) {
+                        return currentOrganization
+                    }
+
                     // Check local storage for previously selected org
                     const savedOrgId = localStorage.getItem('activeOrganizationId')
                     const savedOrg = orgData.find(o => o.id === savedOrgId)
 
                     if (savedOrg) {
-                        setOrganization(savedOrg)
                         document.cookie = `active_organization_id=${savedOrg.id}; path=/; max-age=31536000; SameSite=Lax`
-                    } else {
-                        // Default to the first one (usually the personal workspace created in the migration)
-                        setOrganization(orgData[0])
-                        localStorage.setItem('activeOrganizationId', orgData[0].id)
-                        document.cookie = `active_organization_id=${orgData[0].id}; path=/; max-age=31536000; SameSite=Lax`
+                        return savedOrg
                     }
-                }
+
+                    // Default to the first one (usually the personal workspace created in the migration)
+                    localStorage.setItem('activeOrganizationId', orgData[0].id)
+                    document.cookie = `active_organization_id=${orgData[0].id}; path=/; max-age=31536000; SameSite=Lax`
+                    return orgData[0]
+                })
             } else {
                 setOrganizations([])
                 setOrganization(null)
@@ -68,7 +71,7 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [supabase])
 
     // Allow manual override and save to local storage
     const handleSetOrganization = (org: Organization | null) => {
@@ -91,7 +94,7 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
 
         // Listen to Auth state changes to refresh contexts
         const { data: authListener } = supabase.auth.onAuthStateChange(
-            async (event, session) => {
+            async (event) => {
                 if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
                     refreshOrganizations()
                 } else if (event === 'SIGNED_OUT') {
@@ -106,7 +109,7 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
         return () => {
             authListener.subscription.unsubscribe()
         }
-    }, [])
+    }, [refreshOrganizations, supabase.auth])
 
     return (
         <OrganizationContext.Provider value={{

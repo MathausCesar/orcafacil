@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { getAppBaseUrl } from '@/lib/app-url'
 
 export async function login(formData: FormData) {
     const supabase = await createClient()
@@ -16,7 +17,7 @@ export async function login(formData: FormData) {
     })
 
     if (error) {
-        return { error: 'Credenciais inválidas.' }
+        return { error: 'Credenciais invalidas.' }
     }
 
     revalidatePath('/', 'layout')
@@ -25,10 +26,11 @@ export async function login(formData: FormData) {
 
 export async function signInWithGoogle() {
     const supabase = await createClient()
+    const appBaseUrl = getAppBaseUrl()
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/app/auth/callback`,
+            redirectTo: `${appBaseUrl}/app/auth/callback`,
         },
     })
 
@@ -43,36 +45,22 @@ export async function signInWithGoogle() {
 
 export async function signup(formData: FormData) {
     const supabase = await createClient()
+    const appBaseUrl = getAppBaseUrl()
 
     const email = formData.get('email') as string
     const password = formData.get('password') as string
 
-    // 1. Verificar proativamente se o e-mail já existe contornando a prevenção de enumeração
-    const { data: emailExists, error: rpcError } = await supabase.rpc('check_email_exists', {
-        email_to_check: email
-    })
-
-    if (rpcError) {
-        console.error('Erro na verificação de email:', rpcError)
-        return { error: 'Ocorreu um erro ao validar seus dados.' }
-    }
-
-    if (emailExists) {
-        return { error: 'Este e-mail já está cadastrado em nossa base.' }
-    }
-
-    // 2. Cria conta caso o email não exista.
     const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-            // Usa NEXT_PUBLIC_APP_URL porque NEXT_PUBLIC_SITE_URL não existe no .env.local
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/app/auth/callback`,
+            emailRedirectTo: `${appBaseUrl}/app/auth/callback`,
         },
     })
 
     if (error) {
-        return { error: error.message }
+        console.error('Signup failed:', error)
+        return { error: 'Nao foi possivel concluir o cadastro. Confira os dados e tente novamente.' }
     }
 
     return { success: true }
@@ -87,12 +75,13 @@ export async function signout() {
 
 export async function requestPasswordReset(formData: FormData) {
     const supabase = await createClient()
+    const appBaseUrl = getAppBaseUrl()
     const email = formData.get('email') as string
 
-    if (!email) return { error: 'O email é obrigatório.' }
+    if (!email) return { error: 'O email e obrigatorio.' }
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/app/auth/callback?next=/update-password`,
+        redirectTo: `${appBaseUrl}/app/auth/callback?next=/update-password`,
     })
 
     if (error) {
@@ -106,10 +95,10 @@ export async function updatePassword(formData: FormData) {
     const supabase = await createClient()
     const password = formData.get('password') as string
 
-    if (!password || password.length < 6) return { error: 'A nova senha deve ter no mínimo 6 caracteres.' }
+    if (!password || password.length < 6) return { error: 'A nova senha deve ter no minimo 6 caracteres.' }
 
     const { error } = await supabase.auth.updateUser({
-        password: password
+        password: password,
     })
 
     if (error) {

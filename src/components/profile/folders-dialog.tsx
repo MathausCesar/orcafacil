@@ -68,7 +68,7 @@ export function FoldersDialog({ folders }: FoldersDialogProps) {
                 toast.success('Pasta removida.')
                 router.refresh()
             }
-        } catch (error) {
+        } catch {
             toast.error('Erro ao remover.')
         }
     }

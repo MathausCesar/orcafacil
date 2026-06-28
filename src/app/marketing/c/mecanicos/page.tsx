@@ -1,10 +1,9 @@
 import { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, CheckCircle2, Star, Zap, Clock, TrendingUp, Shield, Wrench, AlertTriangle, Quote } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Star, Clock, TrendingUp, Shield, AlertTriangle, Quote } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import { MarketingFooter } from '@/components/marketing/marketing-footer';
+import { MARKETING_COPY } from '@/lib/pricing-copy';
 
 export const metadata: Metadata = {
     title: 'Zacly | O Fim dos Orçamentos de Boca na Oficina',
@@ -51,7 +50,7 @@ export default function MechanicLandingPage() {
                                 </h1>
 
                                 <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-medium">
-                                    Pare de perder dinheiro anotando peças num bloco de papel. Gere um <strong className="text-white">PDF com a sua logo</strong> em 30 segundos, mande pelo WhatsApp e veja o cliente fechar sem choro de preço.
+                                    Pare de perder dinheiro anotando pecas num bloco de papel. {MARKETING_COPY.corePromise}
                                 </p>
 
                                 <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
@@ -64,7 +63,7 @@ export default function MechanicLandingPage() {
                                     </Link>
                                     <p className="text-sm text-zinc-500 font-medium flex items-center gap-1.5 mt-2 sm:mt-0">
                                         <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                        7 dias grátis. Não precisa de cartão.
+                                        {MARKETING_COPY.signupHint}
                                     </p>
                                 </div>
 
@@ -194,7 +193,7 @@ export default function MechanicLandingPage() {
                                 <div className="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center mb-6">
                                     <span className="text-2xl">🗣️</span>
                                 </div>
-                                <h3 className="text-xl font-bold text-white mb-3">"Não rola um desconto?"</h3>
+                                <h3 className="text-xl font-bold text-white mb-3">&quot;Não rola um desconto?&quot;</h3>
                                 <p className="text-zinc-400">Quando você manda aquele bloco de texto cru no WhatsApp, o cliente acha caro porque não vê credibilidade, e pede desconto de tudo.</p>
                             </div>
                             <div className="bg-zinc-900/80 p-8 rounded-2xl border border-zinc-700 relative">
@@ -243,7 +242,7 @@ export default function MechanicLandingPage() {
                                     <Star className="w-4 h-4 fill-current" />
                                 </div>
                                 <Quote className="w-8 h-8 text-zinc-800 mb-4" />
-                                <p className="text-zinc-300 mb-6 italic">"A aprovação dos orçamentos triplicou. O pessoal olha o PDF com a nossa logo no Zap e paga sem chorar. Deu um puta ar profissional pra oficina mecânica."</p>
+                                <p className="text-zinc-300 mb-6 italic">&quot;A aprovação dos orçamentos triplicou. O pessoal olha o PDF com a nossa logo no Zap e paga sem chorar. Deu um puta ar profissional pra oficina mecânica.&quot;</p>
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-zinc-800" style={{ backgroundImage: `url('https://i.pravatar.cc/100?img=11')`, backgroundSize: 'cover' }}></div>
                                     <div>
@@ -262,7 +261,7 @@ export default function MechanicLandingPage() {
                                     <Star className="w-4 h-4 fill-current" />
                                 </div>
                                 <Quote className="w-8 h-8 text-zinc-800 mb-4" />
-                                <p className="text-zinc-300 mb-6 italic">"A rapidez pra montar orçamento é absurda. Já salvei o preço da revisão e agora puxo no botão. Parei de perder R$ 50 no final porque esqueci de anotar peça."</p>
+                                <p className="text-zinc-300 mb-6 italic">&quot;A rapidez pra montar orçamento é absurda. Já salvei o preço da revisão e agora puxo no botão. Parei de perder R$ 50 no final porque esqueci de anotar peça.&quot;</p>
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-zinc-800" style={{ backgroundImage: `url('https://i.pravatar.cc/100?img=15')`, backgroundSize: 'cover' }}></div>
                                     <div>
@@ -281,7 +280,7 @@ export default function MechanicLandingPage() {
                                     <Star className="w-4 h-4 fill-current" />
                                 </div>
                                 <Quote className="w-8 h-8 text-zinc-800 mb-4" />
-                                <p className="text-zinc-300 mb-6 italic">"A cara do cliente quando diz 'mestre, mandou até em PDF' vale o app inteiro. Passa muita confiança. É como se a gente virasse concessionária do dia pra noite."</p>
+                                <p className="text-zinc-300 mb-6 italic">&quot;A cara do cliente quando diz &apos;mestre, mandou até em PDF&apos; vale o app inteiro. Passa muita confiança. É como se a gente virasse concessionária do dia pra noite.&quot;</p>
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-zinc-800" style={{ backgroundImage: `url('https://i.pravatar.cc/100?img=12')`, backgroundSize: 'cover' }}></div>
                                     <div>
@@ -315,7 +314,7 @@ export default function MechanicLandingPage() {
                                             <Shield className="w-6 h-6 text-white" />
                                         </div>
                                         <div>
-                                            <h4 className="text-xl font-bold text-white mb-2">Comprovante Contra o 'Choro'</h4>
+                                            <h4 className="text-xl font-bold text-white mb-2">Comprovante Contra o &apos;Choro&apos;</h4>
                                             <p className="text-zinc-400">Plaquinha de carro, quebra total mecânica vs. mão de obra. O cliente não quer pechinchar com algo que parece oficial e blindado.</p>
                                         </div>
                                     </div>

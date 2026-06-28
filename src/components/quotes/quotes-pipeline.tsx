@@ -61,6 +61,20 @@ const PIPELINE_COLUMNS = [
         dotRing: 'ring-emerald-500/30'
     },
     {
+        id: 'rejected', label: 'RECUSADO',
+        accent: 'bg-red-500', accentHex: '#ef4444',
+        color: 'text-red-600 dark:text-red-400',
+        bg: 'bg-red-500/5 dark:bg-red-500/10', border: 'border-red-500/20',
+        dotRing: 'ring-red-500/30'
+    },
+    {
+        id: 'changes_requested', label: 'AJUSTES',
+        accent: 'bg-amber-500', accentHex: '#f59e0b',
+        color: 'text-amber-600 dark:text-amber-400',
+        bg: 'bg-amber-500/5 dark:bg-amber-500/10', border: 'border-amber-500/20',
+        dotRing: 'ring-amber-500/30'
+    },
+    {
         id: 'in_progress', label: 'EM EXECUÇÃO',
         accent: 'bg-violet-500', accentHex: '#8b5cf6',
         color: 'text-violet-600 dark:text-violet-400',
@@ -81,6 +95,7 @@ const STATUS_MAP: Record<string, string> = {
     'sent': 'sent',
     'approved': 'approved',
     'rejected': 'rejected',
+    'changes_requested': 'changes_requested',
     'in_progress': 'in_progress',
     'completed': 'completed',
 }
@@ -88,6 +103,24 @@ const STATUS_MAP: Record<string, string> = {
 function getColumnId(status: string): string {
     if (status === 'draft' || status === 'pending') return 'created'
     return status
+}
+
+function canOwnerMoveToStatus(currentStatus: string, targetStatus: string) {
+    if (targetStatus === 'sent') return ['draft', 'pending', 'sent'].includes(currentStatus)
+    if (targetStatus === 'in_progress') return currentStatus === 'approved'
+    if (targetStatus === 'completed') return currentStatus === 'in_progress'
+    return false
+}
+
+function getOwnerMoveTarget(quote: Quote, direction: 'prev' | 'next') {
+    const currentIdx = PIPELINE_COLUMNS.findIndex(col => col.id === getColumnId(quote.status))
+    if (currentIdx < 0) return null
+
+    const candidates = direction === 'next'
+        ? PIPELINE_COLUMNS.slice(currentIdx + 1)
+        : PIPELINE_COLUMNS.slice(0, currentIdx).reverse()
+
+    return candidates.find(col => canOwnerMoveToStatus(quote.status, STATUS_MAP[col.id])) || null
 }
 
 // ===========================
@@ -230,6 +263,13 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
         const newStatus = STATUS_MAP[targetCol.id]
         if (!newStatus) return
 
+        if (!canOwnerMoveToStatus(quote.status, newStatus)) {
+            toast.error('Movimento nao permitido', {
+                description: 'Aprovacao e recusa so podem vir do link do cliente.',
+            })
+            return
+        }
+
         // Optimistic update
         setQuotes(prev => prev.map(q =>
             q.id === quote.id ? { ...q, status: newStatus } : q
@@ -240,7 +280,7 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
         })
 
         try {
-            await updateQuoteStatus(quote.id, newStatus as any)
+            await updateQuoteStatus(quote.id, newStatus as 'sent' | 'in_progress' | 'completed')
             router.refresh()
         } catch {
             setQuotes(prev => prev.map(q =>
@@ -281,6 +321,13 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
         const newStatus = STATUS_MAP[targetColumnId]
         if (!newStatus) return
 
+        if (!canOwnerMoveToStatus(quote.status, newStatus)) {
+            toast.error('Movimento nao permitido', {
+                description: 'Aprovacao e recusa so podem vir do link do cliente.',
+            })
+            return
+        }
+
         const targetCol = PIPELINE_COLUMNS.find(c => c.id === targetColumnId)
 
         setQuotes(prev => prev.map(q =>
@@ -292,7 +339,7 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
         })
 
         try {
-            await updateQuoteStatus(quoteId, newStatus as any)
+            await updateQuoteStatus(quoteId, newStatus as 'sent' | 'in_progress' | 'completed')
             router.refresh()
         } catch {
             setQuotes(prev => prev.map(q =>
@@ -422,9 +469,6 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                                 const colQuotes = quotes.filter(q => getColumnId(q.status) === col.id)
                                 const isCollapsed = collapsedSections.has(col.id)
                                 const isLast = colIdx === PIPELINE_COLUMNS.length - 1
-                                const isFirst = colIdx === 0
-                                const prevCol = !isFirst ? PIPELINE_COLUMNS[colIdx - 1] : null
-                                const nextCol = !isLast ? PIPELINE_COLUMNS[colIdx + 1] : null
 
                                 return (
                                     <div
@@ -462,56 +506,63 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                                         {/* Cards with action buttons */}
                                         {!isCollapsed && colQuotes.length > 0 && (
                                             <div className="space-y-2.5">
-                                                {colQuotes.map((quote) => (
-                                                    <div
-                                                        key={quote.id}
-                                                        className="group relative bg-card rounded-xl border border-border/60 shadow-sm overflow-hidden"
-                                                    >
-                                                        <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${col.accent} opacity-40`} />
+                                                {colQuotes.map((quote) => {
+                                                    const prevCol = getOwnerMoveTarget(quote, 'prev')
+                                                    const nextCol = getOwnerMoveTarget(quote, 'next')
+                                                    const prevIdx = prevCol ? PIPELINE_COLUMNS.findIndex(candidate => candidate.id === prevCol.id) : -1
+                                                    const nextIdx = nextCol ? PIPELINE_COLUMNS.findIndex(candidate => candidate.id === nextCol.id) : -1
 
-                                                        {/* Card content - clickable */}
-                                                        <Link href={`/quotes/${quote.id}`} className="flex items-center justify-between gap-3 p-4 pl-5 hover:bg-muted/30 transition-colors">
-                                                            <div className="min-w-0">
-                                                                <p className="font-semibold text-sm text-foreground truncate">
-                                                                    {quote.client_name}
+                                                    return (
+                                                        <div
+                                                            key={quote.id}
+                                                            className="group relative bg-card rounded-xl border border-border/60 shadow-sm overflow-hidden"
+                                                        >
+                                                            <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${col.accent} opacity-40`} />
+
+                                                            {/* Card content - clickable */}
+                                                            <Link href={`/quotes/${quote.id}`} className="flex items-center justify-between gap-3 p-4 pl-5 hover:bg-muted/30 transition-colors">
+                                                                <div className="min-w-0">
+                                                                    <p className="font-semibold text-sm text-foreground truncate">
+                                                                        {quote.client_name}
+                                                                    </p>
+                                                                    <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">
+                                                                        {fmtDate(quote.created_at)}
+                                                                    </p>
+                                                                </div>
+                                                                <p className="font-black text-foreground text-sm tracking-tight shrink-0">
+                                                                    {fmt(quote.total)}
                                                                 </p>
-                                                                <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">
-                                                                    {fmtDate(quote.created_at)}
-                                                                </p>
+                                                            </Link>
+
+                                                            {/* Stage navigation buttons */}
+                                                            <div className="flex items-stretch border-t border-border/40">
+                                                                {prevCol && prevIdx >= 0 ? (
+                                                                    <button
+                                                                        onClick={() => moveQuoteToStage(quote, prevIdx)}
+                                                                        className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors active:bg-muted/80 hover:bg-muted/50 ${prevCol.color}`}
+                                                                    >
+                                                                        <ChevronLeft className="h-3.5 w-3.5" />
+                                                                        {prevCol.label}
+                                                                    </button>
+                                                                ) : (
+                                                                    <div className="flex-1" />
+                                                                )}
+                                                                <div className="w-px bg-border/40" />
+                                                                {nextCol && nextIdx >= 0 ? (
+                                                                    <button
+                                                                        onClick={() => moveQuoteToStage(quote, nextIdx)}
+                                                                        className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors active:bg-muted/80 hover:bg-muted/50 ${nextCol.color}`}
+                                                                    >
+                                                                        {nextCol.label}
+                                                                        <ChevronRight className="h-3.5 w-3.5" />
+                                                                    </button>
+                                                                ) : (
+                                                                    <div className="flex-1" />
+                                                                )}
                                                             </div>
-                                                            <p className="font-black text-foreground text-sm tracking-tight shrink-0">
-                                                                {fmt(quote.total)}
-                                                            </p>
-                                                        </Link>
-
-                                                        {/* Stage navigation buttons */}
-                                                        <div className="flex items-stretch border-t border-border/40">
-                                                            {prevCol ? (
-                                                                <button
-                                                                    onClick={() => moveQuoteToStage(quote, colIdx - 1)}
-                                                                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors active:bg-muted/80 hover:bg-muted/50 ${prevCol.color}`}
-                                                                >
-                                                                    <ChevronLeft className="h-3.5 w-3.5" />
-                                                                    {prevCol.label}
-                                                                </button>
-                                                            ) : (
-                                                                <div className="flex-1" />
-                                                            )}
-                                                            <div className="w-px bg-border/40" />
-                                                            {nextCol ? (
-                                                                <button
-                                                                    onClick={() => moveQuoteToStage(quote, colIdx + 1)}
-                                                                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors active:bg-muted/80 hover:bg-muted/50 ${nextCol.color}`}
-                                                                >
-                                                                    {nextCol.label}
-                                                                    <ChevronRight className="h-3.5 w-3.5" />
-                                                                </button>
-                                                            ) : (
-                                                                <div className="flex-1" />
-                                                            )}
                                                         </div>
-                                                    </div>
-                                                ))}
+                                                    )
+                                                })}
                                             </div>
                                         )}
 

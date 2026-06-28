@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Save, Loader2, Wand2, Building2, LayoutTemplate, Palette, Rocket } from 'lucide-react'
+import { Save, Loader2, Building2, Palette, Rocket } from 'lucide-react'
 import { LogoUpload } from '@/components/profile/logo-upload'
 import { LayoutSelector } from '@/components/profile/layout-selector'
 import { QuoteSettings, QuoteSettingsData } from '@/components/profile/quote-settings'
@@ -15,15 +15,32 @@ import { toast } from 'sonner'
 import { extractColors } from 'extract-colors'
 
 interface ProfileFormProps {
-    initialProfile: any
+    initialProfile: {
+        address?: string | null
+        address_number?: string | null
+        business_name?: string | null
+        cep?: string | null
+        city?: string | null
+        cnpj?: string | null
+        complement?: string | null
+        email?: string | null
+        layout_style?: string | null
+        logo_url?: string | null
+        neighborhood?: string | null
+        phone?: string | null
+        plan?: string | null
+        quote_settings?: unknown
+        state?: string | null
+        theme_color?: string | null
+    } | null
     userId: string
 }
 
 export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
     const [loading, setLoading] = useState(false)
     const [themeColor, setThemeColor] = useState(initialProfile?.theme_color || '#0D9B5C')
-    const [layoutStyle, setLayoutStyle] = useState(initialProfile?.layout_style || 'modern')
-    const [logoUrl, setLogoUrl] = useState(initialProfile?.logo_url)
+    const [layoutStyle, setLayoutStyle] = useState(initialProfile?.layout_style || 'professional')
+    const [logoUrl, setLogoUrl] = useState<string | null>(initialProfile?.logo_url || null)
     const [businessName, setBusinessName] = useState(initialProfile?.business_name || '')
 
     const [addressData, setAddressData] = useState({
@@ -73,7 +90,7 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
         if (typeof initialProfile.quote_settings === 'string') {
             try {
                 return JSON.parse(initialProfile.quote_settings) as QuoteSettingsData
-            } catch (e) {
+            } catch {
                 return null
             }
         }
@@ -121,8 +138,9 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
             } else {
                 toast.success('Perfil atualizado com sucesso!')
             }
-        } catch (e: any) {
-            toast.error(`Erro inesperado: ${e.message}`)
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Tente novamente.'
+            toast.error(`Erro inesperado: ${message}`)
         } finally {
             setLoading(false)
         }
@@ -331,10 +349,10 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                         <CardHeader className="pb-4 border-b">
                             <CardTitle className="text-lg font-semibold flex items-center gap-2">
                                 <Palette className="h-5 w-5 text-primary" />
-                                Personalização Visual e Layout Avançado
+                                Identidade da Proposta
                             </CardTitle>
                             <CardDescription>
-                                Escolha como seus clientes verão suas propostas. Cores, fontes e capas exclusivas.
+                                Defina um padrão visual seguro para suas propostas sem comprometer a leitura.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-8">
@@ -353,7 +371,6 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                                 settings={quoteSettings}
                                 plan={initialProfile?.plan}
                                 onChange={setQuoteSettings}
-                                userId={userId}
                             />
 
                         </CardContent>

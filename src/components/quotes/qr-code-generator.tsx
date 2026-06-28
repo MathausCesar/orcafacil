@@ -5,15 +5,17 @@ import QRCode from 'qrcode'
 
 interface QRCodeGeneratorProps {
     quoteId: string
+    token?: string | null
     size?: number
 }
 
-export function QRCodeGenerator({ quoteId, size = 120 }: QRCodeGeneratorProps) {
+export function QRCodeGenerator({ quoteId, token, size = 120 }: QRCodeGeneratorProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null)
 
     useEffect(() => {
         if (canvasRef.current) {
-            const url = `${window.location.origin}/quotes/${quoteId}/approve`
+            const query = token ? `?token=${encodeURIComponent(token)}` : ''
+            const url = `${window.location.origin}/quotes/${quoteId}${query}`
             QRCode.toCanvas(canvasRef.current, url, {
                 width: size,
                 margin: 1,
@@ -23,7 +25,7 @@ export function QRCodeGenerator({ quoteId, size = 120 }: QRCodeGeneratorProps) {
                 },
             })
         }
-    }, [quoteId, size])
+    }, [quoteId, token, size])
 
     return (
         <div

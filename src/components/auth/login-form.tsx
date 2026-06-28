@@ -14,12 +14,17 @@ import {
     AlertDialogContent,
     AlertDialogDescription,
     AlertDialogFooter,
-    AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Mail, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+
+type AuthActionResult = {
+    error?: string
+    success?: boolean
+    redirect?: string
+}
 
 export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | 'register' }) {
     const router = useRouter()
@@ -62,7 +67,7 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                 }
             }
 
-            const result = await action(formData) as any
+            const result = await action(formData) as AuthActionResult
 
             if (action === signup) {
                 // Inicia cooldown preventivo de 30s

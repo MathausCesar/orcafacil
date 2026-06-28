@@ -1,28 +1,45 @@
-'use client'
-
-import { Suspense } from 'react'
 import { QuoteForm } from '@/components/quotes/quote-form'
-import { useSearchParams } from 'next/navigation'
-import { Loader2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
+import { getActiveOrganizationId } from '@/lib/get-active-organization'
+import { normalizeProposalModel } from '@/lib/proposal-style'
 
-function NewQuoteContent() {
-    const searchParams = useSearchParams()
-    const defaultClientName = searchParams.get('clientName') || ''
+type NewQuotePageProps = {
+    searchParams: Promise<{ clientName?: string; quick?: string }>
+}
+
+export default async function NewQuotePage({ searchParams }: NewQuotePageProps) {
+    const { clientName, quick } = await searchParams
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    const orgId = user ? await getActiveOrganizationId(supabase) : null
+
+    const [profileResult, quoteCountResult] = user
+        ? await Promise.all([
+            supabase
+                .from('profiles')
+                .select('layout_style')
+                .eq('id', user.id)
+                .maybeSingle(),
+            orgId
+                ? supabase
+                    .from('quotes')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('organization_id', orgId)
+                : Promise.resolve({ count: 0 }),
+        ])
+        : [{ data: null }, { count: 0 }]
+
+    const profile = profileResult.data
+    const quickMode = quick === '1' || (quoteCountResult.count ?? 0) === 0
 
     return (
         <QuoteForm
+            quickMode={quickMode}
             initialData={{
-                clientName: defaultClientName,
+                clientName: clientName || '',
+                layoutStyle: normalizeProposalModel(profile?.layout_style),
                 items: []
             }}
         />
-    )
-}
-
-export default function NewQuotePage() {
-    return (
-        <Suspense fallback={<div className="p-10 text-center"><Loader2 className="animate-spin mx-auto text-primary" /> Carregando...</div>}>
-            <NewQuoteContent />
-        </Suspense>
     )
 }

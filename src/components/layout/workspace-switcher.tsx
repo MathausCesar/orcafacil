@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, ChevronsUpDown, Building2, PlusCircle, Briefcase } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Check, ChevronsUpDown, PlusCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {

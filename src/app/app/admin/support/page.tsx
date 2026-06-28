@@ -9,8 +9,9 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
-import { ptBR } from "date-fns/locale"
-import { TicketReplyDialog } from "./ticket-reply-dialog"
+import { TicketReplyDialog, type AdminSupportTicket } from "./ticket-reply-dialog"
+
+export const dynamic = 'force-dynamic'
 
 export default async function AdminSupportPage() {
     const { tickets } = await getAdminTickets()
@@ -47,7 +48,7 @@ export default async function AdminSupportPage() {
                     </TableHeader>
                     <TableBody>
                         {tickets && tickets.length > 0 ? (
-                            tickets.map((ticket: any) => (
+                            tickets.map((ticket: AdminSupportTicket) => (
                                 <TableRow key={ticket.id}>
                                     <TableCell>
                                         {format(new Date(ticket.created_at), "dd/MM/yyyy HH:mm")}

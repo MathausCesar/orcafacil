@@ -6,25 +6,38 @@ import Image from "next/image"
 
 const DISMISS_KEY = "zacly_pwa_dismissed"
 
+type NavigatorWithStandalone = Navigator & {
+    standalone?: boolean
+}
+
+type BeforeInstallPromptEvent = Event & {
+    prompt: () => Promise<void>
+    userChoice: Promise<{ outcome: "accepted" | "dismissed" }>
+}
+
 function isIOS() {
+    if (typeof navigator === "undefined") return false
     return /iphone|ipad|ipod/i.test(navigator.userAgent)
 }
 
 function isInStandaloneMode() {
+    if (typeof window === "undefined") return false
+    const navigatorWithStandalone = window.navigator as NavigatorWithStandalone
     return (
-        ("standalone" in window.navigator && (window.navigator as any).standalone) ||
+        ("standalone" in navigatorWithStandalone && navigatorWithStandalone.standalone) ||
         window.matchMedia("(display-mode: standalone)").matches
     )
 }
 
 function isMobile() {
+    if (typeof navigator === "undefined") return false
     return /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent)
 }
 
 export function PwaInstallPrompt() {
     const [show, setShow] = useState(false)
-    const [isIos, setIsIos] = useState(false)
-    const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+    const [isIos] = useState(() => isIOS())
+    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
 
     useEffect(() => {
         // Não mostrar se: já dispensou antes, não é mobile, ou já está instalado
@@ -34,12 +47,10 @@ export function PwaInstallPrompt() {
             isInStandaloneMode()
         ) return
 
-        setIsIos(isIOS())
-
         // Android/Chrome: captura o evento nativo de instalação
         const handler = (e: Event) => {
             e.preventDefault()
-            setDeferredPrompt(e)
+            setDeferredPrompt(e as BeforeInstallPromptEvent)
             setShow(true)
         }
 

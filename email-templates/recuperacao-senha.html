@@ -2,160 +2,182 @@
 <html lang="pt-BR">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recuperação de Senha - Zacly</title>
-    <style>
-        body,
-        p,
-        h1,
-        h2,
-        h3 {
-            margin: 0;
-            padding: 0;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redefina sua senha na Zacly</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #071311;
+      color: #f8fafc;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #09090b;
-            color: #fafafa;
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-        }
+    table {
+      border-collapse: collapse;
+    }
 
-        .wrapper {
-            padding: 40px 20px;
-        }
+    a {
+      color: inherit;
+    }
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #18181b;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid #27272a;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        }
+    .page {
+      width: 100%;
+      background: #071311;
+      padding: 32px 16px;
+    }
 
-        .header {
-            padding: 40px 30px 20px;
-            text-align: center;
-        }
+    .card {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      background: #0b1f1c;
+      border: 1px solid #1c3a35;
+      border-radius: 16px;
+      overflow: hidden;
+    }
 
-        .logo-text {
-            color: #fafafa;
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: -0.03em;
-            margin: 0;
-        }
+    .header {
+      padding: 32px 32px 18px;
+      border-bottom: 1px solid #1c3a35;
+    }
 
-        .accent-dot {
-            color: #36cba5;
-        }
+    .brand {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+    }
 
-        .content {
-            padding: 20px 40px 40px;
-        }
+    .brand span {
+      color: #34d399;
+    }
 
-        .title {
-            font-size: 22px;
-            font-weight: 700;
-            color: #fafafa;
-            margin-bottom: 16px;
-            letter-spacing: -0.02em;
-        }
+    .eyebrow {
+      margin-top: 10px;
+      color: #8bb8ae;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
 
-        .text {
-            font-size: 16px;
-            color: #a1a1aa;
-            margin-bottom: 24px;
-        }
+    .content {
+      padding: 32px;
+    }
 
-        .highlight {
-            color: #e4e4e7;
-            font-weight: 600;
-        }
+    .title {
+      margin: 0 0 14px;
+      color: #ffffff;
+      font-size: 24px;
+      line-height: 1.2;
+      font-weight: 800;
+    }
 
-        .cta-container {
-            text-align: center;
-            margin: 36px 0;
-        }
+    .text {
+      margin: 0 0 18px;
+      color: #c8d8d4;
+      font-size: 15px;
+    }
 
-        .btn {
-            display: inline-block;
-            background-color: #fafafa;
-            color: #09090b;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 15px;
-            padding: 14px 28px;
-            border-radius: 8px;
-            transition: background-color 0.2s;
-        }
+    .notice {
+      margin: 22px 0;
+      padding: 14px 16px;
+      background: #08231f;
+      border: 1px solid #1d4b43;
+      border-radius: 10px;
+      color: #dff7f0;
+      font-size: 14px;
+    }
 
-        .btn:hover {
-            background-color: #e4e4e7;
-        }
+    .button-wrap {
+      text-align: center;
+      padding: 12px 0 26px;
+    }
 
-        .divider {
-            height: 1px;
-            background-color: #27272a;
-            margin: 32px 0;
-        }
+    .button {
+      display: inline-block;
+      padding: 14px 24px;
+      background: #ffffff;
+      border-radius: 10px;
+      color: #04201b;
+      font-size: 15px;
+      font-weight: 800;
+      text-decoration: none;
+    }
 
-        .slogan {
-            font-weight: 600;
-            color: #e4e4e7;
-            font-size: 15px;
-        }
+    .fallback {
+      margin: 0;
+      padding: 14px;
+      background: #071814;
+      border: 1px solid #183b35;
+      border-radius: 10px;
+      color: #94aaa5;
+      font-size: 12px;
+      word-break: break-all;
+    }
 
-        .footer {
-            text-align: center;
-            padding: 0 40px 40px;
-            color: #71717a;
-            font-size: 13px;
-        }
+    .footer {
+      padding: 22px 32px 30px;
+      border-top: 1px solid #1c3a35;
+      color: #7f9993;
+      font-size: 12px;
+      text-align: center;
+    }
 
-        .footer a {
-            color: #36cba5;
-            text-decoration: none;
-            font-weight: 500;
-        }
-    </style>
+    .footer a {
+      color: #34d399;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    @media (max-width: 520px) {
+      .header,
+      .content,
+      .footer {
+        padding-left: 22px;
+        padding-right: 22px;
+      }
+
+      .title {
+        font-size: 22px;
+      }
+    }
+  </style>
 </head>
 
 <body>
-    <div class="wrapper">
-        <div class="container">
-            <div class="header">
-                <h1 class="logo-text">Zacly<span class="accent-dot">.</span></h1>
-            </div>
-            <div class="content">
-                <h2 class="title">Recuperação de Senha</h2>
-                <p class="text">Olá,</p>
-                <p class="text">Recebemos uma solicitação para redefinir a senha da sua conta na <span
-                        class="highlight">Zacly</span>.</p>
-                <p class="text">Para criar uma nova senha de forma segura, clique no botão abaixo e você será
-                    redirecionado para o aplicativo:</p>
+  <div class="page">
+    <div class="card">
+      <div class="header">
+        <div class="brand">Zacly<span>.</span></div>
+        <div class="eyebrow">Recupera&ccedil;&atilde;o de acesso</div>
+      </div>
 
-                <div class="cta-container">
-                    <a href="https://app.zacly.com.br/auth/callback?token_hash={{ .TokenHash }}&type=recovery"
-                        class="btn">Redefinir minha senha</a>
-                </div>
+      <div class="content">
+        <h1 class="title">Crie uma nova senha com seguran&ccedil;a.</h1>
+        <p class="text">Recebemos uma solicita&ccedil;&atilde;o para redefinir a senha da sua conta na Zacly.</p>
 
-                <p class="text" style="font-size: 13px; margin-bottom: 0; color: #71717a;">Se você não solicitou isso,
-                    você pode ignorar este e-mail. A sua senha atual permanecerá a mesma.</p>
-
-                <div class="divider"></div>
-                <p class="slogan">A simplicidade que seu negócio merece.</p>
-            </div>
-            <div class="footer">
-                <p style="margin-bottom: 8px;">&copy; 2026 Zacly. Todos os direitos reservados.</p>
-                <p><a href="https://app.zacly.com.br">Acessar a Plataforma</a></p>
-            </div>
+        <div class="notice">
+          O bot&atilde;o abaixo abre o app e leva voc&ecirc; direto para a tela de nova senha.
         </div>
+
+        <div class="button-wrap">
+          <a class="button" href="{{ .ConfirmationURL }}">Redefinir minha senha</a>
+        </div>
+
+        <p class="text">Se voc&ecirc; n&atilde;o solicitou essa altera&ccedil;&atilde;o, ignore este e-mail. Sua senha atual continuar&aacute; a mesma.</p>
+        <p class="fallback">Se o bot&atilde;o n&atilde;o abrir, copie e cole este link no navegador: {{ .ConfirmationURL }}</p>
+      </div>
+
+      <div class="footer">
+        Zacly - propostas, clientes e gest&atilde;o simples para aut&ocirc;nomos.<br>
+        <a href="https://app.zacly.com.br">app.zacly.com.br</a>
+      </div>
     </div>
+  </div>
 </body>
 
 </html>

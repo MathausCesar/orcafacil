@@ -9,8 +9,12 @@ export async function GET(request: NextRequest) {
     const code = searchParams.get('code')
     const token_hash = searchParams.get('token_hash')
     const type = searchParams.get('type') as EmailOtpType | null
-    // Define o padrão como /login caso não haja next param
-    const next = searchParams.get('next') ?? '/login'
+    // Links antigos de recovery podem chegar sem next.
+    const requestedNext = searchParams.get('next')
+    const fallbackNext = type === 'recovery' ? '/update-password' : '/login'
+    const next = requestedNext?.startsWith('/') && !requestedNext.startsWith('//')
+        ? requestedNext
+        : fallbackNext
 
     const redirectTo = request.nextUrl.clone()
     redirectTo.pathname = next

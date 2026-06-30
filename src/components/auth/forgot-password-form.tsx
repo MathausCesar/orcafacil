@@ -1,10 +1,10 @@
 'use client'
 
-import Image from 'next/image'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { requestPasswordReset } from '@/app/actions/auth'
+import { AuthShell } from '@/components/auth/auth-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -49,127 +49,65 @@ export function ForgotPasswordForm() {
     }
 
     return (
-        <div className="flex min-h-[85vh] w-full max-w-[1100px] overflow-hidden rounded-3xl bg-card text-card-foreground shadow-2xl ring-1 ring-border/50 mx-auto">
-            {/* Left Column: Abstract Visual */}
-            <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-teal-900 via-zinc-900 to-black p-12 text-white lg:flex">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-teal-700/20 via-transparent to-transparent"></div>
-                <div className="absolute bottom-0 left-0 h-96 w-96 -mb-20 -ml-20 rounded-full bg-primary/20 blur-3xl"></div>
-
-                <div className="relative z-10 flex items-center justify-start">
-                    <div className="relative h-20 w-48 overflow-hidden rounded-2xl bg-white/10 backdrop-blur-md ring-1 ring-white/20 p-3 flex items-center justify-center">
-                        <div className="relative h-full w-full">
-                            <Image
-                                src="/logo/logo.png"
-                                alt="Zacly Logo"
-                                fill
-                                className="object-contain"
-                                priority
-                            />
-                        </div>
-                    </div>
+        <AuthShell
+            title="Recuperar senha"
+            description="Informe seu e-mail e enviaremos um link seguro para criar uma nova senha."
+        >
+            <form action={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                    <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                        Email
+                    </Label>
+                    <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="seu@email.com"
+                        required
+                        className="h-12 rounded-xl border-zinc-800 bg-zinc-900/50 px-4 text-white placeholder:text-zinc-600 transition-all focus:border-emerald-500/50 focus:bg-zinc-900 focus:ring-4 focus:ring-emerald-500/10"
+                    />
                 </div>
 
-                <div className="relative z-10 space-y-6">
-                    <h1 className="text-4xl font-bold leading-tight tracking-tight text-white">
-                        Recupere o acesso à <br />
-                        <span className="text-accent">sua conta.</span>
-                    </h1>
-                    <p className="max-w-md text-lg text-zinc-400 font-light">
-                        Esqueceu a senha? Não tem problema, nós enviamos um link seguro para você criá-la novamente.
-                    </p>
-                </div>
-            </div>
+                <Button
+                    className="group h-12 w-full rounded-xl border border-white/10 bg-gradient-to-r from-emerald-500 to-teal-600 text-base font-semibold text-white shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.02] hover:shadow-emerald-500/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                    type="submit"
+                    disabled={loading}
+                >
+                    <span className="mr-2">{loading ? 'Enviando...' : 'Enviar link de recuperação'}</span>
+                    {!loading && <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" />}
+                </Button>
 
-            {/* Right Column: Form */}
-            <div className="flex w-full flex-col justify-center bg-card p-8 lg:w-1/2 lg:p-16">
-                <div className="mx-auto w-full max-w-[380px] space-y-8">
-                    {/* Mobile Logo */}
-                    <div className="lg:hidden text-center mb-8">
-                        <div className="relative mx-auto h-20 w-48 rounded-xl bg-muted/50 p-3 ring-1 ring-border/50 flex items-center justify-center">
-                            <div className="relative h-full w-full">
-                                <Image
-                                    src="/logo/logozacly.png"
-                                    alt="Zacly Logo"
-                                    fill
-                                    className="object-contain dark:hidden"
-                                />
-                                <Image
-                                    src="/logo/logo.png"
-                                    alt="Zacly Logo"
-                                    fill
-                                    className="object-contain hidden dark:block"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="space-y-6">
-                        <div className="space-y-1.5 text-center lg:text-left">
-                            <h3 className="text-2xl font-semibold tracking-tight text-foreground">
-                                Redefinir Senha
-                            </h3>
-                            <p className="text-sm text-muted-foreground">
-                                Informe seu e-mail cadastrado e enviaremos um link de recuperação.
-                            </p>
-                        </div>
-
-                        <form action={handleSubmit} className="space-y-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="email" className="text-xs font-medium text-foreground/80">Email</Label>
-                                <Input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    placeholder="seu@email.com"
-                                    required
-                                    className="h-11 rounded-lg border-input bg-muted/30 px-4 transition-all focus:border-primary/50 focus:bg-background focus:ring-4 focus:ring-primary/10"
-                                />
-                            </div>
-
-                            <div className="space-y-4">
-                                <Button
-                                    className="group h-11 w-full rounded-lg bg-gradient-to-r from-primary to-teal-600 text-white shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 hover:scale-[1.01] active:scale-[0.98]"
-                                    type="submit"
-                                    disabled={loading}
-                                >
-                                    <span className="mr-2 font-medium">{loading ? 'Enviando...' : 'Enviar Link de Recuperação'}</span>
-                                    {!loading && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />}
-                                </Button>
-
-                                <Link href="/login" className="flex items-center justify-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2">
-                                    <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Voltar para o login
-                                </Link>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
+                <Link href="/login" className="flex items-center justify-center py-2 text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-200">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Voltar para o login
+                </Link>
+            </form>
 
             <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-                <AlertDialogContent className="max-w-md rounded-2xl border-none p-0 shadow-2xl overflow-hidden">
-                    <div className="bg-gradient-to-br from-primary/10 to-background p-8 text-center">
-                        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/20 ring-4 ring-background">
-                            <Mail className="h-8 w-8 text-primary" />
+                <AlertDialogContent className="max-w-md overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 p-0 pt-6 text-white shadow-2xl">
+                    <div className="p-8 text-center">
+                        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 ring-4 ring-emerald-500/5">
+                            <Mail className="h-8 w-8 text-emerald-400" />
                         </div>
-                        <AlertDialogTitle className="text-xl font-semibold text-foreground">Verifique seu email</AlertDialogTitle>
-                        <AlertDialogDescription className="text-center pt-2 text-muted-foreground">
-                            Enviamos um link de redefinição para <span className="font-medium text-foreground">{emailSent}</span>.
+                        <AlertDialogTitle className="text-2xl font-bold">Verifique seu email</AlertDialogTitle>
+                        <AlertDialogDescription className="pt-3 text-center text-base text-zinc-400">
+                            Enviamos um link de redefinição para <br />
+                            <span className="font-semibold text-white">{emailSent}</span>.
                         </AlertDialogDescription>
                     </div>
-                    <AlertDialogFooter className="bg-muted/30 p-6 sm:justify-center border-t border-border">
+                    <AlertDialogFooter className="border-t border-zinc-800 bg-zinc-900/50 p-6 sm:justify-center">
                         <AlertDialogAction
                             onClick={() => {
                                 setShowSuccessDialog(false)
                                 router.push('/login')
                             }}
-                            className="w-full rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 sm:w-auto px-8"
+                            className="h-11 w-full rounded-xl bg-white px-10 font-semibold text-black hover:bg-zinc-200 sm:w-auto"
                         >
                             Entendi
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </div>
+        </AuthShell>
     )
 }

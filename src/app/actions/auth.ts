@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { getAppBaseUrl } from '@/lib/app-url'
+import { getAuthCallbackUrl } from '@/lib/app-url'
 
 export async function login(formData: FormData) {
     const supabase = await createClient()
@@ -26,11 +26,10 @@ export async function login(formData: FormData) {
 
 export async function signInWithGoogle() {
     const supabase = await createClient()
-    const appBaseUrl = getAppBaseUrl()
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `${appBaseUrl}/app/auth/callback`,
+            redirectTo: getAuthCallbackUrl(),
         },
     })
 
@@ -45,7 +44,6 @@ export async function signInWithGoogle() {
 
 export async function signup(formData: FormData) {
     const supabase = await createClient()
-    const appBaseUrl = getAppBaseUrl()
 
     const email = formData.get('email') as string
     const password = formData.get('password') as string
@@ -54,7 +52,7 @@ export async function signup(formData: FormData) {
         email,
         password,
         options: {
-            emailRedirectTo: `${appBaseUrl}/app/auth/callback`,
+            emailRedirectTo: getAuthCallbackUrl(),
         },
     })
 
@@ -75,13 +73,12 @@ export async function signout() {
 
 export async function requestPasswordReset(formData: FormData) {
     const supabase = await createClient()
-    const appBaseUrl = getAppBaseUrl()
     const email = formData.get('email') as string
 
     if (!email) return { error: 'O email e obrigatorio.' }
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${appBaseUrl}/app/auth/callback?next=/update-password`,
+        redirectTo: getAuthCallbackUrl('/update-password'),
     })
 
     if (error) {

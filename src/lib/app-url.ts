@@ -19,3 +19,13 @@ export function getAppBaseUrl() {
         return PRODUCTION_APP_URL;
     }
 }
+
+export function getAuthCallbackUrl(next?: string) {
+    const url = new URL('/auth/callback', getAppBaseUrl());
+
+    if (next) {
+        url.searchParams.set('next', next);
+    }
+
+    return url.toString();
+}

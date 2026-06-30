@@ -17,7 +17,10 @@ export async function POST(req: NextRequest) {
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
-            return NextResponse.redirect(new URL("/login", req.url));
+            return NextResponse.json(
+                { error: "Faça login para continuar para o checkout.", redirect: "/login" },
+                { status: 401 }
+            );
         }
 
         // Buscar dados do usuário

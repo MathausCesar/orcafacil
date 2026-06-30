@@ -28,6 +28,15 @@ async function redirectToCheckout(plan: "monthly" | "yearly") {
     })
 
     if (!response.ok) {
+        if (response.headers.get("content-type")?.includes("application/json")) {
+            const data = await response.json()
+            if (response.status === 401 && data.redirect) {
+                window.location.href = data.redirect
+                return
+            }
+            throw new Error(data.error || "Erro ao iniciar checkout.")
+        }
+
         const error = await response.text()
         throw new Error(error || "Erro ao iniciar checkout.")
     }

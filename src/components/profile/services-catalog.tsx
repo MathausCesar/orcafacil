@@ -235,7 +235,7 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
                 </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-muted/40 p-4">
+            <div className="rounded-xl border border-border bg-muted/40 p-3 sm:p-4">
                 <div className="mb-4 flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h3 className="text-sm font-semibold text-foreground">Adicionar item ao catalogo</h3>
@@ -245,7 +245,7 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
                 </div>
 
                 <div className="space-y-4">
-                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_140px_150px_180px]">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_140px_150px_180px]">
                         <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">Nome do item</Label>
                             <Input
@@ -294,7 +294,7 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_130px_180px_auto] lg:items-end">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_130px_180px_auto] lg:items-end">
                         <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">Detalhes opcionais</Label>
                             <Input
@@ -335,7 +335,7 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
                             type="button"
                             onClick={handleAdd}
                             disabled={saving || !description.trim()}
-                            className="h-10 bg-primary text-white hover:bg-primary/90"
+                            className="h-11 w-full bg-primary text-white hover:bg-primary/90 sm:col-span-2 lg:col-span-1 lg:h-10"
                         >
                             <Plus className="mr-2 h-4 w-4" />
                             Adicionar
@@ -420,7 +420,7 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
                     <p className="mt-1 text-xs text-muted-foreground/70">Cadastre itens recorrentes para montar orcamentos mais rapido.</p>
                 </div>
             ) : (
-                <div className="max-h-[38rem] space-y-6 overflow-y-auto pr-1 pb-4">
+                <div className="space-y-6 pb-4 lg:max-h-[38rem] lg:overflow-y-auto lg:pr-1">
                     {sortedGroupKeys.map((key) => {
                         const items = groupedServices[key]
                         const folder = key === 'unassigned'

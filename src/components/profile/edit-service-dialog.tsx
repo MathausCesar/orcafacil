@@ -110,15 +110,16 @@ export function EditServiceDialog({ service, initialFolders }: EditServiceDialog
                     <Pencil className="h-4 w-4" />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[520px]">
-                <DialogHeader>
+            <DialogContent className="grid max-h-[calc(100dvh-1rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-h-[calc(100vh-2rem)] sm:max-w-[520px]">
+                <DialogHeader className="border-b border-border px-5 py-4 pr-12 sm:px-6">
                     <DialogTitle>Editar item do catalogo</DialogTitle>
                     <DialogDescription>
                         Ajuste preco, custo, tipo e regras simples de estoque.
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="grid gap-4 py-4">
+                <div className="min-h-0 overflow-y-auto px-5 py-4 sm:px-6">
+                    <div className="grid gap-4">
                     <div className="space-y-1.5">
                         <Label htmlFor="description">Nome do item</Label>
                         <Input
@@ -240,10 +241,11 @@ export function EditServiceDialog({ service, initialFolders }: EditServiceDialog
                             )}
                         </div>
                     )}
+                    </div>
                 </div>
 
-                <DialogFooter>
-                    <Button onClick={handleSave} disabled={saving}>
+                <DialogFooter className="border-t border-border bg-background px-5 py-4 sm:px-6">
+                    <Button onClick={handleSave} disabled={saving} className="w-full sm:w-auto">
                         {saving ? 'Salvando...' : 'Salvar alteracoes'}
                     </Button>
                 </DialogFooter>

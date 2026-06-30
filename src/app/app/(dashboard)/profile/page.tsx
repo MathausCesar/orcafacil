@@ -91,7 +91,7 @@ export default async function ProfilePage() {
                         Cadastre servicos, produtos e materiais para reutilizar nos orcamentos.
                     </p>
                 </CardHeader>
-                <CardContent className="pt-6">
+                <CardContent className="px-3 pt-4 sm:px-6 sm:pt-6">
                     <ServicesCatalog initialServices={services || []} initialFolders={folders || []} userId={user.id} />
                 </CardContent>
             </Card>

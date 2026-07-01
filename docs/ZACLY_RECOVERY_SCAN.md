@@ -22,6 +22,33 @@ validado pelo usuario, billing foi tecnicamente reparado, regras criticas de
 seguranca foram aplicadas no Supabase e a Vercel esta apontando
 `https://app.zacly.com.br` para a nova versao.
 
+## Atualizacao de 2026-07-01 - Rodada 5 Qualidade estrutural
+
+Corrigido:
+
+- `OrganizationProvider` deixou de rodar no layout raiz e agora fica restrito
+  a area logada do app, onde `WorkspaceSwitcher`, dashboard e busca de produtos
+  realmente usam o contexto de organizacao.
+- Viewport mobile deixou de bloquear zoom do usuario. O app manteve
+  `width=device-width, initial-scale=1` e removeu o bloqueio de escala.
+- Proxy passou a ignorar todos os caminhos internos `_next`, evitando
+  interferencia em assets do framework, otimizacao de imagem e HMR local.
+- Logos da tela de login com `fill` agora informam `sizes`, removendo warnings
+  de performance do Next.
+
+Validado:
+
+- `npm run lint`: passou.
+- `npm audit --audit-level=critical`: 0 vulnerabilidades.
+- `npm run build`: passou.
+- Smoke local em modo producao: login por email/senha com usuario temporario,
+  abertura do painel, contexto de organizacao sem erro e sem overflow
+  horizontal.
+- Smoke mobile em modo producao: login e perfil em 390px sem overflow
+  horizontal.
+- Smoke local em desenvolvimento via `localhost`: tela de login hidrata,
+  alterna para cadastro e fica sem warnings/erros de console relevantes.
+
 ## Atualizacao de 2026-07-01 - Rodada 4 Billing
 
 Corrigido:

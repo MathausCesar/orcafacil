@@ -75,11 +75,7 @@ export const viewport: Viewport = {
   themeColor: "#165952", // Zacly Deep Teal
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
-
-import { OrganizationProvider } from "@/contexts/organization-context";
 
 export default function RootLayout({
   children,
@@ -121,10 +117,8 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <OrganizationProvider>
-              {children}
-              <Toaster />
-            </OrganizationProvider>
+            {children}
+            <Toaster />
           </ThemeProvider>
         </PostHogProvider>
         <Analytics />

@@ -195,12 +195,11 @@ export const config = {
     matcher: [
         /*
          * Match all request paths except for the ones starting with:
-         * - _next/static (static files)
-         * - _next/image (image optimization files)
+         * - _next (framework assets, image optimization and dev HMR)
          * - favicon.ico, robots.txt, sitemap.xml, manifest files
          * - api routes (handled separately)
          * - static assets (images, fonts, etc.)
          */
-        '/((?!_next/static|_next/image|api|favicon.ico|robots.txt|sitemap.xml|manifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot)$).*)',
+        '/((?!_next|api|favicon.ico|robots.txt|sitemap.xml|manifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot)$).*)',
     ],
 }

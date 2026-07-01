@@ -114,6 +114,7 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                             src="/logo/logo.png"
                             alt="Zacly Logo"
                             fill
+                            sizes="320px"
                             className="object-contain object-left"
                             priority
                         />
@@ -182,6 +183,7 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                                     src="/logo/zacly_icone.png"
                                     alt="Zacly Ícone"
                                     fill
+                                    sizes="80px"
                                     className="object-contain"
                                     priority
                                 />

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { UpgradeBanner } from '@/components/upgrade-banner'
 import { PwaInstallPrompt } from '@/components/pwa-install-prompt'
 import { getActiveOrganizationId } from '@/lib/get-active-organization'
+import { OrganizationProvider } from '@/contexts/organization-context'
 
 export default async function DashboardLayout({
     children,
@@ -48,32 +49,34 @@ export default async function DashboardLayout({
     const quotesUsed = (isFree && orgId) ? (quotesCountResult.count || 0) : 0
 
     return (
-        <div className="flex min-h-screen bg-background">
-            {/* Desktop Sidebar - Hidden on Mobile */}
-            <div className="hidden lg:flex w-64 flex-col fixed inset-y-0 z-50">
-                <div className="flex-1 flex flex-col min-h-0 bg-sidebar border-r border-sidebar-border">
-                    <DesktopSidebar />
+        <OrganizationProvider>
+            <div className="flex min-h-screen bg-background">
+                {/* Desktop Sidebar - Hidden on Mobile */}
+                <div className="hidden lg:flex w-64 flex-col fixed inset-y-0 z-50">
+                    <div className="flex-1 flex flex-col min-h-0 bg-sidebar border-r border-sidebar-border">
+                        <DesktopSidebar />
+                    </div>
                 </div>
-            </div>
 
-            {/* Main Content Area */}
-            <main className="flex-1 transition-all duration-300 lg:pl-64">
-                <div className="container mx-auto p-4 md:p-8 max-w-2xl lg:max-w-7xl pb-24 lg:pb-8">
-                    {isFree && <UpgradeBanner quotesUsed={quotesUsed} quotesLimit={5} />}
-                    {children}
+                {/* Main Content Area */}
+                <main className="flex-1 transition-all duration-300 lg:pl-64">
+                    <div className="container mx-auto p-4 md:p-8 max-w-2xl lg:max-w-7xl pb-24 lg:pb-8">
+                        {isFree && <UpgradeBanner quotesUsed={quotesUsed} quotesLimit={5} />}
+                        {children}
+                    </div>
+                </main>
+
+                {/* Mobile Navigation - Hidden on Desktop */}
+                <div className="lg:hidden">
+                    <BottomNav />
                 </div>
-            </main>
 
-            {/* Mobile Navigation - Hidden on Desktop */}
-            <div className="lg:hidden">
-                <BottomNav />
-            </div>
-
-            {/* Floating Support Widget */}
-            <SupportWidget />
+                {/* Floating Support Widget */}
+                <SupportWidget />
 
             {/* PWA Install Prompt — aparece no celular, fora do app instalado */}
-            <PwaInstallPrompt />
-        </div>
+                <PwaInstallPrompt />
+            </div>
+        </OrganizationProvider>
     )
 }

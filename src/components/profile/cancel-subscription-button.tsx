@@ -26,7 +26,7 @@ export function CancelSubscriptionButton({ isFree }: CancelSubscriptionButtonPro
                     className="text-xs text-muted-foreground/60 hover:text-destructive hover:bg-destructive/5 gap-1.5 transition-colors"
                 >
                     <XCircle className="h-3.5 w-3.5" />
-                    Cancelar assinatura
+                    Cancelar renovacao
                 </Button>
             </div>
 

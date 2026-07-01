@@ -22,6 +22,46 @@ validado pelo usuario, billing foi tecnicamente reparado, regras criticas de
 seguranca foram aplicadas no Supabase e a Vercel esta apontando
 `https://app.zacly.com.br` para a nova versao.
 
+## Atualizacao de 2026-07-01 - Rodada 4 Billing
+
+Corrigido:
+
+- Checkout Stripe agora valida se o Price ID configurado esta ativo, recorrente
+  e no intervalo esperado antes de abrir o pagamento.
+- Checkout bloqueia criacao de assinatura duplicada quando o usuario ja tem uma
+  assinatura billable no perfil ou no cliente Stripe.
+- Checkout passa metadata tambem para `subscription_data`, melhorando a
+  rastreabilidade dos eventos de assinatura.
+- Retorno de pagamento aprovado passa a levar o usuario para `/profile` com o
+  estado da conta.
+- Webhook Stripe passou a usar o cliente admin centralizado do Supabase e valida
+  explicitamente assinatura/segredo antes de processar eventos.
+- Webhook sincroniza assinatura completa em `checkout.session.completed`,
+  `invoice.payment_succeeded`, `invoice.payment_failed`,
+  `customer.subscription.updated` e `customer.subscription.deleted`.
+- Cancelamento grava campos sensiveis de billing via service role, compatível
+  com o hardening de permissao aplicado em `profiles`.
+- Interface de conta agora mostra plano, status, vencimento e cancelamento
+  agendado sem dizer que o Pro foi removido imediatamente.
+
+Validado:
+
+- Variaveis locais essenciais existem sem expor valores.
+- Stripe retornou os dois precos configurados como ativos, recorrentes e em BRL:
+  mensal com intervalo mensal e anual com intervalo anual.
+- Supabase confirmou `profiles` com campos de billing e
+  `cancellation_feedback` existente.
+- `npm run lint`: passou.
+- `npm run build`: passou.
+- Webhook local validado com eventos assinados e usuario temporario no Supabase:
+  `checkout.session.completed`, `customer.subscription.updated` e
+  `customer.subscription.deleted`.
+
+Observacao: as chaves Stripe atuais sao de modo live. A rodada validou o
+webhook com assinatura real e payloads controlados, sem criar cobranca. O teste
+de pagamento completo deve ser feito com ambiente Stripe test separado ou com
+uma compra real controlada.
+
 ## Atualizacao de 2026-06-26
 
 Corrigido localmente:

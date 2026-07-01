@@ -5,8 +5,13 @@ import { usePathname } from 'next/navigation'
 import { Boxes, Home, PlusCircle, Users, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+function normalizeAppPathname(pathname: string) {
+    const normalized = pathname.replace(/^\/app(?=\/|$)/, '')
+    return normalized || '/'
+}
+
 export function BottomNav() {
-    const pathname = usePathname()
+    const pathname = normalizeAppPathname(usePathname())
 
     const links = [
         {

@@ -12,8 +12,13 @@ interface DesktopSidebarProps {
     className?: string
 }
 
+function normalizeAppPathname(pathname: string) {
+    const normalized = pathname.replace(/^\/app(?=\/|$)/, '')
+    return normalized || '/'
+}
+
 export function DesktopSidebar({ className }: DesktopSidebarProps) {
-    const pathname = usePathname()
+    const pathname = normalizeAppPathname(usePathname())
 
     const links = [
         {

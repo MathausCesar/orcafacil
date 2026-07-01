@@ -4,12 +4,80 @@ import { getStripe } from "@/lib/stripe";
 import { getAppBaseUrl } from "@/lib/app-url";
 import type Stripe from "stripe";
 
+type CheckoutPlan = "monthly" | "yearly";
+type InternalPlan = "pro_monthly" | "pro_yearly";
+
+const PLAN_CONFIG: Record<CheckoutPlan, {
+    envKey: "STRIPE_PRICE_MONTHLY" | "STRIPE_PRICE_YEARLY";
+    internalPlan: InternalPlan;
+    interval: "month" | "year";
+}> = {
+    monthly: {
+        envKey: "STRIPE_PRICE_MONTHLY",
+        internalPlan: "pro_monthly",
+        interval: "month",
+    },
+    yearly: {
+        envKey: "STRIPE_PRICE_YEARLY",
+        internalPlan: "pro_yearly",
+        interval: "year",
+    },
+};
+
+const BILLABLE_STATUSES = new Set(["active", "trialing", "past_due", "unpaid"]);
+
+function getPlanConfig(plan: FormDataEntryValue | null) {
+    if (plan === "monthly" || plan === "yearly") {
+        return PLAN_CONFIG[plan];
+    }
+
+    return null;
+}
+
+function isBillableStatus(status: string | null | undefined) {
+    return Boolean(status && BILLABLE_STATUSES.has(status));
+}
+
+function getSubscriptionPriceId(subscription: Stripe.Subscription) {
+    return subscription.items.data[0]?.price?.id ?? null;
+}
+
+async function assertPriceMatchesPlan(stripe: Stripe, priceId: string, expectedInterval: "month" | "year") {
+    const price = await stripe.prices.retrieve(priceId);
+
+    if (!price.active || price.type !== "recurring" || price.recurring?.interval !== expectedInterval) {
+        throw new Error("Plano de assinatura mal configurado no Stripe.");
+    }
+}
+
+async function findBillableSubscription(stripe: Stripe, customerId: string) {
+    const subscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "all",
+        limit: 10,
+    });
+
+    return subscriptions.data.find((subscription) => isBillableStatus(subscription.status)) ?? null;
+}
+
+function getDuplicateSubscriptionMessage(currentPriceId: string | null, requestedPriceId: string, cancelAtPeriodEnd: boolean | null | undefined) {
+    if (cancelAtPeriodEnd) {
+        return "Sua assinatura ja esta ativa ate o fim do periodo pago. Para reativar ou trocar de plano sem risco de cobranca duplicada, fale com o suporte.";
+    }
+
+    if (currentPriceId === requestedPriceId) {
+        return "Voce ja tem uma assinatura ativa neste plano.";
+    }
+
+    return "Voce ja tem uma assinatura ativa. Para trocar de plano sem cobranca duplicada, fale com o suporte.";
+}
+
 export async function POST(req: NextRequest) {
     try {
         const formData = await req.formData();
-        const plan = formData.get("plan") as string; // 'monthly' ou 'yearly'
+        const planConfig = getPlanConfig(formData.get("plan"));
 
-        if (!plan) {
+        if (!planConfig) {
             return NextResponse.json({ error: "Plano não selecionado" }, { status: 400 });
         }
 
@@ -26,32 +94,52 @@ export async function POST(req: NextRequest) {
         // Buscar dados do usuário
         const { data: profile } = await supabase
             .from("profiles")
-            .select("stripe_customer_id, email, business_name")
+            .select("stripe_customer_id, stripe_subscription_id, stripe_price_id, subscription_status, cancel_at_period_end, email, business_name")
             .eq("id", user.id)
             .single();
 
-        let priceId = "";
+        const priceId = process.env[planConfig.envKey] || "";
 
         // Define o Price ID baseando-se nas Variáveis de Ambiente
-        if (plan === "monthly") {
-            priceId = process.env.STRIPE_PRICE_MONTHLY || "";
-        } else if (plan === "yearly") {
-            priceId = process.env.STRIPE_PRICE_YEARLY || "";
-        }
-
         if (!priceId) {
-            console.error(`Price ID not configured for ${plan} plan.`);
+            console.error(`Price ID not configured for ${planConfig.internalPlan}.`);
             // Para testes sem chave configurada, apenas retornamos um aviso simulado:
             return new NextResponse(`Erro: O Preço do Stripe não está configurado nas Variáveis de Ambiente. (STRIPE_PRICE_MONTHLY ou STRIPE_PRICE_YEARLY)`, { status: 500 });
         }
 
         // Detecta a URL base pela origem da requisição para garantir domínio correto
+        const stripe = getStripe();
+        await assertPriceMatchesPlan(stripe, priceId, planConfig.interval);
+
+        if (isBillableStatus(profile?.subscription_status)) {
+            const message = getDuplicateSubscriptionMessage(
+                profile?.stripe_price_id ?? null,
+                priceId,
+                profile?.cancel_at_period_end
+            );
+
+            return NextResponse.json({ error: message, redirect: "/profile" }, { status: 409 });
+        }
+
+        if (profile?.stripe_customer_id) {
+            const existingSubscription = await findBillableSubscription(stripe, profile.stripe_customer_id);
+
+            if (existingSubscription) {
+                const message = getDuplicateSubscriptionMessage(
+                    getSubscriptionPriceId(existingSubscription),
+                    priceId,
+                    existingSubscription.cancel_at_period_end
+                );
+
+                return NextResponse.json({ error: message, redirect: "/profile" }, { status: 409 });
+            }
+        }
+
         const origin = req.headers.get('origin') || req.headers.get('referer')?.split('/').slice(0, 3).join('/')
         const baseUrl = origin?.includes('localhost') ? origin : getAppBaseUrl()
 
         // Mensal = assinatura recorrente mensal
         // Anual  = assinatura recorrente anual
-        const isMonthly = plan === "monthly"
         const checkoutMode = "subscription"
 
         // Criar a Sessão de Checkout
@@ -64,12 +152,18 @@ export async function POST(req: NextRequest) {
                 },
             ],
             mode: checkoutMode,
-            success_url: `${baseUrl}/?success=true`,
+            success_url: `${baseUrl}/profile?billing=success&session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${baseUrl}/pricing?canceled=true`,
             client_reference_id: user.id,
             metadata: {
                 userId: user.id,
-                plan_type: isMonthly ? "pro_monthly" : "pro_yearly",
+                plan_type: planConfig.internalPlan,
+            },
+            subscription_data: {
+                metadata: {
+                    userId: user.id,
+                    plan_type: planConfig.internalPlan,
+                },
             },
         };
 
@@ -81,7 +175,6 @@ export async function POST(req: NextRequest) {
             sessionPayload.customer_email = profile?.email || user.email;
         }
 
-        const stripe = getStripe();
         const stripeSession = await stripe.checkout.sessions.create(sessionPayload);
 
         if (stripeSession.url) {

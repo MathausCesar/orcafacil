@@ -27,6 +27,16 @@ const CANCELLATION_REASONS = [
     { id: 'other', label: 'Outro motivo' },
 ]
 
+function formatPeriodEnd(value?: string | null) {
+    if (!value) return null
+
+    return new Intl.DateTimeFormat('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+    }).format(new Date(value))
+}
+
 interface CancelSubscriptionDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
@@ -38,6 +48,7 @@ export function CancelSubscriptionDialog({ open, onOpenChange }: CancelSubscript
     const [cancelled, setCancelled] = useState(false)
     const [selectedReason, setSelectedReason] = useState('')
     const [comments, setComments] = useState('')
+    const [periodEnd, setPeriodEnd] = useState<string | null>(null)
 
     const handleCancel = async () => {
         if (!selectedReason) {
@@ -55,8 +66,9 @@ export function CancelSubscriptionDialog({ open, onOpenChange }: CancelSubscript
             if (result.error) {
                 toast.error(result.error)
             } else {
+                setPeriodEnd('currentPeriodEnd' in result ? result.currentPeriodEnd ?? null : null)
                 setCancelled(true)
-                toast.success('Assinatura cancelada. Sentiremos sua falta! 💚')
+                toast.success('Renovacao cancelada. Seu acesso Pro continua ate o fim do periodo pago.')
                 // Delay refresh to let the user see the confirmation
                 setTimeout(() => {
                     onOpenChange(false)
@@ -79,9 +91,9 @@ export function CancelSubscriptionDialog({ open, onOpenChange }: CancelSubscript
                             <CheckCircle2 className="h-8 w-8 text-emerald-500" />
                         </div>
                         <div>
-                            <p className="text-lg font-bold">Assinatura cancelada</p>
+                            <p className="text-lg font-bold">Renovacao cancelada</p>
                             <p className="text-sm text-muted-foreground mt-2">
-                                Seu plano foi alterado para gratuito. Sentiremos sua falta! 💚
+                                Seu acesso Pro continua {formatPeriodEnd(periodEnd) ? `ate ${formatPeriodEnd(periodEnd)}` : 'ate o fim do periodo pago'}. Depois disso, o plano volta para gratuito.
                             </p>
                         </div>
                     </div>
@@ -93,11 +105,11 @@ export function CancelSubscriptionDialog({ open, onOpenChange }: CancelSubscript
                                     <AlertTriangle className="h-5 w-5 text-red-500" />
                                 </div>
                                 <AlertDialogTitle className="text-lg font-bold text-left">
-                                    Cancelar assinatura
+                                    Cancelar renovacao
                                 </AlertDialogTitle>
                             </div>
                             <AlertDialogDescription className="text-sm text-muted-foreground text-left">
-                                Lamentamos que queira cancelar. Antes de confirmar, nos conte o motivo — sua opinião é muito importante para melhorarmos o Zacly.
+                                A proxima cobranca sera interrompida e seu acesso Pro continua ativo ate o fim do periodo ja pago. Antes de confirmar, conte o principal motivo para melhorarmos o Zacly.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
 
@@ -156,7 +168,7 @@ export function CancelSubscriptionDialog({ open, onOpenChange }: CancelSubscript
                                 className="w-full sm:w-auto"
                             >
                                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                Confirmar cancelamento
+                                Cancelar renovacao
                             </Button>
                         </AlertDialogFooter>
                     </>

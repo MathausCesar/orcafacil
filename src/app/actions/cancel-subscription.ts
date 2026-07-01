@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getActiveOrganizationId } from '@/lib/get-active-organization'
 import { getStripe } from '@/lib/stripe'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import type Stripe from 'stripe'
 
@@ -12,8 +13,14 @@ export interface CancellationData {
 }
 
 function getPeriodEnd(subscription: Stripe.Subscription) {
-    return "current_period_end" in subscription && typeof subscription.current_period_end === "number"
-        ? new Date(subscription.current_period_end * 1000).toISOString()
+    const subscriptionPeriodEnd = "current_period_end" in subscription && typeof subscription.current_period_end === "number"
+        ? subscription.current_period_end
+        : null
+    const itemPeriodEnd = subscription.items.data[0]?.current_period_end ?? null
+    const periodEnd = subscriptionPeriodEnd ?? itemPeriodEnd
+
+    return typeof periodEnd === "number"
+        ? new Date(periodEnd * 1000).toISOString()
         : null
 }
 
@@ -126,14 +133,15 @@ export async function cancelSubscription(data: CancellationData) {
         updated_at: new Date().toISOString(),
     }
 
-    const { error: updateError } = await supabase
+    const admin = getSupabaseAdmin()
+    const { error: updateError } = await admin
         .from('profiles')
         .update(updatePayload)
         .eq('id', user.id)
 
     if (updateError) {
         if (isMissingColumnError(updateError)) {
-            const { error: legacyUpdateError } = await supabase
+            const { error: legacyUpdateError } = await admin
                 .from('profiles')
                 .update({
                     plan: updatePayload.plan,
@@ -145,7 +153,7 @@ export async function cancelSubscription(data: CancellationData) {
             if (!legacyUpdateError) {
                 revalidatePath('/app/profile')
                 revalidatePath('/app')
-                return { success: true, cancelAtPeriodEnd: true, migrationRequired: true }
+                return { success: true, cancelAtPeriodEnd: true, currentPeriodEnd: updatePayload.current_period_end, migrationRequired: true }
             }
 
             console.error('Error updating legacy billing profile:', legacyUpdateError)
@@ -158,5 +166,5 @@ export async function cancelSubscription(data: CancellationData) {
     revalidatePath('/app/profile')
     revalidatePath('/app')
 
-    return { success: true, cancelAtPeriodEnd: true }
+    return { success: true, cancelAtPeriodEnd: true, currentPeriodEnd: updatePayload.current_period_end }
 }

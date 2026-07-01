@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowLeft, Building2, CreditCard, FileText, Palette, Users } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { ArrowLeft, CreditCard, Palette, Users } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ProfileForm } from '@/components/profile/profile-form'
@@ -11,6 +11,7 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import { TeamManager } from '@/components/profile/team-manager'
 import { getActiveOrganizationId } from '@/lib/get-active-organization'
 import { CancelSubscriptionButton } from '@/components/profile/cancel-subscription-button'
+import { ProfileSettingsTabs } from '@/components/profile/profile-settings-tabs'
 
 interface TeamMember {
     user_id: string
@@ -19,6 +20,39 @@ interface TeamMember {
         email: string
         business_name: string | null
         logo_url: string | null
+    }
+}
+
+function formatBillingDate(value?: string | null) {
+    if (!value) return null
+
+    return new Intl.DateTimeFormat('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+    }).format(new Date(value))
+}
+
+function getPlanLabel(plan?: string | null) {
+    if (plan === 'pro_yearly') return 'Pro anual'
+    if (plan === 'pro_monthly') return 'Pro mensal'
+    if (plan && plan !== 'free') return 'Pro'
+    return 'Gratuito'
+}
+
+function getStatusLabel(status?: string | null, cancelAtPeriodEnd?: boolean | null) {
+    if (cancelAtPeriodEnd) return 'Renovacao cancelada'
+
+    switch (status) {
+        case 'active':
+        case 'trialing':
+            return 'Ativo'
+        case 'past_due':
+            return 'Pagamento pendente'
+        case 'canceled':
+            return 'Cancelado'
+        default:
+            return 'Inativo'
     }
 }
 
@@ -51,7 +85,94 @@ export default async function ProfilePage() {
         `)
         .eq('organization_id', orgId || '')
 
-    const planLabel = profile?.plan && profile.plan !== 'free' ? profile.plan : 'Gratuito'
+    const isPaidPlan = Boolean(profile?.plan && profile.plan !== 'free')
+    const planLabel = getPlanLabel(profile?.plan)
+    const billingDate = formatBillingDate(profile?.current_period_end)
+    const cancelAtPeriodEnd = Boolean(profile?.cancel_at_period_end)
+    const statusLabel = getStatusLabel(profile?.subscription_status, cancelAtPeriodEnd)
+
+    const teamContent = orgId ? (
+        <TeamManager initialMembers={(members || []) as unknown as TeamMember[]} />
+    ) : (
+        <Card className="border-0 shadow-sm ring-1 ring-border">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                    <Users className="h-5 w-5 text-primary" />
+                    Equipe
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-muted-foreground">
+                    Conclua o cadastro da empresa para convidar pessoas da sua equipe.
+                </p>
+            </CardContent>
+        </Card>
+    )
+
+    const accountContent = (
+        <div className="space-y-6">
+            <Card className="border-primary/10">
+                <CardHeader className="border-b border-primary/10 bg-primary/5">
+                    <CardTitle className="flex items-center gap-2 text-primary">
+                        <Palette className="h-5 w-5" />
+                        Aparencia do Sistema
+                    </CardTitle>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Defina como voce prefere visualizar o painel administrativo.
+                    </p>
+                </CardHeader>
+                <CardContent className="pt-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h3 className="text-sm font-medium text-foreground">Modo do Sistema</h3>
+                            <p className="text-sm text-muted-foreground">Escolha entre modo claro, escuro ou automatico.</p>
+                        </div>
+                        <ThemeToggle />
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-sm ring-1 ring-border">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                        <CreditCard className="h-5 w-5 text-primary" />
+                        Conta e Plano
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                        Gerencie acesso, sessao e assinatura da Zacly.
+                    </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Plano atual</p>
+                                <p className="mt-1 text-base font-semibold text-foreground">{planLabel}</p>
+                                {isPaidPlan && billingDate ? (
+                                    <p className="mt-1 text-sm text-muted-foreground">
+                                        {cancelAtPeriodEnd ? 'Acesso Pro ate' : 'Proxima renovacao em'} {billingDate}
+                                    </p>
+                                ) : null}
+                            </div>
+                            <Badge
+                                variant={cancelAtPeriodEnd ? 'secondary' : isPaidPlan ? 'default' : 'outline'}
+                                className={isPaidPlan && !cancelAtPeriodEnd ? 'bg-emerald-500 text-white' : ''}
+                            >
+                                {statusLabel}
+                            </Badge>
+                        </div>
+                        {cancelAtPeriodEnd ? (
+                            <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-foreground">
+                                A renovacao foi cancelada. O acesso Pro continua ate {billingDate ?? 'o fim do periodo pago'} e depois volta para o plano gratuito.
+                            </div>
+                        ) : null}
+                    </div>
+                    <LogoutButton />
+                    <CancelSubscriptionButton isFree={!isPaidPlan || cancelAtPeriodEnd} />
+                </CardContent>
+            </Card>
+        </div>
+    )
 
     return (
         <div className="space-y-6 pb-20">
@@ -62,104 +183,19 @@ export default async function ProfilePage() {
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-xl font-bold text-foreground">Configurações</h1>
+                    <h1 className="text-xl font-bold text-foreground">Configuracoes</h1>
                     <p className="text-sm text-muted-foreground">
-                        Ajuste empresa, proposta, equipe e plano em áreas separadas.
+                        Ajuste empresa, proposta, equipe e plano em areas separadas.
                     </p>
                 </div>
             </div>
 
-            <Tabs defaultValue="company" className="space-y-6">
-                <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-xl bg-muted/70 p-1 sm:grid-cols-4">
-                    <TabsTrigger value="company" className="h-11 gap-2 rounded-lg">
-                        <Building2 className="h-4 w-4" />
-                        Empresa
-                    </TabsTrigger>
-                    <TabsTrigger value="proposal" className="h-11 gap-2 rounded-lg">
-                        <FileText className="h-4 w-4" />
-                        Proposta
-                    </TabsTrigger>
-                    <TabsTrigger value="team" className="h-11 gap-2 rounded-lg">
-                        <Users className="h-4 w-4" />
-                        Equipe
-                    </TabsTrigger>
-                    <TabsTrigger value="account" className="h-11 gap-2 rounded-lg">
-                        <CreditCard className="h-4 w-4" />
-                        Conta
-                    </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="company" className="mt-0">
-                    <ProfileForm initialProfile={profile} userId={user.id} section="company" />
-                </TabsContent>
-
-                <TabsContent value="proposal" className="mt-0">
-                    <ProfileForm initialProfile={profile} userId={user.id} section="proposal" />
-                </TabsContent>
-
-                <TabsContent value="team" className="mt-0">
-                    {orgId ? (
-                        <TeamManager initialMembers={(members || []) as unknown as TeamMember[]} />
-                    ) : (
-                        <Card className="border-0 shadow-sm ring-1 ring-border">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-lg">
-                                    <Users className="h-5 w-5 text-primary" />
-                                    Equipe
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-muted-foreground">
-                                    Conclua o cadastro da empresa para convidar pessoas da sua equipe.
-                                </p>
-                            </CardContent>
-                        </Card>
-                    )}
-                </TabsContent>
-
-                <TabsContent value="account" className="mt-0 space-y-6">
-                    <Card className="border-primary/10">
-                        <CardHeader className="border-b border-primary/10 bg-primary/5">
-                            <CardTitle className="flex items-center gap-2 text-primary">
-                                <Palette className="h-5 w-5" />
-                                Aparência do Sistema
-                            </CardTitle>
-                            <p className="mt-1 text-xs text-muted-foreground">
-                                Defina como você prefere visualizar o painel administrativo.
-                            </p>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                <div>
-                                    <h3 className="text-sm font-medium text-foreground">Modo do Sistema</h3>
-                                    <p className="text-sm text-muted-foreground">Escolha entre modo claro, escuro ou automático.</p>
-                                </div>
-                                <ThemeToggle />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-0 shadow-sm ring-1 ring-border">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-lg">
-                                <CreditCard className="h-5 w-5 text-primary" />
-                                Conta e Plano
-                            </CardTitle>
-                            <p className="text-sm text-muted-foreground">
-                                Gerencie acesso, sessão e assinatura da Zacly.
-                            </p>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="rounded-lg border border-border bg-muted/30 p-4">
-                                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Plano atual</p>
-                                <p className="mt-1 text-base font-semibold text-foreground">{planLabel}</p>
-                            </div>
-                            <LogoutButton />
-                            <CancelSubscriptionButton isFree={!profile?.plan || profile.plan === 'free'} />
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-            </Tabs>
+            <ProfileSettingsTabs
+                company={<ProfileForm initialProfile={profile} userId={user.id} section="company" />}
+                proposal={<ProfileForm initialProfile={profile} userId={user.id} section="proposal" />}
+                team={teamContent}
+                account={accountContent}
+            />
         </div>
     )
 }

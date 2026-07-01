@@ -34,9 +34,10 @@ interface ProfileFormProps {
         theme_color?: string | null
     } | null
     userId: string
+    section?: 'all' | 'company' | 'proposal'
 }
 
-export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
+export function ProfileForm({ initialProfile, userId, section = 'all' }: ProfileFormProps) {
     const [loading, setLoading] = useState(false)
     const [themeColor, setThemeColor] = useState(initialProfile?.theme_color || '#0D9B5C')
     const [layoutStyle, setLayoutStyle] = useState(initialProfile?.layout_style || 'professional')
@@ -98,6 +99,12 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
     }
 
     const [quoteSettings, setQuoteSettings] = useState<QuoteSettingsData | null>(getInitialSettings())
+    const showCompany = section === 'all' || section === 'company'
+    const showProposal = section === 'all' || section === 'proposal'
+    const saveLabel = section === 'proposal' ? 'Salvar proposta' : 'Salvar perfil'
+    const tipText = section === 'proposal'
+        ? 'Mantenha um padrão visual profissional. Pequenas personalizações ajudam sua proposta a parecer única sem perder organização.'
+        : 'Um perfil completo com logo, telefone e dados comerciais deixa seus orçamentos mais confiáveis para o cliente.'
 
     const handleLogoChange = async (newUrl: string) => {
         setLogoUrl(newUrl)
@@ -125,10 +132,12 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
 
     const handleSubmit = async (formData: FormData) => {
         setLoading(true)
-        formData.append('themeColor', themeColor)
-        formData.append('layoutStyle', layoutStyle)
-        if (quoteSettings) {
-            formData.append('quoteSettings', JSON.stringify(quoteSettings))
+        if (showProposal) {
+            formData.append('themeColor', themeColor)
+            formData.append('layoutStyle', layoutStyle)
+            if (quoteSettings) {
+                formData.append('quoteSettings', JSON.stringify(quoteSettings))
+            }
         }
 
         try {
@@ -155,6 +164,7 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                 <div className="lg:col-span-2 space-y-6">
 
                     {/* Business Info */}
+                    {showCompany && (
                     <Card className="border-0 shadow-sm ring-1 ring-border">
                         <CardHeader className="pb-4 border-b border-border">
                             <CardTitle className="text-lg font-semibold flex items-center gap-2">
@@ -343,8 +353,10 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                             </div>
                         </CardContent>
                     </Card>
+                    )}
 
                     {/* Unified Appearance Tab */}
+                    {showProposal && (
                     <Card className="shadow-sm">
                         <CardHeader className="pb-4 border-b">
                             <CardTitle className="text-lg font-semibold flex items-center gap-2">
@@ -375,6 +387,7 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
 
                         </CardContent>
                     </Card>
+                    )}
 
                 </div>
 
@@ -405,7 +418,7 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
 
                                 <Button type="submit" size="lg" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 shadow-lg shadow-primary/10 border-0 mb-4" disabled={loading}>
                                     {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                                    Salvar Alterações
+                                    {saveLabel}
                                 </Button>
 
                                 <p className="text-xs text-center text-muted-foreground">
@@ -422,7 +435,7 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                                     <div>
                                         <h4 className="font-semibold text-blue-900 text-sm mb-1">Dica Pro</h4>
                                         <p className="text-xs text-blue-700 leading-relaxed">
-                                            Um perfil completo com logo e cores personalizadas aumenta em 40% a taxa de aprovação dos orçamentos. Mantenha seus dados sempre atualizados.
+                                            {tipText}
                                         </p>
                                     </div>
                                 </div>
@@ -435,7 +448,7 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                 {/* Mobile Floating Button */}
                 <div className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 border-t border-border bg-background/95 p-4 shadow-[0_-12px_30px_rgba(15,23,42,0.12)] backdrop-blur lg:hidden">
                     <Button type="submit" size="lg" className="w-full bg-primary text-primary-foreground font-bold" disabled={loading}>
-                        {loading ? 'Salvando...' : 'Salvar Perfil'}
+                        {loading ? 'Salvando...' : saveLabel}
                     </Button>
                 </div>
 

@@ -6,18 +6,18 @@ import { getAuthContext } from '@/lib/get-auth-context'
 import type { Json } from '@/types/database.types'
 
 type ProfileUpdateData = {
-    business_name: string
-    phone: string
-    email: string
-    cnpj: string
-    cep: string
-    address: string
-    address_number: string
-    complement: string
-    neighborhood: string
-    city: string
-    state: string
     updated_at: string
+    business_name?: string
+    phone?: string
+    email?: string
+    cnpj?: string
+    cep?: string
+    address?: string
+    address_number?: string
+    complement?: string
+    neighborhood?: string
+    city?: string
+    state?: string
     theme_color?: string
     layout_style?: string
     quote_settings?: Json
@@ -51,35 +51,25 @@ export async function updateProfile(formData: FormData) {
         redirect('/login')
     }
 
-    const businessName = formData.get('businessName') as string
-    const phone = formData.get('phone') as string
-    const email = formData.get('email') as string
-    const cnpj = formData.get('cnpj') as string
-    const address = formData.get('address') as string
-    const cep = formData.get('cep') as string
-    const addressNumber = formData.get('address_number') as string
-    const complement = formData.get('complement') as string
-    const neighborhood = formData.get('neighborhood') as string
-    const city = formData.get('city') as string
-    const state = formData.get('state') as string
     const themeColor = formData.get('themeColor') as string
     const layoutStyle = formData.get('layoutStyle') as string
     const quoteSettingsStr = formData.get('quoteSettings') as string
 
     const updateData: ProfileUpdateData = {
-        business_name: businessName,
-        phone: phone,
-        email: email,
-        cnpj: cnpj,
-        cep: cep,
-        address: address,
-        address_number: addressNumber,
-        complement: complement,
-        neighborhood: neighborhood,
-        city: city,
-        state: state,
         updated_at: new Date().toISOString(),
     }
+
+    if (formData.has('businessName')) updateData.business_name = String(formData.get('businessName') || '')
+    if (formData.has('phone')) updateData.phone = String(formData.get('phone') || '')
+    if (formData.has('email')) updateData.email = String(formData.get('email') || '')
+    if (formData.has('cnpj')) updateData.cnpj = String(formData.get('cnpj') || '')
+    if (formData.has('cep')) updateData.cep = String(formData.get('cep') || '')
+    if (formData.has('address')) updateData.address = String(formData.get('address') || '')
+    if (formData.has('address_number')) updateData.address_number = String(formData.get('address_number') || '')
+    if (formData.has('complement')) updateData.complement = String(formData.get('complement') || '')
+    if (formData.has('neighborhood')) updateData.neighborhood = String(formData.get('neighborhood') || '')
+    if (formData.has('city')) updateData.city = String(formData.get('city') || '')
+    if (formData.has('state')) updateData.state = String(formData.get('state') || '')
 
     if (themeColor) updateData.theme_color = themeColor
     if (layoutStyle) updateData.layout_style = layoutStyle

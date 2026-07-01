@@ -147,7 +147,7 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
     }
 
     return (
-        <form action={handleSubmit} className="pb-24 lg:pb-0">
+        <form action={handleSubmit} className="pb-40 lg:pb-0">
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 
@@ -433,7 +433,7 @@ export function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
                 </div>
 
                 {/* Mobile Floating Button */}
-                <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t lg:hidden z-50">
+                <div className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 border-t border-border bg-background/95 p-4 shadow-[0_-12px_30px_rgba(15,23,42,0.12)] backdrop-blur lg:hidden">
                     <Button type="submit" size="lg" className="w-full bg-primary text-primary-foreground font-bold" disabled={loading}>
                         {loading ? 'Salvando...' : 'Salvar Perfil'}
                     </Button>

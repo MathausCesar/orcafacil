@@ -303,11 +303,14 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
         if (!newStatus) return
 
         if (!canOwnerMoveToStatus(quote.status, newStatus)) {
-            toast.error('Movimento nao permitido', {
-                description: 'Aprovacao e recusa so podem vir do link do cliente.',
+            toast.error('Movimento não permitido', {
+                description: 'Aprovação e recusa só podem vir do link do cliente.',
             })
             return
         }
+
+        const confirmed = window.confirm(`Mover orçamento de ${quote.client_name} para "${targetCol.label}"?`)
+        if (!confirmed) return
 
         // Optimistic update
         setQuotes(prev => prev.map(q =>
@@ -361,8 +364,8 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
         if (!newStatus) return
 
         if (!canOwnerMoveToStatus(quote.status, newStatus)) {
-            toast.error('Movimento nao permitido', {
-                description: 'Aprovacao e recusa so podem vir do link do cliente.',
+            toast.error('Movimento não permitido', {
+                description: 'Aprovação e recusa só podem vir do link do cliente.',
             })
             return
         }
@@ -665,54 +668,56 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                             )}
 
                             {/* Kanban Columns */}
-                            <div className="grid grid-cols-6 gap-3 pt-2">
-                                {PIPELINE_COLUMNS.map(col => {
-                                    const colQuotes = quotes.filter(q => getColumnId(q.status) === col.id)
-                                    const isDropTarget = overId === col.id
+                            <div className="overflow-x-auto pb-2">
+                                <div className="grid min-w-[1120px] grid-cols-[repeat(7,minmax(0,1fr))] gap-3 pt-2">
+                                    {PIPELINE_COLUMNS.map(col => {
+                                        const colQuotes = quotes.filter(q => getColumnId(q.status) === col.id)
+                                        const isDropTarget = overId === col.id
 
-                                    return (
-                                        <DroppableColumn
-                                            key={col.id}
-                                            id={col.id}
-                                            className={`min-w-0 flex flex-col rounded-2xl border ${col.border} ${col.bg} relative overflow-hidden transition-all duration-300 hover:shadow-lg ${isDropTarget ? 'ring-2 ring-primary shadow-xl scale-[1.02]' : ''}`}
-                                        >
-                                            <div className={`absolute top-0 left-0 right-0 h-1.5 ${col.accent} opacity-80`} />
-                                            <div className="flex items-center justify-between px-3 xl:px-4 pt-4 pb-2">
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`w-2 h-2 rounded-full ${col.accent} shadow-sm`} />
-                                                    <h3 className={`text-[10px] xl:text-xs font-black tracking-widest uppercase ${col.color}`}>
-                                                        {col.label}
-                                                    </h3>
-                                                </div>
-                                                <span className="text-[10px] xl:text-xs bg-background/80 backdrop-blur-md border border-border/50 px-2 py-0.5 rounded-full text-foreground font-bold shadow-sm">
-                                                    {colQuotes.length}
-                                                </span>
-                                            </div>
-                                            <div className="flex px-2 xl:px-3 pb-3 flex-col gap-2 overflow-y-auto max-h-[65vh] scrollbar-none min-h-[80px]">
-                                                {colQuotes.map((quote) => (
-                                                    <DraggableQuoteCard
-                                                        key={quote.id}
-                                                        quote={quote}
-                                                        colAccent={col.accent}
-                                                        colColor={col.color}
-                                                        fmt={fmt}
-                                                        fmtDate={fmtDate}
-                                                    />
-                                                ))}
-                                                {colQuotes.length === 0 && (
-                                                    <div className={`flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-xl m-1 transition-all ${isDropTarget
-                                                        ? 'border-primary/50 bg-primary/5 text-primary'
-                                                        : 'border-current/10 opacity-60'
-                                                        }`}>
-                                                        <p className="text-xs font-bold uppercase tracking-widest text-foreground/50">
-                                                            {isDropTarget ? 'Soltar aqui' : 'Vazio'}
-                                                        </p>
+                                        return (
+                                            <DroppableColumn
+                                                key={col.id}
+                                                id={col.id}
+                                                className={`min-w-0 flex flex-col rounded-2xl border ${col.border} ${col.bg} relative overflow-hidden transition-all duration-300 hover:shadow-lg ${isDropTarget ? 'ring-2 ring-primary shadow-xl scale-[1.02]' : ''}`}
+                                            >
+                                                <div className={`absolute top-0 left-0 right-0 h-1.5 ${col.accent} opacity-80`} />
+                                                <div className="flex items-center justify-between px-3 xl:px-4 pt-4 pb-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`w-2 h-2 rounded-full ${col.accent} shadow-sm`} />
+                                                        <h3 className={`text-[10px] xl:text-xs font-black tracking-widest uppercase ${col.color}`}>
+                                                            {col.label}
+                                                        </h3>
                                                     </div>
-                                                )}
-                                            </div>
-                                        </DroppableColumn>
-                                    )
-                                })}
+                                                    <span className="text-[10px] xl:text-xs bg-background/80 backdrop-blur-md border border-border/50 px-2 py-0.5 rounded-full text-foreground font-bold shadow-sm">
+                                                        {colQuotes.length}
+                                                    </span>
+                                                </div>
+                                                <div className="flex px-2 xl:px-3 pb-3 flex-col gap-2 overflow-y-auto max-h-[65vh] scrollbar-none min-h-[80px]">
+                                                    {colQuotes.map((quote) => (
+                                                        <DraggableQuoteCard
+                                                            key={quote.id}
+                                                            quote={quote}
+                                                            colAccent={col.accent}
+                                                            colColor={col.color}
+                                                            fmt={fmt}
+                                                            fmtDate={fmtDate}
+                                                        />
+                                                    ))}
+                                                    {colQuotes.length === 0 && (
+                                                        <div className={`flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-xl m-1 transition-all ${isDropTarget
+                                                            ? 'border-primary/50 bg-primary/5 text-primary'
+                                                            : 'border-current/10 opacity-60'
+                                                            }`}>
+                                                            <p className="text-xs font-bold uppercase tracking-widest text-foreground/50">
+                                                                {isDropTarget ? 'Soltar aqui' : 'Vazio'}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </DroppableColumn>
+                                        )
+                                    })}
+                                </div>
                             </div>
                         </div>
 

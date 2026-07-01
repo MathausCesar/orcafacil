@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, ChevronsUpDown, PlusCircle } from 'lucide-react'
+import { Check, ChevronsUpDown, PlusCircle, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -99,6 +99,16 @@ export function WorkspaceSwitcher() {
                         </CommandGroup>
                         <CommandSeparator />
                         <CommandGroup>
+                            <CommandItem
+                                onSelect={() => {
+                                    setOpen(false)
+                                    router.push('/profile')
+                                }}
+                                className="gap-2 cursor-pointer"
+                            >
+                                <Settings className="h-4 w-4" />
+                                <span>Configurações</span>
+                            </CommandItem>
                             <CommandItem
                                 onSelect={() => {
                                     setOpen(false)

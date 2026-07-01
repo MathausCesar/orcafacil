@@ -1,10 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, Boxes, Palette } from 'lucide-react'
+import { ArrowLeft, Palette } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ServicesCatalog } from '@/components/profile/services-catalog'
 import { ProfileForm } from '@/components/profile/profile-form'
 import { LogoutButton } from '@/components/auth/logout-button'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -39,18 +38,6 @@ export default async function ProfilePage() {
 
     const orgId = await getActiveOrganizationId()
 
-    const { data: services } = await supabase
-        .from('services')
-        .select('*')
-        .eq('organization_id', orgId || '')
-        .order('created_at', { ascending: false })
-
-    const { data: folders } = await supabase
-        .from('item_folders')
-        .select('*')
-        .eq('organization_id', orgId || '')
-        .order('name', { ascending: true })
-
     const { data: members } = await supabase
         .from('organization_members')
         .select(`
@@ -80,21 +67,6 @@ export default async function ProfilePage() {
             {orgId && (
                 <TeamManager initialMembers={(members || []) as unknown as TeamMember[]} />
             )}
-
-            {/* Services Catalog */}
-            <Card className="border-primary/10">
-                <CardHeader className="bg-primary/5 border-b border-primary/10">
-                    <CardTitle className="text-primary flex items-center gap-2">
-                        <Boxes className="h-5 w-5" /> Catalogo e Estoque
-                    </CardTitle>
-                    <p className="text-xs text-muted-foreground mt-1">
-                        Cadastre servicos, produtos e materiais para reutilizar nos orcamentos.
-                    </p>
-                </CardHeader>
-                <CardContent className="px-3 pt-4 sm:px-6 sm:pt-6">
-                    <ServicesCatalog initialServices={services || []} initialFolders={folders || []} userId={user.id} />
-                </CardContent>
-            </Card>
 
             {/* Appearance Section */}
             <Card className="border-primary/10">

@@ -74,6 +74,27 @@ const FAQ_ITEMS = [
     { category: 'PDF & Aprovação', q: 'O PDF sai com marca d\'água no plano gratuito?', a: 'No plano gratuito, o PDF mantem a marca Zacly e limita a personalizacao. Com o plano Pro, a logo da empresa aparece com visual premium e sem marca Zacly.' },
 ]
 
+const HELP_FAQ_ITEMS = [
+    ...FAQ_ITEMS.filter(() => false),
+    { category: 'Orçamentos', q: 'Como criar um novo orçamento?', a: 'Toque em "Novo", escolha ou cadastre o cliente, adicione serviços/produtos e salve. Depois você pode compartilhar o link, baixar PDF ou imprimir.' },
+    { category: 'Orçamentos', q: 'Como envio o link de aprovação para o cliente?', a: 'Abra o orçamento criado e use a opção de compartilhar ou copiar o link. O cliente acessa pelo celular e aprova pelo próprio link.' },
+    { category: 'Orçamentos', q: 'Quem pode aprovar uma proposta?', a: 'A aprovação deve ser feita pelo cliente no link público da proposta. O dono do orçamento pode marcar envio, execução e conclusão, mas não aprovar por conta própria.' },
+    { category: 'Orçamentos', q: 'Posso editar um orçamento já criado?', a: 'Sim. Abra o orçamento, toque em editar e ajuste cliente, itens, valores, validade, pagamento ou visual. Se o cliente já decidiu, a edição volta o orçamento para nova conferência.' },
+    { category: 'Orçamentos', q: 'Como adiciono prazo, pagamento ou desconto?', a: 'Na criação do orçamento, abra "Ajustes da proposta". Ali ficam validade, condição combinada, cronograma, formas de pagamento e desconto à vista.' },
+    { category: 'Orçamentos', q: 'Quantos orçamentos posso criar no plano gratuito?', a: `O plano gratuito permite até ${PRICING.freeQuotesPerMonth} orçamentos por mês. Para orçamentos ilimitados, assine o plano Pro.` },
+    { category: 'Catálogo', q: 'Onde cadastro serviços, produtos e estoque?', a: 'Acesse "Catálogo" no menu principal. Essa área reúne serviços, produtos, materiais, pastas e controle simples de estoque.' },
+    { category: 'Catálogo', q: 'Quando devo usar produto/material?', a: 'Use produto/material quando quiser controlar quantidade em estoque. Para mão de obra, visita técnica ou instalação, use serviço.' },
+    { category: 'Catálogo', q: 'Os itens do catálogo aparecem no orçamento?', a: 'Sim. Ao montar um orçamento, busque pelo nome do item. Produtos cadastrados mantêm vínculo com estoque para você decidir a baixa depois.' },
+    { category: 'Clientes', q: 'Como cadastrar um novo cliente?', a: 'Acesse "Clientes", toque em "Novo Cliente", preencha os dados principais e salve. Depois você pode gerar orçamento direto pelo card do cliente.' },
+    { category: 'Clientes', q: 'Posso emitir orçamento para pessoa jurídica?', a: 'Sim. No cadastro do cliente, selecione pessoa jurídica e informe os dados da empresa para eles aparecerem na proposta.' },
+    { category: 'Conta & Plano', q: 'Onde ficam minhas configurações?', a: 'No celular, toque no nome da empresa no topo e escolha "Configurações". No computador, use o menu lateral.' },
+    { category: 'Conta & Plano', q: 'Como faço upgrade para o plano Pro?', a: 'Acesse a área de planos pelo app ou pelo banner de upgrade. Escolha mensal ou anual e finalize pelo checkout seguro.' },
+    { category: 'Conta & Plano', q: 'Como cancelo minha assinatura?', a: 'Acesse Configurações e use a opção de cancelamento. O acesso Pro permanece ativo até o fim do período já pago.' },
+    { category: 'PDF & Aprovação', q: 'Como personalizo o visual da proposta?', a: 'Acesse Configurações e ajuste a identidade da proposta: logo, cor, modelo visual, tom e mensagem final.' },
+    { category: 'PDF & Aprovação', q: 'O PDF respeita o modelo escolhido?', a: 'Sim. Cada orçamento salva o modelo visual escolhido no momento da criação ou edição.' },
+    { category: 'PDF & Aprovação', q: 'O PDF sai com marca d\'água no plano gratuito?', a: 'No plano gratuito, o PDF pode manter marca Zacly e limitar personalizações. Com o plano Pro, a proposta fica mais completa e profissional.' },
+]
+
 const TICKET_TYPES: { value: TicketType; label: string; icon: React.ReactNode; color: string }[] = [
     { value: 'bug', label: 'Bug / Erro', icon: <Bug className="h-4 w-4" />, color: 'peer-checked:border-red-500 peer-checked:bg-red-500/10 peer-checked:text-red-500' },
     { value: 'doubt', label: 'Dúvida', icon: <HelpCircle className="h-4 w-4" />, color: 'peer-checked:border-blue-500 peer-checked:bg-blue-500/10 peer-checked:text-blue-500' },
@@ -104,13 +125,13 @@ function FaqTab() {
     const [openIdx, setOpenIdx] = useState<number | null>(null)
 
     const filteredFaqs = query.trim().length < 2
-        ? FAQ_ITEMS
-        : FAQ_ITEMS.filter(item =>
+        ? HELP_FAQ_ITEMS
+        : HELP_FAQ_ITEMS.filter(item =>
             item.q.toLowerCase().includes(query.toLowerCase()) ||
             item.a.toLowerCase().includes(query.toLowerCase())
         )
 
-    const grouped = filteredFaqs.reduce<Record<string, typeof FAQ_ITEMS>>((acc, item) => {
+    const grouped = filteredFaqs.reduce<Record<string, typeof HELP_FAQ_ITEMS>>((acc, item) => {
         ; (acc[item.category] ??= []).push(item)
         return acc
     }, {})
@@ -143,7 +164,7 @@ function FaqTab() {
                             )}
                             <div className="space-y-0 divide-y divide-border rounded-lg border border-border overflow-hidden">
                                 {items.map((item, i) => {
-                                    const idx = FAQ_ITEMS.indexOf(item)
+                                    const idx = HELP_FAQ_ITEMS.indexOf(item)
                                     const isOpen = openIdx === idx
                                     return (
                                         <div key={i}>

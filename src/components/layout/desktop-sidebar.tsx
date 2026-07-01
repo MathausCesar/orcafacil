@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Image from 'next/image'
-import { PlusCircle, Users, Settings, FileText, LayoutDashboard, LogOut } from 'lucide-react'
+import { Boxes, PlusCircle, Users, Settings, FileText, LayoutDashboard, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { signout } from '@/app/actions/auth'
@@ -25,6 +25,11 @@ export function DesktopSidebar({ className }: DesktopSidebarProps) {
             href: '/quotes',
             label: 'Orçamentos',
             icon: FileText,
+        },
+        {
+            href: '/catalog',
+            label: 'Catálogo',
+            icon: Boxes,
         },
         {
             href: '/clients',

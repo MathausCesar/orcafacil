@@ -24,6 +24,25 @@ import { useRouter } from 'next/navigation'
 import { PROPOSAL_MODELS } from '@/lib/proposal-style'
 import { PROFESSIONAL_CONTEXTS, getProfessionalContext } from '@/lib/professional-context'
 
+type NumericQuoteItemField = 'quantity' | 'unitPrice'
+
+function parseBrazilianNumber(value: string) {
+    const cleanValue = value.trim().replace(/\s/g, '')
+
+    if (!cleanValue) return null
+
+    const normalized = cleanValue.includes(',')
+        ? cleanValue.replace(/\./g, '').replace(',', '.')
+        : cleanValue
+
+    const parsed = Number(normalized)
+    return Number.isFinite(parsed) ? parsed : null
+}
+
+function formatNumberInput(value: number) {
+    return String(value).replace('.', ',')
+}
+
 export interface QuoteItem {
     id: string;
     serviceId?: string | null;
@@ -66,7 +85,9 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
     const [date, setDate] = useState<string>(initialData?.expirationDate || '')
     const [clientName, setClientName] = useState(initialData?.clientName || '')
     const [clientPhone, setClientPhone] = useState(initialData?.clientPhone || '')
+    const [paymentTerms, setPaymentTerms] = useState(initialData?.paymentTerms || 'A combinar')
     const [notes, setNotes] = useState(initialData?.notes || '')
+    const [itemDrafts, setItemDrafts] = useState<Record<string, Partial<Record<NumericQuoteItemField, string>>>>({})
 
     // Customization states
     // In a real app, these could come from initialData too if persisted
@@ -126,6 +147,37 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
         setItems(items.map(i => i.id === id ? { ...i, [field]: value } : i))
     }
 
+    const handleItemNumberChange = (id: string, field: NumericQuoteItemField, value: string) => {
+        setItemDrafts((current) => ({
+            ...current,
+            [id]: {
+                ...current[id],
+                [field]: value,
+            },
+        }))
+
+        const parsed = parseBrazilianNumber(value)
+        if (parsed !== null) {
+            handleUpdateItem(id, field, parsed)
+        }
+    }
+
+    const handleItemNumberBlur = (id: string, field: NumericQuoteItemField) => {
+        setItemDrafts((current) => {
+            const next = { ...current }
+            const itemDraft = { ...(next[id] || {}) }
+            delete itemDraft[field]
+
+            if (Object.keys(itemDraft).length > 0) {
+                next[id] = itemDraft
+            } else {
+                delete next[id]
+            }
+
+            return next
+        })
+    }
+
     const handleProfessionalContextChange = (contextId: string) => {
         const context = getProfessionalContext(contextId)
 
@@ -162,6 +214,8 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
         formData.set('items', JSON.stringify(items))
         formData.set('clientName', clientName)
         if (clientPhone) formData.set('clientPhone', clientPhone)
+        formData.set('expirationDate', date)
+        formData.set('paymentTerms', paymentTerms)
         formData.set('notes', notes)
 
         // Add customization fields
@@ -176,11 +230,12 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                 formData.set('payment_methods', JSON.stringify(paymentMethods))
             }
             if (cashDiscount) {
+                const normalizedCashDiscount = String(parseBrazilianNumber(cashDiscount) || 0)
                 if (cashDiscountType === 'percent') {
-                    formData.set('cash_discount_percent', cashDiscount)
+                    formData.set('cash_discount_percent', normalizedCashDiscount)
                     formData.set('cash_discount_fixed', '0')
                 } else {
-                    formData.set('cash_discount_fixed', cashDiscount)
+                    formData.set('cash_discount_fixed', normalizedCashDiscount)
                     formData.set('cash_discount_percent', '0')
                 }
                 formData.set('cash_discount_type', cashDiscountType)
@@ -232,7 +287,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
     const total = items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0)
 
     return (
-        <form action={handleSubmit} className="pb-24 lg:pb-0">
+        <form action={handleSubmit} className="pb-40 lg:pb-0">
             {/* Header Area */}
             <div className="flex items-center gap-4 mb-8">
                 <Link href={initialData?.id ? `/quotes/${initialData.id}` : "/"}>
@@ -244,15 +299,15 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                     <h1 className="text-2xl font-bold text-foreground tracking-tight">
                         {initialData?.id ? 'Editar Orçamento' : 'Novo Orçamento'}
                     </h1>
-                    <p className="text-muted-foreground text-sm">Preencha as informações para gerar a proposta.</p>
+                    <p className="text-muted-foreground text-sm">Comece pelo cliente e pelos itens. O visual fica como ajuste opcional.</p>
                 </div>
             </div>
 
             {quickMode && (
                 <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-                    <p className="font-semibold">Modo rapido para o primeiro orcamento</p>
+                    <p className="font-semibold">Modo rápido para o primeiro orçamento</p>
                     <p className="mt-1 text-emerald-800/80">
-                        Comece com cliente, itens e observacoes. Layout, pagamento e cronograma continuam disponiveis nas configuracoes avancadas.
+                        Comece com cliente, itens e observações. Layout, pagamento e cronograma continuam disponíveis nos ajustes da proposta.
                     </p>
                 </div>
             )}
@@ -261,34 +316,6 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
 
                 {/* Main Column (Left) */}
                 <div className="lg:col-span-2 space-y-6">
-                    <Card className="border-0 shadow-sm ring-1 ring-border">
-                        <CardHeader className="pb-4 border-b border-border">
-                            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                                <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-lg">
-                                    <Wrench className="h-5 w-5" />
-                                </div>
-                                Modelo da Operacao
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-6 space-y-3">
-                            <Select value={professionalContext} onValueChange={handleProfessionalContextChange}>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Escolha o tipo de servico" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {PROFESSIONAL_CONTEXTS.map((context) => (
-                                        <SelectItem key={context.id} value={context.id}>
-                                            {context.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <p className="text-sm leading-6 text-muted-foreground">
-                                O Zacly ajusta textos, prazo e pagamento sugeridos sem engessar sua proposta.
-                            </p>
-                        </CardContent>
-                    </Card>
-
                     {/* Client Data */}
                     <Card className="border-0 shadow-sm ring-1 ring-border">
                         <CardHeader className="pb-4 border-b border-border">
@@ -296,7 +323,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                                 <div className="p-2 bg-primary/10 text-primary rounded-lg">
                                     <FileText className="h-5 w-5" />
                                 </div>
-                                Dados do Cliente
+                                Cliente
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-6">
@@ -345,7 +372,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                                                             : 'border-slate-200 bg-slate-50 text-slate-600'
                                                             }`}>
                                                             {item.itemType === 'product' ? <Package className="h-3 w-3" /> : <Wrench className="h-3 w-3" />}
-                                                            {item.itemType === 'product' ? 'Produto' : 'Servico'}
+                                                            {item.itemType === 'product' ? 'Produto' : 'Serviço'}
                                                         </span>
                                                         {item.itemType === 'product' && item.serviceId && (
                                                             <span className="text-[10px] text-muted-foreground">vinculado ao estoque</span>
@@ -362,20 +389,23 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                                                 <div className="lg:col-span-1 flex items-center lg:justify-center">
                                                     <span className="lg:hidden text-sm text-muted-foreground mr-2">Qtd:</span>
                                                     <Input
-                                                        type="number"
-                                                        value={item.quantity}
-                                                        onChange={(e) => handleUpdateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                                                        type="text"
+                                                        inputMode="decimal"
+                                                        value={itemDrafts[item.id]?.quantity ?? formatNumberInput(item.quantity)}
+                                                        onChange={(e) => handleItemNumberChange(item.id, 'quantity', e.target.value)}
+                                                        onBlur={() => handleItemNumberBlur(item.id, 'quantity')}
                                                         className="w-16 text-center h-8"
                                                     />
                                                 </div>
 
                                                 <div className="lg:col-span-3 flex items-center lg:justify-end min-w-0">
-                                                    <span className="lg:hidden text-sm text-muted-foreground mr-2 shrink-0">Unit:</span>
+                                                    <span className="lg:hidden text-sm text-muted-foreground mr-2 shrink-0">Unitário:</span>
                                                     <Input
-                                                        type="number"
-                                                        step="0.01"
-                                                        value={item.unitPrice}
-                                                        onChange={(e) => handleUpdateItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                                                        type="text"
+                                                        inputMode="decimal"
+                                                        value={itemDrafts[item.id]?.unitPrice ?? formatNumberInput(item.unitPrice)}
+                                                        onChange={(e) => handleItemNumberChange(item.id, 'unitPrice', e.target.value)}
+                                                        onBlur={() => handleItemNumberBlur(item.id, 'unitPrice')}
                                                         className="w-full max-w-[120px] text-right h-8"
                                                     />
                                                 </div>
@@ -421,7 +451,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                             ) : (
                                 <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed border-border">
                                     <p className="text-muted-foreground">Nenhum item adicionado ainda.</p>
-                                    <p className="text-sm text-muted-foreground/70">Use a busca acima para adicionar serviços.</p>
+                                    <p className="text-sm text-muted-foreground/70">Use a busca acima para adicionar serviços ou produtos.</p>
                                 </div>
                             )}
                         </CardContent>
@@ -448,6 +478,33 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                 {/* Sidebar Column (Right) - Sticky */}
                 <div className="lg:col-span-1 space-y-6">
                     <div className="lg:sticky lg:top-6 flex flex-col gap-6">
+                        <Card className="border-0 shadow-sm ring-1 ring-border">
+                            <CardHeader className="pb-4 border-b border-border">
+                                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                                    <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-lg">
+                                        <Wrench className="h-4 w-4" />
+                                    </div>
+                                    Tipo de serviço
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-5 space-y-3">
+                                <Select value={professionalContext} onValueChange={handleProfessionalContextChange}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Escolha o tipo de serviço" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {PROFESSIONAL_CONTEXTS.map((context) => (
+                                            <SelectItem key={context.id} value={context.id}>
+                                                {context.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-xs leading-5 text-muted-foreground">
+                                    Ajusta sugestões de prazo, pagamento e texto sem travar sua proposta.
+                                </p>
+                            </CardContent>
+                        </Card>
 
                         {/* Summary & Save */}
                         <Card className="order-last lg:order-first border-0 shadow-lg ring-1 ring-border bg-slate-900 dark:bg-card text-white dark:text-card-foreground overflow-hidden">
@@ -460,7 +517,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                                 </div>
                                 <Button size="lg" className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold h-12 shadow-lg shadow-emerald-900/20 border-0" disabled={loading}>
                                     {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
-                                    {initialData?.id ? 'Salvar Alterações' : 'Finalizar Orçamento'}
+                                    {initialData?.id ? 'Salvar alterações' : 'Finalizar orçamento'}
                                 </Button>
                             </CardContent>
                         </Card>
@@ -477,7 +534,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                                     <Settings2 className="h-4 w-4" />
                                 </div>
                                 <span className="flex min-w-0 flex-col items-start">
-                                    <span className="font-semibold text-foreground">Mostrar configuracoes avancadas</span>
+                                    <span className="font-semibold text-foreground">Mostrar ajustes da proposta</span>
                                     <span className="text-xs font-normal text-muted-foreground">
                                         Escolha layout, pagamento, cronograma e detalhes extras.
                                     </span>
@@ -487,7 +544,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                         <Card className="border-0 shadow-sm ring-1 ring-border">
                             <CardHeader className="pb-3 border-b border-border bg-muted/30">
                                 <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
-                                    <Settings2 className="h-4 w-4" /> Configurações
+                                    <Settings2 className="h-4 w-4" /> Ajustes da proposta
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-0">
@@ -498,7 +555,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                                             <div className="p-2 bg-primary/10 text-primary rounded-lg">
                                                 <LayoutTemplate className="h-4 w-4" />
                                             </div>
-                                            <Label className="font-medium">Estilo da Proposta</Label>
+                                            <Label className="font-medium">Modelo visual</Label>
                                         </div>
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                                             {PROPOSAL_MODELS.map((l) => (
@@ -516,7 +573,43 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                                                 </button>
                                             ))}
                                         </div>
-                                        <p className="text-xs text-muted-foreground leading-snug">Cada orçamento salva o layout escolhido no momento da criação.</p>
+                                        <p className="text-xs text-muted-foreground leading-snug">Cada orçamento salva o modelo escolhido no momento da criação.</p>
+                                    </div>
+                                    <div className="p-4 space-y-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-lg">
+                                                <CheckCircle2 className="h-4 w-4" />
+                                            </div>
+                                            <Label className="font-medium">Condições comerciais</Label>
+                                        </div>
+                                        <div className="grid gap-3">
+                                            <div>
+                                                <Label htmlFor="expirationDate" className="mb-1.5 block text-xs text-muted-foreground">
+                                                    Validade da proposta
+                                                </Label>
+                                                <Input
+                                                    id="expirationDate"
+                                                    name="expirationDate"
+                                                    type="date"
+                                                    value={date}
+                                                    onChange={(event) => setDate(event.target.value)}
+                                                    className="h-9 text-sm"
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="paymentTerms" className="mb-1.5 block text-xs text-muted-foreground">
+                                                    Condição combinada
+                                                </Label>
+                                                <Input
+                                                    id="paymentTerms"
+                                                    name="paymentTerms"
+                                                    value={paymentTerms}
+                                                    onChange={(event) => setPaymentTerms(event.target.value)}
+                                                    placeholder="Ex: 50% no início e 50% na entrega"
+                                                    className="h-9 text-sm"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                     {/* Detailed Items Toggle */}
                                     <div className="p-4 space-y-3">
@@ -526,14 +619,14 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                                             </div>
                                             <div className="flex-1">
                                                 <div className="flex items-center justify-between">
-                                                    <Label htmlFor="show_detailed" className="font-medium cursor-pointer">Orçamento Detalhado</Label>
+                                                    <Label htmlFor="show_detailed" className="font-medium cursor-pointer">Mostrar detalhes dos itens</Label>
                                                     <Checkbox
                                                         id="show_detailed"
                                                         checked={showDetailedItems}
                                                         onCheckedChange={(checked) => setShowDetailedItems(checked as boolean)}
                                                     />
                                                 </div>
-                                                <p className="text-xs text-muted-foreground mt-1 leading-snug">Se ativo, exibe as descrições extras de produtos e serviços no documento.</p>
+                                                <p className="text-xs text-muted-foreground mt-1 leading-snug">Exibe descrições extras de produtos e serviços no documento.</p>
                                             </div>
                                         </div>
                                     </div>
@@ -556,7 +649,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                                             </div>
                                         </div>
                                         {showTimeline && (
-                                            <div className="pl-11 pr-1 animate-in slide-in-from-top-2 duration-200">
+                                            <div className="pr-1 sm:pl-11 animate-in slide-in-from-top-2 duration-200">
                                                 <Label className="text-xs text-muted-foreground mb-1.5 block">Dias estimados</Label>
                                                 <Input
                                                     type="number"
@@ -587,7 +680,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                                             </div>
                                         </div>
                                         {showPaymentOptions && (
-                                            <div className="pl-11 pr-1 space-y-3 animate-in slide-in-from-top-2 duration-200">
+                                            <div className="pr-1 space-y-3 sm:pl-11 animate-in slide-in-from-top-2 duration-200">
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {[
                                                         { value: 'pix', label: 'PIX' },
@@ -611,7 +704,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
 
                                                 {paymentMethods.includes('installment') && (
                                                     <div>
-                                                        <Label className="text-xs text-muted-foreground mb-1 block">Nº Parcelas</Label>
+                                                        <Label className="text-xs text-muted-foreground mb-1 block">Número de parcelas</Label>
                                                         <Input
                                                             type="number"
                                                             placeholder="Ex: 12"
@@ -639,9 +732,9 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                                                                 >R$</button>
                                                             </div>
                                                             <Input
-                                                                type="number"
-                                                                step={cashDiscountType === 'percent' ? "1" : "0.01"}
-                                                                placeholder={cashDiscountType === 'percent' ? "Ex: 5" : "Ex: 100.00"}
+                                                                type="text"
+                                                                inputMode="decimal"
+                                                                placeholder={cashDiscountType === 'percent' ? "Ex: 5" : "Ex: 100,00"}
                                                                 value={cashDiscount}
                                                                 onChange={(e) => setCashDiscount(e.target.value)}
                                                                 className="h-8 text-sm flex-1"
@@ -660,7 +753,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                 </div>
 
                 {/* Mobile Floating Button - Visible only on mobile */}
-                <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border lg:hidden z-50">
+                <div className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 border-t border-border bg-background/95 p-4 shadow-[0_-12px_30px_rgba(15,23,42,0.12)] backdrop-blur lg:hidden">
                     <Button type="submit" size="lg" className="w-full bg-emerald-600 font-bold" disabled={loading}>
                         {loading ? 'Salvando...' : `Salvar (${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)})`}
                     </Button>

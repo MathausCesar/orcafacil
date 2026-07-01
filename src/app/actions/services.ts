@@ -6,7 +6,11 @@ import { getAuthContext } from '@/lib/get-auth-context'
 function parseNumber(value: FormDataEntryValue | null, fallback = 0) {
     if (typeof value !== 'string') return fallback
 
-    const parsed = Number(value.replace(',', '.'))
+    const cleanValue = value.trim().replace(/\s/g, '')
+    const normalized = cleanValue.includes(',')
+        ? cleanValue.replace(/\./g, '').replace(',', '.')
+        : cleanValue
+    const parsed = Number(normalized)
     return Number.isFinite(parsed) ? parsed : fallback
 }
 
@@ -191,7 +195,7 @@ export async function adjustServiceStock(id: string, formData: FormData) {
 
     if (error) {
         console.error('Error adjusting stock:', error)
-        return { error: 'Nao foi possivel ajustar o estoque.' }
+        return { error: 'Não foi possível ajustar o estoque.' }
     }
 
     revalidateCatalogPaths()

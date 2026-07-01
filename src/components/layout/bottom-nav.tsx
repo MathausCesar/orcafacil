@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, PlusCircle, Users, Settings, FileText } from 'lucide-react'
+import { Boxes, Home, PlusCircle, Users, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function BottomNav() {
@@ -26,14 +26,14 @@ export function BottomNav() {
             highlight: true,
         },
         {
+            href: '/catalog',
+            label: 'Catálogo',
+            icon: Boxes,
+        },
+        {
             href: '/clients',
             label: 'Clientes',
             icon: Users,
-        },
-        {
-            href: '/profile',
-            label: 'Perfil',
-            icon: Settings,
         },
     ]
 

@@ -64,7 +64,7 @@ export function NotificationBell() {
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80 p-0" align="end">
+            <PopoverContent className="w-[calc(100vw-2rem)] max-w-sm p-0 sm:w-80" align="end" sideOffset={8}>
                 <div className="flex items-center justify-between p-4 border-b">
                     <h4 className="font-semibold">Notificações</h4>
                     {hasUnread && (
@@ -84,7 +84,7 @@ export function NotificationBell() {
                                 <div
                                     key={notification.id}
                                     className={cn(
-                                        "p-4 hover:bg-secondary/50 transition-colors flex gap-3 items-start",
+                                        "p-4 hover:bg-secondary/50 transition-colors flex gap-3 items-start min-w-0",
                                         !notification.read && "bg-primary/5 dark:bg-primary/10 hover:bg-primary/10 dark:hover:bg-primary/20"
                                     )}
                                 >
@@ -92,10 +92,10 @@ export function NotificationBell() {
                                         "h-2 w-2 mt-2 rounded-full flex-shrink-0",
                                         !notification.read ? "bg-primary" : "bg-muted-foreground/30"
                                     )} />
-                                    <div className="flex-1 space-y-1">
+                                    <div className="min-w-0 flex-1 space-y-1">
                                         <p className="text-sm font-medium leading-none text-foreground">{notification.title}</p>
                                         <p className="text-xs text-muted-foreground line-clamp-2">{notification.message}</p>
-                                        <div className="flex gap-2 mt-2">
+                                        <div className="flex flex-wrap gap-2 mt-2">
                                             {notification.link && (
                                                 <Link href={notification.link} onClick={() => { setOpen(false); handleMarkRead(notification.id) }}>
                                                     <Button variant="outline" size="icon" className="h-6 w-auto px-2 text-[10px] gap-1">
@@ -115,7 +115,7 @@ export function NotificationBell() {
                                             )}
                                         </div>
                                     </div>
-                                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                                    <span className="text-[10px] text-muted-foreground whitespace-nowrap shrink-0">
                                         {formatTimeAgo(notification.created_at)}
                                     </span>
                                 </div>

@@ -88,8 +88,8 @@ export function PwaInstallPrompt() {
     if (!show) return null
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-[9999] p-4 sm:p-6 animate-in slide-in-from-bottom duration-300">
-            <div className="max-w-md mx-auto bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+        <div className="fixed bottom-20 left-0 right-0 z-[9999] p-4 pb-[calc(1rem_+_env(safe-area-inset-bottom))] sm:bottom-6 sm:p-6 animate-in slide-in-from-bottom duration-300">
+            <div className="max-w-md mx-auto max-h-[calc(100dvh-7rem)] overflow-y-auto bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-700">
                 {/* Header */}
                 <div className="flex items-center justify-between px-4 pt-4 pb-2">
                     <div className="flex items-center gap-3">

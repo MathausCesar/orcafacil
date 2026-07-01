@@ -49,6 +49,19 @@ function formatQty(value: number | null | undefined, unit?: string | null) {
     return `${Number(value || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ${unit || 'un'}`
 }
 
+function parseBrazilianNumber(value: string) {
+    const cleanValue = value.trim().replace(/\s/g, '')
+
+    if (!cleanValue) return 0
+
+    const normalized = cleanValue.includes(',')
+        ? cleanValue.replace(/\./g, '').replace(',', '.')
+        : cleanValue
+
+    const parsed = Number(normalized)
+    return Number.isFinite(parsed) ? parsed : 0
+}
+
 export function ProductSearch({ onAddProduct }: ProductSearchProps) {
     const { organization } = useOrganization()
     const [description, setDescription] = useState('')
@@ -127,15 +140,15 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
 
     const handleAdd = () => {
         if (!description.trim()) {
-            toast.error('Informe a descricao do item.')
+            toast.error('Informe a descrição do item.')
             return
         }
 
-        const priceVal = Number(price.replace(',', '.')) || 0
-        const qtyVal = Number(quantity.replace(',', '.')) || 1
+        const priceVal = parseBrazilianNumber(price)
+        const qtyVal = parseBrazilianNumber(quantity) || 1
 
         if (priceVal <= 0) {
-            toast.warning('O preco deve ser maior que zero.')
+            toast.warning('O preço deve ser maior que zero.')
             return
         }
 
@@ -150,7 +163,7 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
             typeof selectedService.stock_quantity === 'number' &&
             qtyVal > selectedService.stock_quantity
         ) {
-            toast.warning('Quantidade acima do estoque atual. O item foi adicionado para voce decidir depois.')
+            toast.warning('Quantidade acima do estoque atual. O item foi adicionado para você decidir depois.')
         }
 
         onAddProduct({
@@ -183,11 +196,11 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
             <div className="relative" ref={suggestionsRef}>
                 <div className="space-y-1">
                     <Label htmlFor="itemName" className="text-xs font-medium text-muted-foreground">
-                        Item ou servico
+                        Item ou serviço
                     </Label>
                     <Input
                         id="itemName"
-                        placeholder="Ex: Troca de oleo, pastilha de freio..."
+                        placeholder="Ex: Troca de óleo, pastilha de freio..."
                         value={description}
                         onChange={(event) => handleDescriptionChange(event.target.value)}
                         onFocus={() => {
@@ -205,7 +218,7 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
                 </div>
 
                 {showSuggestions && (
-                    <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-72 overflow-y-auto rounded-lg border border-primary/15 bg-card shadow-lg">
+                    <div className="fixed inset-x-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-[60] max-h-[45vh] overflow-y-auto rounded-lg border border-primary/15 bg-card shadow-lg sm:absolute sm:bottom-auto sm:left-0 sm:right-0 sm:top-full sm:z-20 sm:mt-1 sm:max-h-72">
                         {Object.entries(
                             suggestions.reduce((groups, current) => {
                                 const key = current.folder_id || 'none'
@@ -247,7 +260,7 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
                                                         </span>
                                                         <Badge variant="outline" className="h-4 shrink-0 border-border py-0 text-[10px] font-normal text-muted-foreground">
                                                             {isProduct ? <Package className="mr-1 h-3 w-3" /> : <Wrench className="mr-1 h-3 w-3" />}
-                                                            {isProduct ? 'Produto' : 'Servico'}
+                                                            {isProduct ? 'Produto' : 'Serviço'}
                                                         </Badge>
                                                     </div>
                                                     <span className="shrink-0 text-xs font-semibold text-primary">
@@ -289,9 +302,8 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
                     </Label>
                     <Input
                         id="itemQty"
-                        type="number"
-                        min="0.01"
-                        step="0.01"
+                        type="text"
+                        inputMode="decimal"
                         value={quantity}
                         onChange={(event) => setQuantity(event.target.value)}
                         onKeyDown={handleKeyDown}
@@ -301,12 +313,12 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
 
                 <div className="flex-1 space-y-1">
                     <Label htmlFor="itemPrice" className="text-xs font-medium text-muted-foreground">
-                        Valor unitario (R$)
+                        Valor unitário (R$)
                     </Label>
                     <Input
                         id="itemPrice"
-                        type="number"
-                        step="0.01"
+                        type="text"
+                        inputMode="decimal"
                         placeholder="0,00"
                         value={price}
                         onChange={(event) => setPrice(event.target.value)}
@@ -319,7 +331,7 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
                     type="button"
                     onClick={handleAdd}
                     disabled={!description.trim()}
-                    className="bg-gradient-to-r from-primary to-emerald-600 text-white shadow-md shadow-primary/20 hover:from-primary/90 hover:to-emerald-600/90"
+                    className="w-full bg-gradient-to-r from-primary to-emerald-600 text-white shadow-md shadow-primary/20 hover:from-primary/90 hover:to-emerald-600/90 sm:w-auto"
                 >
                     <Plus className="mr-2 h-4 w-4" /> Adicionar
                 </Button>
@@ -328,8 +340,8 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
             <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
                 <Package className="h-3 w-3" />
                 {savedServices.length > 0
-                    ? 'Produtos do catalogo mantem vinculo com estoque. Itens digitados manualmente ficam livres.'
-                    : 'Cadastre servicos e produtos no catalogo para agilizar os orcamentos.'
+                    ? 'Produtos do catálogo mantêm vínculo com estoque. Itens digitados manualmente ficam livres.'
+                    : 'Cadastre serviços e produtos no catálogo para agilizar os orçamentos.'
                 }
             </p>
         </div>

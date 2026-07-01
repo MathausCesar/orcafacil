@@ -68,7 +68,7 @@ export function EditServiceDialog({ service, initialFolders }: EditServiceDialog
 
     const handleSave = async () => {
         if (!description.trim()) {
-            toast.error('Informe a descricao.')
+            toast.error('Informe a descrição.')
             return
         }
 
@@ -112,9 +112,9 @@ export function EditServiceDialog({ service, initialFolders }: EditServiceDialog
             </DialogTrigger>
             <DialogContent className="grid max-h-[calc(100dvh-1rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-h-[calc(100vh-2rem)] sm:max-w-[520px]">
                 <DialogHeader className="border-b border-border px-5 py-4 pr-12 sm:px-6">
-                    <DialogTitle>Editar item do catalogo</DialogTitle>
+                    <DialogTitle>Editar item do catálogo</DialogTitle>
                     <DialogDescription>
-                        Ajuste preco, custo, tipo e regras simples de estoque.
+                        Ajuste preço, custo, tipo e regras simples de estoque.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -131,11 +131,11 @@ export function EditServiceDialog({ service, initialFolders }: EditServiceDialog
 
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                         <div className="space-y-1.5">
-                            <Label htmlFor="price">Preco de venda</Label>
+                            <Label htmlFor="price">Preço de venda</Label>
                             <Input
                                 id="price"
-                                type="number"
-                                step="0.01"
+                                type="text"
+                                inputMode="decimal"
                                 value={price}
                                 onChange={(event) => setPrice(event.target.value)}
                             />
@@ -144,8 +144,8 @@ export function EditServiceDialog({ service, initialFolders }: EditServiceDialog
                             <Label htmlFor="cost">Custo</Label>
                             <Input
                                 id="cost"
-                                type="number"
-                                step="0.01"
+                                type="text"
+                                inputMode="decimal"
                                 value={costPrice}
                                 onChange={(event) => setCostPrice(event.target.value)}
                                 placeholder="0,00"
@@ -170,7 +170,7 @@ export function EditServiceDialog({ service, initialFolders }: EditServiceDialog
                                     <SelectValue placeholder="Selecione" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="service">Servico</SelectItem>
+                                    <SelectItem value="service">Serviço</SelectItem>
                                     <SelectItem value="product">Produto/material</SelectItem>
                                 </SelectContent>
                             </Select>
@@ -199,7 +199,7 @@ export function EditServiceDialog({ service, initialFolders }: EditServiceDialog
                             id="details"
                             value={details}
                             onChange={(event) => setDetails(event.target.value)}
-                            placeholder="Ex: inclui instalacao, acabamento, material..."
+                            placeholder="Ex: inclui instalação, acabamento, material..."
                         />
                     </div>
 
@@ -227,11 +227,11 @@ export function EditServiceDialog({ service, initialFolders }: EditServiceDialog
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label htmlFor="minStock">Alerta minimo</Label>
+                                        <Label htmlFor="minStock">Alerta mínimo</Label>
                                         <Input
                                             id="minStock"
-                                            type="number"
-                                            step="0.01"
+                                            type="text"
+                                            inputMode="decimal"
                                             value={minStock}
                                             onChange={(event) => setMinStock(event.target.value)}
                                             placeholder="Ex: 5"
@@ -246,7 +246,7 @@ export function EditServiceDialog({ service, initialFolders }: EditServiceDialog
 
                 <DialogFooter className="border-t border-border bg-background px-5 py-4 sm:px-6">
                     <Button onClick={handleSave} disabled={saving} className="w-full sm:w-auto">
-                        {saving ? 'Salvando...' : 'Salvar alteracoes'}
+                        {saving ? 'Salvando...' : 'Salvar alterações'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

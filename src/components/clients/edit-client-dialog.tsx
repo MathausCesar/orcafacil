@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { updateClient } from '@/app/actions/clients'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -59,11 +59,12 @@ export function EditClientDialog({ client, trigger }: EditClientDialogProps) {
                     </Button>
                 )}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
+            <DialogContent className="grid max-h-[calc(100dvh-1rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-h-[calc(100vh-2rem)] sm:max-w-[425px]">
+                <DialogHeader className="border-b border-border px-5 py-4 pr-12 sm:px-6">
                     <DialogTitle>Editar Cliente</DialogTitle>
                 </DialogHeader>
-                <form action={handleSubmit} className="space-y-4 pt-4">
+                <form action={handleSubmit} className="contents">
+                    <div className="min-h-0 space-y-4 overflow-y-auto px-5 py-4 sm:px-6">
                     <div className="space-y-2">
                         <Label htmlFor="edit-name">Nome Completo *</Label>
                         <Input
@@ -103,12 +104,13 @@ export function EditClientDialog({ client, trigger }: EditClientDialogProps) {
                             placeholder="Preferências, histórico..."
                         />
                     </div>
-                    <div className="flex justify-end pt-4">
-                        <Button type="submit" disabled={loading}>
+                    </div>
+                    <DialogFooter className="border-t border-border bg-background px-5 py-4 sm:px-6">
+                        <Button type="submit" disabled={loading} className="w-full sm:w-auto">
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Salvar Alterações
                         </Button>
-                    </div>
+                    </DialogFooter>
                 </form>
             </DialogContent>
         </Dialog>

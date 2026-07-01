@@ -64,10 +64,10 @@ export function ClientCardExpandable({ client }: { client: Client }) {
         <Card className="hover:border-primary/25 hover:shadow-md transition-all border-primary/10">
             {/* Main Row */}
             <CardContent className="p-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <button
                         onClick={handleToggle}
-                        className="flex items-center gap-3 flex-1 text-left cursor-pointer"
+                        className="flex min-w-0 items-center gap-3 text-left cursor-pointer sm:flex-1"
                     >
                         <Avatar className="h-10 w-10 bg-primary/10 text-primary">
                             <AvatarFallback className="bg-primary/10 text-primary font-semibold">
@@ -75,25 +75,29 @@ export function ClientCardExpandable({ client }: { client: Client }) {
                             </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-foreground">{client.name}</h3>
+                            <h3 className="font-semibold text-foreground truncate">{client.name}</h3>
                             {client.phone && (
-                                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                    <Phone className="h-3 w-3" /> {client.phone}
+                                <p className="text-xs text-muted-foreground flex min-w-0 items-center gap-1">
+                                    <Phone className="h-3 w-3 shrink-0" /> <span className="truncate">{client.phone}</span>
                                 </p>
                             )}
                         </div>
-                        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+                        <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
                     </button>
 
-                    <div className="flex gap-1 ml-2 shrink-0">
-                        <EditClientDialog client={client} trigger={
-                            <Button size="sm" variant="ghost" className="h-8 text-xs hover:bg-muted">
-                                Editar
-                            </Button>
-                        } />
-                        <DeleteClientButton clientId={client.id} clientName={client.name} />
-                        <Link href={`/new?clientId=${client.id}&clientName=${encodeURIComponent(client.name)}`}>
-                            <Button size="sm" variant="ghost" className="h-8 text-xs text-primary hover:bg-primary/10 hover:text-primary">
+                    <div className="grid grid-cols-3 gap-2 sm:flex sm:shrink-0">
+                        <div className="[&_button]:w-full sm:[&_button]:w-auto">
+                            <EditClientDialog client={client} trigger={
+                                <Button size="sm" variant="ghost" className="h-9 text-xs hover:bg-muted sm:h-8">
+                                    Editar
+                                </Button>
+                            } />
+                        </div>
+                        <div className="[&_button]:w-full sm:[&_button]:w-auto">
+                            <DeleteClientButton clientId={client.id} clientName={client.name} />
+                        </div>
+                        <Link href={`/new?clientId=${client.id}&clientName=${encodeURIComponent(client.name)}`} className="min-w-0">
+                            <Button size="sm" variant="ghost" className="h-9 w-full text-xs text-primary hover:bg-primary/10 hover:text-primary sm:h-8 sm:w-auto">
                                 Orçar
                             </Button>
                         </Link>
@@ -122,9 +126,9 @@ export function ClientCardExpandable({ client }: { client: Client }) {
                                     <Link
                                         key={quote.id}
                                         href={`/quotes/${quote.id}`}
-                                        className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/60 border border-border/50 transition-colors group"
+                                        className="flex flex-col gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/60 border border-border/50 transition-colors group sm:flex-row sm:items-center sm:justify-between"
                                     >
-                                        <div className="flex items-center gap-3 min-w-0">
+                                        <div className="flex min-w-0 items-center gap-3">
                                             <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                                             <div className="min-w-0">
                                                 <p className="text-sm font-medium text-foreground truncate">
@@ -135,7 +139,7 @@ export function ClientCardExpandable({ client }: { client: Client }) {
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2 shrink-0">
+                                        <div className="flex items-center justify-between gap-2 sm:shrink-0 sm:justify-end">
                                             <QuoteStatusBadge status={quote.status} />
                                             <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                                         </div>

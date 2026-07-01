@@ -130,7 +130,7 @@ export async function createQuote(formData: FormData) {
             .gte('created_at', firstDayOfMonth.toISOString())
 
         if (!countError && count !== null && count >= PRICING.freeQuotesPerMonth) {
-            return { error: 'LIMIT_REACHED', message: `Voce atingiu o limite de ${PRICING.freeQuotesPerMonth} orcamentos gratis neste mes.` }
+            return { error: 'LIMIT_REACHED', message: `Você atingiu o limite de ${PRICING.freeQuotesPerMonth} orçamentos grátis neste mês.` }
         }
     }
     // ----------------------
@@ -423,7 +423,7 @@ export async function deductQuoteStock(id: string) {
 
     if (error) {
         console.error('Error consuming quote stock:', error)
-        return { error: 'Nao foi possivel baixar o estoque deste orcamento.' }
+        return { error: 'Não foi possível baixar o estoque deste orçamento.' }
     }
 
     const deductedItems = typeof data === 'object' && data && 'deducted_items' in data

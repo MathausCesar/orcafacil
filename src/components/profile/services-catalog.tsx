@@ -65,6 +65,19 @@ function getMargin(defaultPrice: number, costPrice: number | null | undefined) {
     return Math.round(((defaultPrice - cost) / defaultPrice) * 100)
 }
 
+function parseBrazilianNumber(value: string) {
+    const cleanValue = value.trim().replace(/\s/g, '')
+
+    if (!cleanValue) return 0
+
+    const normalized = cleanValue.includes(',')
+        ? cleanValue.replace(/\./g, '').replace(',', '.')
+        : cleanValue
+
+    const parsed = Number(normalized)
+    return Number.isFinite(parsed) ? parsed : 0
+}
+
 function isLowStock(service: Service) {
     return service.type === 'product' &&
         Boolean(service.track_stock) &&
@@ -153,9 +166,9 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
             return
         }
 
-        const priceValue = Number(price.replace(',', '.'))
+        const priceValue = parseBrazilianNumber(price)
         if (!Number.isFinite(priceValue) || priceValue < 0) {
-            toast.warning('Informe um preco valido.')
+            toast.warning('Informe um preço válido.')
             return
         }
 
@@ -164,13 +177,13 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
         try {
             const formData = new FormData()
             formData.append('description', description)
-            formData.append('price', price || '0')
+            formData.append('price', String(priceValue))
             formData.append('type', type)
             formData.append('unit', unit || 'un')
-            formData.append('cost_price', costPrice || '0')
+            formData.append('cost_price', String(parseBrazilianNumber(costPrice)))
             formData.append('track_stock', String(type === 'product' && trackStock))
-            formData.append('stock_quantity', type === 'product' && trackStock ? stockQuantity || '0' : '0')
-            formData.append('min_stock', type === 'product' && trackStock ? minStock || '0' : '0')
+            formData.append('stock_quantity', type === 'product' && trackStock ? String(parseBrazilianNumber(stockQuantity)) : '0')
+            formData.append('min_stock', type === 'product' && trackStock ? String(parseBrazilianNumber(minStock)) : '0')
             if (details.trim()) formData.append('details', details.trim())
             if (folderId) formData.append('folder_id', folderId)
 
@@ -181,7 +194,7 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
                 return
             }
 
-            toast.success(type === 'product' ? 'Produto salvo.' : 'Servico salvo.')
+            toast.success(type === 'product' ? 'Produto salvo.' : 'Serviço salvo.')
             resetForm()
             router.refresh()
         } catch {
@@ -222,7 +235,7 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
                     <p className="mt-1 text-2xl font-bold text-foreground">{stats.all}</p>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Servicos</p>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Serviços</p>
                     <p className="mt-1 text-2xl font-bold text-foreground">{stats.services}</p>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4">
@@ -238,7 +251,7 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
             <div className="rounded-xl border border-border bg-muted/40 p-3 sm:p-4">
                 <div className="mb-4 flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h3 className="text-sm font-semibold text-foreground">Adicionar item ao catalogo</h3>
+                        <h3 className="text-sm font-semibold text-foreground">Adicionar item ao catálogo</h3>
                         <p className="text-xs text-muted-foreground">Use produto/material somente quando quiser controlar estoque.</p>
                     </div>
                     <FoldersDialog folders={initialFolders} />
@@ -249,7 +262,7 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
                         <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">Nome do item</Label>
                             <Input
-                                placeholder="Ex: Visita tecnica ou Cabo 2.5mm"
+                                placeholder="Ex: Visita técnica ou Cabo 2,5mm"
                                 value={description}
                                 onChange={(event) => setDescription(event.target.value)}
                                 onKeyDown={handleKeyDown}
@@ -259,8 +272,8 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
                         <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">Venda (R$)</Label>
                             <Input
-                                type="number"
-                                step="0.01"
+                                type="text"
+                                inputMode="decimal"
                                 placeholder="0,00"
                                 value={price}
                                 onChange={(event) => setPrice(event.target.value)}
@@ -271,8 +284,8 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
                         <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">Custo (R$)</Label>
                             <Input
-                                type="number"
-                                step="0.01"
+                                type="text"
+                                inputMode="decimal"
                                 placeholder="0,00"
                                 value={costPrice}
                                 onChange={(event) => setCostPrice(event.target.value)}
@@ -287,7 +300,7 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
                                     <SelectValue placeholder="Selecione" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="service">Servico</SelectItem>
+                                    <SelectItem value="service">Serviço</SelectItem>
                                     <SelectItem value="product">Produto/material</SelectItem>
                                 </SelectContent>
                             </Select>
@@ -298,7 +311,7 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
                         <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">Detalhes opcionais</Label>
                             <Input
-                                placeholder="Ex: marca, condicao, o que esta incluso..."
+                                placeholder="Ex: marca, condição, o que está incluso..."
                                 value={details}
                                 onChange={(event) => setDetails(event.target.value)}
                                 onKeyDown={handleKeyDown}
@@ -360,8 +373,8 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
                                     <div className="space-y-1">
                                         <Label className="text-xs text-emerald-900/70">Quantidade atual</Label>
                                         <Input
-                                            type="number"
-                                            step="0.01"
+                                            type="text"
+                                            inputMode="decimal"
                                             placeholder="Ex: 10"
                                             value={stockQuantity}
                                             onChange={(event) => setStockQuantity(event.target.value)}
@@ -371,8 +384,8 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
                                     <div className="space-y-1">
                                         <Label className="text-xs text-emerald-900/70">Avisar abaixo de</Label>
                                         <Input
-                                            type="number"
-                                            step="0.01"
+                                            type="text"
+                                            inputMode="decimal"
                                             placeholder="Ex: 2"
                                             value={minStock}
                                             onChange={(event) => setMinStock(event.target.value)}
@@ -389,7 +402,7 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
             <div className="flex flex-wrap gap-2">
                 {[
                     { id: 'all', label: 'Todos', icon: Boxes },
-                    { id: 'service', label: 'Servicos', icon: Wrench },
+                    { id: 'service', label: 'Serviços', icon: Wrench },
                     { id: 'product', label: 'Produtos', icon: Package },
                     { id: 'low_stock', label: 'Baixo estoque', icon: AlertTriangle },
                 ].map((item) => {
@@ -417,7 +430,7 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
                 <div className="rounded-xl border border-dashed border-primary/20 bg-primary/5 py-8 text-center text-muted-foreground">
                     <Package className="mx-auto mb-2 h-8 w-8 text-primary/30" />
                     <p className="text-sm">Nenhum item encontrado.</p>
-                    <p className="mt-1 text-xs text-muted-foreground/70">Cadastre itens recorrentes para montar orcamentos mais rapido.</p>
+                    <p className="mt-1 text-xs text-muted-foreground/70">Cadastre itens recorrentes para montar orçamentos mais rápido.</p>
                 </div>
             ) : (
                 <div className="space-y-6 pb-4 lg:max-h-[38rem] lg:overflow-y-auto lg:pr-1">
@@ -456,7 +469,7 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
                                                             </p>
                                                             <Badge variant="outline" className="gap-1 text-[10px]">
                                                                 {isProduct ? <Package className="h-3 w-3" /> : <Wrench className="h-3 w-3" />}
-                                                                {isProduct ? 'Produto' : 'Servico'}
+                                                                {isProduct ? 'Produto' : 'Serviço'}
                                                             </Badge>
                                                             {lowStock && (
                                                                 <Badge className="gap-1 bg-amber-100 text-amber-800 hover:bg-amber-100">
@@ -499,7 +512,7 @@ export function ServicesCatalog({ initialServices, initialFolders }: ServicesCat
                                                                             {formatQty(service.stock_quantity, service.unit)}
                                                                         </p>
                                                                         <p className="text-[10px] text-muted-foreground">
-                                                                            minimo {formatQty(service.min_stock, service.unit)}
+                                                                            mínimo {formatQty(service.min_stock, service.unit)}
                                                                         </p>
                                                                     </>
                                                                 ) : (

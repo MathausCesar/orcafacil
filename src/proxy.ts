@@ -75,11 +75,29 @@ export async function proxy(request: NextRequest) {
         }
 
         // Definindo os URLs base da Vercel para ambiente de preview/dev e o de prod
-        const isAppDomain = hostname.startsWith('app.') || hostname.includes('app-zacly'); // app-zacly no preview da vercel
-        const isMarketingDomain = !isAppDomain && (hostname.includes('zacly.com.br') || hostname.includes('localhost'));
-
         // Paths base do Next.js
         const path = url.pathname;
+        const isLocalHost = hostname.startsWith('localhost') || hostname.startsWith('127.0.0.1')
+        const isLocalAppPath = isLocalHost && (
+            path === '/login' ||
+            path === '/register' ||
+            path === '/forgot-password' ||
+            path === '/update-password' ||
+            path === '/quotes' ||
+            path.startsWith('/quotes/') ||
+            path.startsWith('/new') ||
+            path.startsWith('/clients') ||
+            path.startsWith('/catalog') ||
+            path.startsWith('/profile') ||
+            path.startsWith('/pricing') ||
+            path.startsWith('/dashboard') ||
+            path.startsWith('/onboarding') ||
+            path.startsWith('/admin') ||
+            path.startsWith('/auth/callback')
+        )
+
+        const isAppDomain = hostname.startsWith('app.') || hostname.includes('app-zacly') || isLocalAppPath; // app-zacly no preview da vercel
+        const isMarketingDomain = !isAppDomain && (hostname.includes('zacly.com.br') || hostname.includes('localhost'));
 
         // --- PROTEÇÃO DE ROTAS (Autenticação) ---
         // Apenas listamos as rotas que dependem de auth na nossa app

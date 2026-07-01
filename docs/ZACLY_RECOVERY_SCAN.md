@@ -22,6 +22,29 @@ validado pelo usuario, billing foi tecnicamente reparado, regras criticas de
 seguranca foram aplicadas no Supabase e a Vercel esta apontando
 `https://app.zacly.com.br` para a nova versao.
 
+## Atualizacao de 2026-07-01 - Onboarding por oficio
+
+Corrigido:
+
+- O onboarding deixou de montar catalogo inicial lendo diretamente os templates
+  amplos do banco por categoria.
+- Agora o catalogo inicial e gerado por kits curados por oficio/especialidade,
+  evitando itens duplicados ou incoerentes para autonomos.
+- Foram adicionadas opcoes de `Marceneiro / Moveis Planejados` e
+  `Encanador / Hidraulica` no ramo de construcao e reformas.
+- A deduplicacao passou a normalizar nomes sem acento, pontuacao e palavras de
+  ligacao antes de comparar com itens ja existentes.
+- Os itens criados pelo onboarding agora carregam unidade e categoria, alem de
+  separar corretamente servico e produto.
+
+Validado:
+
+- `npm run lint`: passou.
+- `npm run build`: passou.
+- Smoke real com usuario temporario: onboarding em `Construcao & Reformas` +
+  `Marceneiro / Moveis Planejados` criou 9 itens coerentes de marcenaria, sem
+  duplicados e sem itens de outras areas.
+
 ## Atualizacao de 2026-07-01 - Rodada 5 Qualidade estrutural
 
 Corrigido:

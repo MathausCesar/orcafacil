@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache"
 import type { Database, Json } from "@/types/database.types"
 import {
     getDefaultProfessionalContext,
+    getInitialCatalogForOnboarding,
+    normalizeCatalogItemName,
     type OnboardingPricingTier,
 } from "@/lib/onboarding-catalog"
 
@@ -159,61 +161,25 @@ export async function applyOnboardingKit(
 
         const professionalContext = getDefaultProfessionalContext(category.slug, specialties)
 
-        // 2. Fetch Template Services
-        const { data: services, error: servicesError } = await supabase
-            .from("template_services")
-            .select("*")
-            .eq("category_id", categoryId)
-
-        if (servicesError) throw servicesError
-
-        // 3. Fetch Template Products
-        const { data: products, error: productsError } = await supabase
-            .from("template_products")
-            .select("*")
-            .eq("category_id", categoryId)
-
-        if (productsError) throw productsError
-
-        // 4. Prepare Bulk Inserts
-        const relevantServices = services.filter(s =>
-            s.specialty_tags && s.specialty_tags.some((tag: string) => specialties.includes(tag))
-        )
-
-        const relevantProducts = products.filter(p =>
-            p.specialty_tags && p.specialty_tags.some((tag: string) => specialties.includes(tag))
-        )
+        // 2. Prepare a curated catalog for the selected trade.
+        // This avoids broad category templates creating duplicated or incoherent items.
+        const initialCatalog = getInitialCatalogForOnboarding(category.slug, specialties)
 
         // organization_id is required by the RLS policy "Users can insert own services"
         // which checks user_in_organization(organization_id)
-        const allItems: ServiceInsert[] = [
-            ...relevantServices.map(s => ({
+        const itemsToInsert: ServiceInsert[] = initialCatalog.map(item => ({
                 user_id: userId,
                 organization_id: organizationId,
-                description: s.name,
-                default_price: Math.round(s.default_price * multiplier),
-                details: s.description || null,
-                type: 'service'
-            })),
-            ...relevantProducts.map(p => ({
-                user_id: userId,
-                organization_id: organizationId,
-                description: p.name,
-                default_price: Math.round(p.default_price * multiplier),
-                details: p.description || null,
-                type: 'product'
+                description: item.name,
+                default_price: Math.round(item.price * multiplier),
+                details: item.details || null,
+                type: item.type,
+                unit: item.unit,
+                category: category.name,
+                stock_quantity: 0,
+                min_stock: 0,
+                track_stock: false,
             }))
-        ]
-
-        // Deduplicate items by description
-        const uniqueItemsMap = new Map<string, ServiceInsert>();
-        allItems.forEach(item => {
-            if (!uniqueItemsMap.has(item.description)) {
-                uniqueItemsMap.set(item.description, item);
-            }
-        });
-
-        const itemsToInsert = Array.from(uniqueItemsMap.values());
 
         const { data: existingItems, error: existingItemsError } = await supabase
             .from("services")
@@ -223,13 +189,13 @@ export async function applyOnboardingKit(
         if (existingItemsError) throw existingItemsError
 
         const existingDescriptions = new Set(
-            (existingItems || []).map(item => item.description.trim().toLowerCase())
+            (existingItems || []).map(item => normalizeCatalogItemName(item.description))
         )
         const newItemsToInsert = itemsToInsert.filter(item => {
-            return !existingDescriptions.has(item.description.trim().toLowerCase())
+            return !existingDescriptions.has(normalizeCatalogItemName(item.description))
         })
 
-        // 5. Execute Inserts
+        // 3. Execute Inserts
         if (newItemsToInsert.length > 0) {
             const { error: insertError } = await supabase
                 .from("services")

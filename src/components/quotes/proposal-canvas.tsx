@@ -16,7 +16,7 @@ import { ApproveQuoteClient } from '@/components/quotes/approve-quote-client'
 import { PaymentOptions } from '@/components/quotes/payment-options'
 import { QRCodeGenerator } from '@/components/quotes/qr-code-generator'
 import { TimelineSection } from '@/components/quotes/timeline-section'
-import { Watermark } from '@/components/quotes/watermark'
+import { FreeProposalBrandingBanner, Watermark } from '@/components/quotes/watermark'
 import { getProfessionalContext } from '@/lib/professional-context'
 import { buildQuoteFollowUpMessage, getQuoteReminder } from '@/lib/quote-reminders'
 import {
@@ -741,6 +741,8 @@ export function ProposalCanvas({
                                 {footerText}
                             </div>
                         )}
+
+                        {isFree && <FreeProposalBrandingBanner />}
                     </section>
                 </article>
             </main>

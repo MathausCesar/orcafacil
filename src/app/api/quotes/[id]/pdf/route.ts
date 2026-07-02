@@ -775,6 +775,7 @@ function drawNotesAndFooter(
     footerText: string,
     accent: string,
     fonts: ReturnType<typeof getPdfFonts>,
+    isFree: boolean,
 ) {
     const left = doc.page.margins.left
     const right = doc.page.width - doc.page.margins.right
@@ -801,13 +802,59 @@ function drawNotesAndFooter(
         doc.y = y + 68
     }
 
+    if (isFree) {
+        ensureSpace(doc, 92)
+        const y = doc.y
+        doc.roundedRect(left, y, pageWidth, 72, 12).fillAndStroke('#ecfdf5', '#bbf7d0')
+        doc.fillColor('#047857').font(fonts.bold).fontSize(8.5).text('PROPOSTA CRIADA COM ZACLY', left + 18, y + 14, {
+            width: pageWidth - 36,
+            align: 'center',
+        })
+        doc.fillColor('#0f172a').font(fonts.regular).fontSize(9.5).text(
+            'Esta proposta foi gerada em um aplicativo de gestao para autonomos organizarem clientes, orcamentos e aprovacoes em um so lugar.',
+            left + 28,
+            y + 31,
+            { width: pageWidth - 56, align: 'center', lineGap: 2 },
+        )
+        doc.fillColor(accent).font(fonts.bold).fontSize(9).text('Conheca a Zacly: zacly.com.br', left + 18, y + 58, {
+            width: pageWidth - 36,
+            align: 'center',
+            lineBreak: false,
+        })
+        doc.y = y + 92
+    }
+
     const footerY = doc.page.height - doc.page.margins.bottom - 28
+    const generatedText = isFree
+        ? 'Gerado gratuitamente com Zacly - gestao de orcamentos para autonomos. zacly.com.br'
+        : 'A aprovacao oficial deve ser feita pelo link publico enviado ao cliente.'
+
     doc.strokeColor('#e2e8f0').moveTo(left, footerY - 12).lineTo(right, footerY - 12).stroke()
-    doc.fillColor('#64748b').font(fonts.regular).fontSize(8).text('Gerado pelo Zacly. A aprovacao oficial deve ser feita pelo link publico enviado ao cliente.', left, footerY, {
+    doc.fillColor(isFree ? '#334155' : '#64748b').font(isFree ? fonts.bold : fonts.regular).fontSize(8).text(generatedText, left, footerY, {
         width: pageWidth,
         align: 'center',
         lineBreak: false,
     })
+}
+
+function drawFreePlanWatermark(doc: PDFKit.PDFDocument, fonts: ReturnType<typeof getPdfFonts>) {
+    const centerX = doc.page.width / 2
+    const centerY = doc.page.height / 2
+
+    doc.save()
+    doc.opacity(0.055)
+    doc.rotate(-35, { origin: [centerX, centerY] })
+    doc.fillColor('#0f172a').font(fonts.bold).fontSize(92).text('ZACLY', centerX - 230, centerY - 72, {
+        width: 460,
+        align: 'center',
+        lineBreak: false,
+    })
+    doc.fontSize(13).text('PROPOSTA GERADA COM ZACLY', centerX - 230, centerY + 18, {
+        width: 460,
+        align: 'center',
+        lineBreak: false,
+    })
+    doc.restore()
 }
 
 async function renderQuotePdf(quote: QuoteWithItems, profile: ProfileRow | null, approvalUrl: string) {
@@ -850,11 +897,14 @@ async function renderQuotePdf(quote: QuoteWithItems, profile: ProfileRow | null,
     drawSummary(doc, quote, skin, fonts)
     drawPaymentSection(doc, quote, profile, accent, fonts)
     drawApprovalSection(doc, approvalUrl, approvalQr, skin, accent, fonts)
-    drawNotesAndFooter(doc, quote, identitySettings.footerText, accent, fonts)
+    drawNotesAndFooter(doc, quote, identitySettings.footerText, accent, fonts, isFree)
 
     const range = doc.bufferedPageRange()
     for (let index = range.start; index < range.start + range.count; index++) {
         doc.switchToPage(index)
+        if (isFree) {
+            drawFreePlanWatermark(doc, fonts)
+        }
         doc.fillColor('#94a3b8')
             .font(fonts.regular)
             .fontSize(7)

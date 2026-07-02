@@ -98,6 +98,7 @@ export default async function QuotePage({
         validUntil: quote.expiration_date,
         approvalUrl,
         template: isFree ? '' : identitySettings.whatsappMessageTemplate,
+        includeZaclyMarketing: isFree,
     })
     const whatsappLink = buildWhatsAppLink(quote.client_phone, whatsappMessage)
 

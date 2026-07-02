@@ -1,15 +1,20 @@
 export const DEFAULT_QUOTE_APPROVAL_MESSAGE_TEMPLATE = [
-    'Olá, {cliente}. Tudo bem?',
+    'Ola, {cliente}. Tudo bem?',
     '',
-    'Preparei sua proposta pela {empresa} com escopo, valores e condições organizados para facilitar sua decisão.',
+    'Preparei sua proposta pela {empresa} com escopo, valores e condicoes organizados para facilitar sua decisao.',
     '',
     'Valor total: {total}',
     '{validade_linha}',
     '',
-    'Para visualizar e aprovar com segurança, acesse:',
+    'Para visualizar e aprovar com seguranca, acesse:',
     '{link}',
     '',
-    'Se tiver qualquer dúvida ou quiser ajustar algum ponto, me responda por aqui.',
+    'Se tiver qualquer duvida ou quiser ajustar algum ponto, me responda por aqui.',
+].join('\n')
+
+const FREE_QUOTE_APPROVAL_MARKETING_FOOTER = [
+    'Proposta gerada com Zacly, um aplicativo de gestao para quem faz orcamentos, clientes e aprovacoes em um so lugar.',
+    'Conheca e teste: https://zacly.com.br',
 ].join('\n')
 
 type QuoteApprovalMessageInput = {
@@ -19,6 +24,7 @@ type QuoteApprovalMessageInput = {
     validUntil: string | null
     approvalUrl: string
     template?: string | null
+    includeZaclyMarketing?: boolean
 }
 
 function formatValidity(validUntil: string | null) {
@@ -40,6 +46,7 @@ export function buildQuoteApprovalMessage({
     validUntil,
     approvalUrl,
     template,
+    includeZaclyMarketing = false,
 }: QuoteApprovalMessageInput) {
     const validityLine = formatValidity(validUntil)
     const message = cleanTemplate(template)
@@ -52,11 +59,15 @@ export function buildQuoteApprovalMessage({
         .replace(/\n{3,}/g, '\n\n')
         .trim()
 
-    if (message.includes(approvalUrl)) {
-        return message
+    const messageWithApprovalLink = message.includes(approvalUrl)
+        ? message
+        : `${message}\n\nLink para visualizar e aprovar:\n${approvalUrl}`
+
+    if (!includeZaclyMarketing || messageWithApprovalLink.includes('Proposta gerada com Zacly')) {
+        return messageWithApprovalLink
     }
 
-    return `${message}\n\nLink para visualizar e aprovar:\n${approvalUrl}`
+    return `${messageWithApprovalLink}\n\n${FREE_QUOTE_APPROVAL_MARKETING_FOOTER}`
 }
 
 export function buildWhatsAppLink(phone: string | null | undefined, message: string) {

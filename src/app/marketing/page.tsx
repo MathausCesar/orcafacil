@@ -1,25 +1,27 @@
+import type { Metadata } from "next";
 import { HeroSection } from "@/components/marketing/hero-section";
 import { PainAgitationSection } from "@/components/marketing/pain-agitation-section";
+import { ProfessionFitSection } from "@/components/marketing/profession-fit-section";
 import { FeatureShowcase } from "@/components/marketing/feature-showcase";
+import { TrustSection } from "@/components/marketing/trust-section";
 import { PricingSection } from "@/components/marketing/pricing-section";
 import { FaqSection } from "@/components/marketing/faq-section";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
-import type { Metadata } from 'next';
 import { MARKETING_COPY, PRICING, YEARLY_SAVINGS, formatCurrencyBR } from "@/lib/pricing-copy";
+import { marketingFaqs } from "@/lib/marketing-faqs";
 
-const BASE_URL = "https://zacly.com.br";
+const BASE_URL = "https://www.zacly.com.br";
 
-// ─── JSON-LD Structured Data ────────────────────────────────────────────────
 const jsonLdSoftware = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     name: "Zacly",
     url: BASE_URL,
     applicationCategory: "BusinessApplication",
-    operatingSystem: "Web, iOS, Android",
+    operatingSystem: "Web",
     description:
-        "Zacly é o app para autônomos criarem orçamentos profissionais em PDF com sua logo em menos de 1 minuto, enviarem pelo WhatsApp e acompanharem a aprovação do cliente em tempo real.",
+        "Zacly é o app para autônomos criarem orçamentos profissionais em PDF, enviarem pelo WhatsApp e acompanharem a aprovação do cliente.",
     offers: [
         {
             "@type": "Offer",
@@ -32,13 +34,8 @@ const jsonLdSoftware = {
             "@type": "Offer",
             price: PRICING.monthly.toFixed(2),
             priceCurrency: "BRL",
-            priceSpecification: {
-                "@type": "UnitPriceSpecification",
-                billingIncrement: 1,
-                unitCode: "MON",
-            },
             name: "Zacly Pro Mensal",
-            description: "Orcamentos ilimitados, sua logomarca e visual Pro sem marca Zacly.",
+            description: "Orçamentos ilimitados, sua marca no PDF e acompanhamento das propostas.",
         },
         {
             "@type": "Offer",
@@ -48,99 +45,62 @@ const jsonLdSoftware = {
             description: `Economize ${formatCurrencyBR(YEARLY_SAVINGS)} por ano. Tudo do Pro Mensal com desconto.`,
         },
     ],
-    aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: "4.9",
-        reviewCount: "312",
-    },
     featureList: [
-        "Criação de orçamentos em PDF em 1 minuto",
-        "Personalização com logomarca do profissional",
+        "Criação de orçamentos em PDF em até 1 minuto",
+        "Personalização com a marca do profissional",
         "Envio direto pelo WhatsApp",
-        "Aprovação do cliente com link interativo",
-        "Tracking em tempo real da proposta",
-        "Dashboard de controle de serviços",
+        "Aprovação do cliente por link",
+        "Acompanhamento de propostas",
+        "Painel de controle de serviços",
     ],
 };
 
 const jsonLdFaq = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: [
-        {
-            "@type": "Question",
-            name: "O que é o Zacly?",
-            acceptedAnswer: {
-                "@type": "Answer",
-                text: "Zacly é um aplicativo para autônomos — marceneiros, mecânicos, arquitetos, confeiteiros e outros profissionais — criarem orçamentos profissionais em PDF com sua logomarca em menos de 1 minuto, sem precisar usar Word, Excel ou papel.",
-            },
+    mainEntity: marketingFaqs.map((faq) => ({
+        "@type": "Question",
+        name: faq.question,
+        acceptedAnswer: {
+            "@type": "Answer",
+            text: faq.answer,
         },
+    })),
+};
+
+const jsonLdOrganization = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Zacly",
+    url: BASE_URL,
+    contactPoint: [
         {
-            "@type": "Question",
-            name: "O Zacly é gratuito?",
-            acceptedAnswer: {
-                "@type": "Answer",
-                text: `Sim. ${MARKETING_COPY.freePlan} Para orcamentos ilimitados e sua logo nos PDFs sem marca Zacly, o ${MARKETING_COPY.proPlan}`,
-            },
-        },
-        {
-            "@type": "Question",
-            name: "Como o Zacly ajuda autônomos a fecharem mais vendas?",
-            acceptedAnswer: {
-                "@type": "Answer",
-                text: "O Zacly gera PDFs com visual profissional que passam credibilidade ao cliente. O profissional envia o link de aprovação pelo WhatsApp e o cliente pode aprovar na hora, eliminando o tempo de espera e o 'sumiço' que é comum em orçamentos no papel.",
-            },
-        },
-        {
-            "@type": "Question",
-            name: "Preciso instalar algum programa para usar o Zacly?",
-            acceptedAnswer: {
-                "@type": "Answer",
-                text: "Não. O Zacly funciona diretamente no navegador web no computador ou celular. Não é necessário instalar nenhum programa ou aplicativo.",
-            },
-        },
-        {
-            "@type": "Question",
-            name: "O Zacly funciona para qual tipo de profissional autônomo?",
-            acceptedAnswer: {
-                "@type": "Answer",
-                text: "O Zacly funciona para qualquer autônomo que precisa enviar orçamentos: marceneiros, pedreiros, arquitetos, mecânicos, eletricistas, confeiteiros, fotógrafos, pintores, designers e qualquer outro profissional de serviço.",
-            },
+            "@type": "ContactPoint",
+            contactType: "customer support",
+            email: "suporte@zacly.com.br",
+            availableLanguage: "Portuguese",
         },
     ],
 };
 
-const jsonLdWebsite = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "Zacly",
-    url: BASE_URL,
-    potentialAction: {
-        "@type": "SearchAction",
-        target: `${BASE_URL}/blog?q={search_term_string}`,
-        "query-input": "required name=search_term_string",
-    },
-};
-
-// ─── Metadata Export ─────────────────────────────────────────────────────────
 export const metadata: Metadata = {
     metadataBase: new URL(BASE_URL),
     title: {
-        default: "Zacly — App de Orçamentos para Autônomos | PDFs Profissionais em 1 Minuto",
+        default: "Zacly — App de Orçamentos para Autônomos | PDF pelo WhatsApp",
         template: "%s | Zacly",
     },
     description:
-        "Crie orçamentos profissionais em PDF com sua logomarca em menos de 1 minuto. Marceneiros, mecânicos, arquitetos e autônomos usam o Zacly para fechar mais vendas pelo WhatsApp.",
+        "Crie orçamentos profissionais em PDF com sua marca, envie pelo WhatsApp e acompanhe a aprovação do cliente. Feito para mecânicos, marceneiros, eletricistas, pintores e prestadores autônomos.",
     keywords: [
         "app de orçamento para autônomo",
-        "criar orçamento em pdf",
+        "gerador de orçamento pdf",
+        "orçamento online grátis",
         "orçamento profissional para marceneiro",
-        "orçamento para autônomo",
-        "app orçamento online grátis",
-        "proposta comercial autônomo",
-        "orçamento pdf whatsapp",
+        "app de orçamento para eletricista",
+        "orçamento para mecânico",
+        "proposta comercial para autônomo",
+        "orçamento pelo whatsapp",
         "zacly",
-        "app de orçamentos",
     ],
     authors: [{ name: "Zacly", url: BASE_URL }],
     creator: "Zacly",
@@ -164,9 +124,9 @@ export const metadata: Metadata = {
         locale: "pt_BR",
         url: BASE_URL,
         siteName: "Zacly",
-        title: "Zacly — App de Orçamentos para Autônomos | PDFs Profissionais em 1 Minuto",
+        title: "Zacly — Orçamentos profissionais para autônomos",
         description:
-            "Crie orçamentos com sua logo em 1 minuto. Envie pelo WhatsApp e seja aprovado na hora. Grátis para começar.",
+            "Crie orçamento em PDF com sua marca, envie pelo WhatsApp e acompanhe a aprovação do cliente.",
         images: [
             {
                 url: "/og-image.png",
@@ -178,20 +138,16 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: "summary_large_image",
-        site: "@zaclybr",
-        creator: "@zaclybr",
-        title: "Zacly — Orçamentos Profissionais em 1 Minuto",
+        title: "Zacly — Orçamentos profissionais pelo WhatsApp",
         description:
-            "Crie orçamentos com sua logo em 1 minuto. Envie pelo WhatsApp e seja aprovado na hora. Grátis para começar.",
+            "Crie orçamento em PDF com sua marca, envie pelo WhatsApp e acompanhe a aprovação do cliente.",
         images: ["/og-image.png"],
     },
 };
 
-// ─── Page Component ───────────────────────────────────────────────────────────
 export default function MarketingPage() {
     return (
         <>
-            {/* JSON-LD Structured Data — Critical for rich results and AI citation */}
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdSoftware) }}
@@ -202,7 +158,7 @@ export default function MarketingPage() {
             />
             <script
                 type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebsite) }}
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization) }}
             />
 
             <main
@@ -210,22 +166,13 @@ export default function MarketingPage() {
                 className="min-h-screen bg-zinc-950 flex flex-col antialiased selection:bg-emerald-500 selection:text-white font-sans text-zinc-50"
             >
                 <MarketingHeader />
-
-                {/* ── Hero: Primary Keyword Region ─────────────────────── */}
                 <HeroSection />
-
-                {/* ── Problem: Pain Agitation ───────────────────────────── */}
                 <PainAgitationSection />
-
-                {/* ── Product: Feature Flow ─────────────────────────────── */}
+                <ProfessionFitSection />
                 <FeatureShowcase />
-
-                {/* ── Conversion: Pricing ───────────────────────────────── */}
+                <TrustSection />
                 <PricingSection />
-
-                {/* ── GEO/AI: FAQ for citations ─────────────────────────── */}
                 <FaqSection />
-
                 <MarketingFooter />
             </main>
         </>

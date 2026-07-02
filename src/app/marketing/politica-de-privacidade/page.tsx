@@ -83,6 +83,8 @@ export default function PrivacyPolicyPage() {
                             <li><strong className="text-zinc-200">Supabase Inc.</strong> — infraestrutura de banco de dados e autenticação (servidores nos EUA, cobertos por cláusulas contratuais padrão).</li>
                             <li><strong className="text-zinc-200">Stripe Inc.</strong> — processamento de pagamentos (dados financeiros tratados sob a política de privacidade da Stripe).</li>
                             <li><strong className="text-zinc-200">Vercel Inc.</strong> — hospedagem da aplicação web.</li>
+                            <li><strong className="text-zinc-200">Vercel Analytics</strong> — métricas agregadas de acesso e desempenho da aplicação.</li>
+                            <li><strong className="text-zinc-200">PostHog</strong> — análise de uso do produto para identificar falhas, melhorar fluxos e medir conversões.</li>
                         </ul>
                     </section>
 
@@ -119,7 +121,7 @@ export default function PrivacyPolicyPage() {
                     <section>
                         <h2 className="text-lg font-bold text-white mb-3">8. Cookies</h2>
                         <p className="text-zinc-400 leading-relaxed">
-                            Utilizamos cookies estritamente necessários para autenticação e sessão do usuário. Não utilizamos cookies de rastreamento ou publicidade comportamental.
+                            Utilizamos cookies necessários para autenticação e sessão do usuário. Também podemos usar ferramentas de análise, como Vercel Analytics e PostHog, para entender uso, desempenho e conversões do produto. Esses dados são usados para melhoria da plataforma e não são vendidos a terceiros.
                         </p>
                     </section>
 

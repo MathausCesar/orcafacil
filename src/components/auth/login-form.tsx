@@ -26,9 +26,25 @@ type AuthActionResult = {
     redirect?: string
 }
 
+function getSafeNextPath(searchParams: { get: (name: string) => string | null }) {
+    const requestedNext = searchParams.get('next')
+
+    if (!requestedNext || !requestedNext.startsWith('/') || requestedNext.startsWith('//')) {
+        return ''
+    }
+
+    const plan = searchParams.get('plan')
+    if ((plan === 'monthly' || plan === 'yearly') && requestedNext === '/pricing') {
+        return `/pricing?plan=${plan}`
+    }
+
+    return requestedNext
+}
+
 export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | 'register' }) {
     const router = useRouter()
     const searchParams = useSearchParams()
+    const nextPath = getSafeNextPath(searchParams)
     const [loading, setLoading] = useState(false)
     const [mode, setMode] = useState<'login' | 'register'>(defaultMode)
     const [showSuccessDialog, setShowSuccessDialog] = useState(false)
@@ -232,7 +248,7 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                         <div className="space-y-4">
                             <form action={async () => {
                                 setLoading(true);
-                                const result = await signInWithGoogle();
+                                const result = await signInWithGoogle(nextPath || undefined);
                                 if (result?.error) {
                                     toast.error(result.error);
                                     setLoading(false);
@@ -274,6 +290,7 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                         </div>
 
                         <form action={(formData) => handleSubmit(formData, mode === 'login' ? login : signup)} className="space-y-5">
+                            {nextPath && <input type="hidden" name="next" value={nextPath} />}
                             <div className="space-y-2">
                                 <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Email</Label>
                                 <Input
@@ -368,7 +385,7 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                                         ? 'Processando...'
                                         : countdown > 0
                                             ? `Aguarde ${countdown}s`
-                                            : (mode === 'login' ? 'Acessar Painel' : 'Criar Conta Grátis')
+                                            : (mode === 'login' ? 'Acessar Painel' : 'Criar orçamento grátis')
                                     }
                                 </span>
                                 {!loading && countdown === 0 && <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" />}

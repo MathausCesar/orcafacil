@@ -242,7 +242,7 @@ export default function MechanicLandingPage() {
                                     <Star className="w-4 h-4 fill-current" />
                                 </div>
                                 <Quote className="w-8 h-8 text-zinc-800 mb-4" />
-                                <p className="text-zinc-300 mb-6 italic">&quot;A aprovação dos orçamentos triplicou. O pessoal olha o PDF com a nossa logo no Zap e paga sem chorar. Deu um puta ar profissional pra oficina mecânica.&quot;</p>
+                                <p className="text-zinc-300 mb-6 italic">&quot;A aprovação dos orçamentos aumentou muito. O cliente olha o PDF com nossa logo no WhatsApp, entende peças e mão de obra e aprova com mais confiança.&quot;</p>
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-zinc-800" style={{ backgroundImage: `url('https://i.pravatar.cc/100?img=11')`, backgroundSize: 'cover' }}></div>
                                     <div>
@@ -266,7 +266,7 @@ export default function MechanicLandingPage() {
                                     <div className="w-10 h-10 rounded-full bg-zinc-800" style={{ backgroundImage: `url('https://i.pravatar.cc/100?img=15')`, backgroundSize: 'cover' }}></div>
                                     <div>
                                         <p className="text-sm font-bold text-white">Marcos Silva</p>
-                                        <p className="text-xs text-zinc-500">Mecânica do Marcola</p>
+                                        <p className="text-xs text-zinc-500">Mecânica Silva</p>
                                     </div>
                                 </div>
                             </div>
@@ -301,10 +301,10 @@ export default function MechanicLandingPage() {
                             <div className="space-y-12">
                                 <div>
                                     <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                                        Venda como uma <span className="text-emerald-400">concessionária</span> usando só o seu celular.
+                                        Venda como uma <span className="text-emerald-400">oficina organizada</span> usando só o seu celular.
                                     </h2>
                                     <p className="text-lg text-zinc-400">
-                                        Surpreenda o dono do carro com um orçamento que chora profissionalismo e justifique naturalmente o preço do seu serviço.
+                                        Mostre peças, mão de obra, garantia e prazo em uma proposta clara para justificar melhor o valor do seu serviço.
                                     </p>
                                 </div>
 
@@ -314,8 +314,8 @@ export default function MechanicLandingPage() {
                                             <Shield className="w-6 h-6 text-white" />
                                         </div>
                                         <div>
-                                            <h4 className="text-xl font-bold text-white mb-2">Comprovante Contra o &apos;Choro&apos;</h4>
-                                            <p className="text-zinc-400">Plaquinha de carro, quebra total mecânica vs. mão de obra. O cliente não quer pechinchar com algo que parece oficial e blindado.</p>
+                                            <h4 className="text-xl font-bold text-white mb-2">Escopo claro contra pechincha</h4>
+                                            <p className="text-zinc-400">Separe placa, peças, mão de obra e garantia para o cliente entender o que está pagando antes de pedir desconto.</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-4">
@@ -324,7 +324,7 @@ export default function MechanicLandingPage() {
                                         </div>
                                         <div>
                                             <h4 className="text-xl font-bold text-white mb-2">Montagem Expressa no Aparelho</h4>
-                                            <p className="text-zinc-400">Monte orçamentos em apenas cliques salvando seus serviços fixos. Terminou a avaliação, o orçamento já cai no whats dele.</p>
+                                            <p className="text-zinc-400">Monte orçamentos em poucos cliques salvando seus serviços fixos. Terminou a avaliação, a proposta já vai para o WhatsApp do cliente.</p>
                                         </div>
                                     </div>
                                 </div>

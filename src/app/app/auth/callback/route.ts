@@ -4,26 +4,39 @@ import { type EmailOtpType } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: NextRequest) {
-    const { searchParams } = new URL(request.url)
-    const code = searchParams.get('code')
-    const token_hash = searchParams.get('token_hash')
-    const type = searchParams.get('type') as EmailOtpType | null
-    // Links antigos de recovery podem chegar sem next.
-    const requestedNext = searchParams.get('next')
-    const fallbackNext = type === 'recovery' ? '/update-password' : '/login'
-    const next = requestedNext?.startsWith('/') && !requestedNext.startsWith('//')
-        ? requestedNext
-        : fallbackNext
+function getSafeNext(value: string | null, fallback: string) {
+    if (!value || !value.startsWith('/') || value.startsWith('//')) {
+        return fallback
+    }
 
+    return value
+}
+
+function buildRedirectUrl(request: NextRequest, next: string) {
+    const target = new URL(next, request.nextUrl.origin)
     const redirectTo = request.nextUrl.clone()
-    redirectTo.pathname = next
+
+    redirectTo.pathname = target.pathname
+    redirectTo.search = target.search
     redirectTo.searchParams.delete('code')
     redirectTo.searchParams.delete('token_hash')
     redirectTo.searchParams.delete('type')
     redirectTo.searchParams.delete('error')
     redirectTo.searchParams.delete('error_code')
     redirectTo.searchParams.delete('error_description')
+    redirectTo.searchParams.delete('next')
+
+    return redirectTo
+}
+
+export async function GET(request: NextRequest) {
+    const { searchParams } = new URL(request.url)
+    const code = searchParams.get('code')
+    const token_hash = searchParams.get('token_hash')
+    const type = searchParams.get('type') as EmailOtpType | null
+    const fallbackNext = type === 'recovery' ? '/update-password' : '/login'
+    const next = getSafeNext(searchParams.get('next'), fallbackNext)
+    const redirectTo = buildRedirectUrl(request, next)
 
     const supabase = await createClient()
 
@@ -31,11 +44,10 @@ export async function GET(request: NextRequest) {
         const { error } = await supabase.auth.exchangeCodeForSession(code)
 
         if (!error) {
-            redirectTo.searchParams.delete('next')
             return NextResponse.redirect(redirectTo)
-        } else {
-            console.error('exchangeCodeForSession error:', error)
         }
+
+        console.error('exchangeCodeForSession error:', error)
     } else if (token_hash && type) {
         const { error } = await supabase.auth.verifyOtp({
             type,
@@ -43,22 +55,20 @@ export async function GET(request: NextRequest) {
         })
 
         if (!error) {
-            redirectTo.searchParams.delete('next')
             return NextResponse.redirect(redirectTo)
-        } else {
-            console.error('verifyOtp error:', error)
         }
+
+        console.error('verifyOtp error:', error)
     }
 
-    // Falha na verificação do código ou ausência de código (ex: link clicado 2x)
-    // Direciona para o login com aviso de checagem.
-    // Isso evita a página 404 que causava o "travamento" do usuário.
     const authError = searchParams.get('error_description') || searchParams.get('error')
     if (authError) {
         console.error('Callback auth error from Supabase URL:', authError)
     }
 
-    redirectTo.pathname = '/login'
-    redirectTo.searchParams.set('message', 'auth_code_error')
-    return NextResponse.redirect(redirectTo)
+    const fallback = request.nextUrl.clone()
+    fallback.pathname = '/login'
+    fallback.search = ''
+    fallback.searchParams.set('message', 'auth_code_error')
+    return NextResponse.redirect(fallback)
 }

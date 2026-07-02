@@ -1,21 +1,33 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://www.orcafacil.com.br'
+    const baseUrl = 'https://www.zacly.com.br'
+    const now = new Date()
 
     return [
         {
             url: baseUrl,
-            lastModified: new Date(),
-            changeFrequency: 'yearly',
+            lastModified: now,
+            changeFrequency: 'weekly',
             priority: 1,
         },
         {
-            url: `${baseUrl}/login`,
-            lastModified: new Date(),
+            url: `${baseUrl}/c/mecanicos`,
+            lastModified: now,
             changeFrequency: 'monthly',
             priority: 0.8,
         },
-        // Add more routes here as needed
+        {
+            url: `${baseUrl}/termos-de-uso`,
+            lastModified: now,
+            changeFrequency: 'yearly',
+            priority: 0.3,
+        },
+        {
+            url: `${baseUrl}/politica-de-privacidade`,
+            lastModified: now,
+            changeFrequency: 'yearly',
+            priority: 0.3,
+        },
     ]
 }

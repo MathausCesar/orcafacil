@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: "%s | Zacly",
   },
   description:
-    "Crie orçamentos profissionais em segundos. A ferramenta ideal para autônomos e pequenos negócios gerarem propostas irresistíveis.",
+    "Crie orçamentos profissionais em PDF, envie pelo WhatsApp e acompanhe a aprovação do cliente.",
   applicationName: "Zacly",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
@@ -32,9 +32,9 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
   },
-  authors: [{ name: "Mathaus Cesar" }],
-  keywords: ["orçamento", "proposta comercial", "gerador de orçamento", "autônomo", "freelancer", "pdf", "gestão financeira"],
-  creator: "Mathaus Cesar",
+  authors: [{ name: "Zacly" }],
+  keywords: ["orçamento", "proposta comercial", "gerador de orçamento", "autônomo", "prestador de serviço", "pdf", "whatsapp"],
+  creator: "Zacly",
   publisher: "Zacly",
   formatDetection: {
     email: false,
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Zacly — Orçamentos Profissionais",
-    description: "Crie orçamentos, emita PDFs e conquiste mais clientes com o Zacly.",
+    description: "Crie orçamentos em PDF, envie pelo WhatsApp e acompanhe aprovações com o Zacly.",
     url: "https://www.zacly.com.br",
     siteName: "Zacly",
     locale: "pt_BR",
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Zacly — Orçamentos Profissionais",
-    description: "Crie orçamentos profissionais em segundos. Simples e rápido.",
+    description: "Crie orçamentos profissionais em PDF pelo WhatsApp. Simples e rápido.",
   },
   robots: {
     index: true,
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#165952", // Zacly Deep Teal
+  themeColor: "#165952",
   width: "device-width",
   initialScale: 1,
 };
@@ -85,27 +85,20 @@ export default function RootLayout({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "name": "Zacly",
-    "applicationCategory": "BusinessApplication",
-    "operatingSystem": "Web",
-    "offers": {
+    name: "Zacly",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    offers: {
       "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "BRL",
+      price: "0",
+      priceCurrency: "BRL",
     },
-    "description": "Crie orçamentos profissionais em segundos. Ferramenta simples para autônomos.",
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "ratingCount": "120",
-    },
+    description: "Crie orçamentos profissionais em PDF. Ferramenta simples para autônomos e prestadores de serviço.",
   };
 
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body
-        className={`${inter.variable} font-sans antialiased`}
-      >
+      <body className={`${inter.variable} font-sans antialiased`}>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

@@ -20,12 +20,13 @@ interface ApproveQuoteClientProps {
     publicToken: string
     clientName: string
     themeColor: string
+    totalFormatted: string
 }
 
 type DecisionDialog = 'approve' | 'reject' | 'changes' | null
 type ClientDecision = 'approved' | 'rejected' | 'changes_requested'
 
-export function ApproveQuoteClient({ quoteId, publicToken, clientName, themeColor }: ApproveQuoteClientProps) {
+export function ApproveQuoteClient({ quoteId, publicToken, clientName, themeColor, totalFormatted }: ApproveQuoteClientProps) {
     const [loading, setLoading] = useState(false)
     const [dialog, setDialog] = useState<DecisionDialog>(null)
     const [note, setNote] = useState('')
@@ -167,6 +168,32 @@ export function ApproveQuoteClient({ quoteId, publicToken, clientName, themeColo
                     <ThumbsDown className="mr-2 h-4 w-4" />
                     Recusar proposta
                 </Button>
+            </div>
+
+            <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-3 py-3 shadow-[0_-12px_28px_rgba(15,23,42,0.16)] backdrop-blur lg:hidden print:hidden">
+                <div className="mx-auto flex max-w-2xl items-center gap-3">
+                    <div className="min-w-0 flex-1">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Total da proposta</p>
+                        <p className="truncate text-lg font-black text-slate-950">{totalFormatted}</p>
+                    </div>
+                    <Button
+                        className="h-11 shrink-0 rounded-xl px-5 font-bold text-white shadow-lg"
+                        style={{ backgroundColor: themeColor, boxShadow: `0 8px 20px -8px ${themeColor}` }}
+                        onClick={() => setDialog('approve')}
+                    >
+                        Aceitar
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-11 w-11 shrink-0 rounded-xl border-amber-200 text-amber-700"
+                        aria-label="Pedir ajuste"
+                        onClick={() => setDialog('changes')}
+                    >
+                        <PencilLine className="h-4 w-4" />
+                    </Button>
+                </div>
             </div>
 
             <AlertDialog open={dialog === 'approve'} onOpenChange={(open) => !open && resetDialog()}>

@@ -254,10 +254,6 @@ export function QuoteForm({ initialData, quickMode = false, plan }: QuoteFormPro
         }
         formData.set('layout_style', isFree ? FREE_PROPOSAL_MODEL : layoutStyle)
         formData.set('professional_context', professionalContext)
-        if (quickMode && !initialData?.id) {
-            formData.set('after_create', 'pipeline')
-        }
-
         try {
             let result;
             if (initialData?.id) {
@@ -300,17 +296,17 @@ export function QuoteForm({ initialData, quickMode = false, plan }: QuoteFormPro
     return (
         <form action={handleSubmit} className="pb-40 lg:pb-0">
             {/* Header Area */}
-            <div className="flex items-center gap-4 mb-8">
+            <div className="mb-6 flex min-w-0 items-start gap-3 sm:mb-8 sm:items-center sm:gap-4">
                 <Link href={initialData?.id ? `/quotes/${initialData.id}` : "/"}>
-                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-full border-border">
+                    <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-full border-border">
                         <ArrowLeft className="h-5 w-5 text-muted-foreground" />
                     </Button>
                 </Link>
-                <div>
-                    <h1 className="text-2xl font-bold text-foreground tracking-tight">
+                <div className="min-w-0">
+                    <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
                         {initialData?.id ? 'Editar Orçamento' : 'Novo Orçamento'}
                     </h1>
-                    <p className="text-muted-foreground text-sm">Comece pelo cliente e pelos itens. O visual fica como ajuste opcional.</p>
+                    <p className="text-sm leading-5 text-muted-foreground">Comece pelo cliente e pelos itens. O visual fica como ajuste opcional.</p>
                 </div>
             </div>
 
@@ -323,7 +319,7 @@ export function QuoteForm({ initialData, quickMode = false, plan }: QuoteFormPro
                 </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-3 lg:gap-8">
 
                 {/* Main Column (Left) */}
                 <div className="lg:col-span-2 space-y-6">
@@ -374,10 +370,10 @@ export function QuoteForm({ initialData, quickMode = false, plan }: QuoteFormPro
 
                                     <div className="space-y-3">
                                         {items.map((item) => (
-                                            <div key={item.id} className="grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-2 items-center bg-card p-4 rounded-xl border border-border shadow-sm group hover:border-primary/30 hover:shadow-md transition-all">
+                                            <div key={item.id} className="grid grid-cols-1 items-center gap-2 rounded-xl border border-border bg-card p-3 shadow-sm transition-all hover:border-primary/30 hover:shadow-md sm:p-4 lg:grid-cols-12 lg:gap-2">
 
                                                 <div className="lg:col-span-5 min-w-0">
-                                                    <div className="mb-1 flex items-center gap-2">
+                                                    <div className="mb-1 flex min-w-0 flex-wrap items-center gap-2">
                                                         <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${item.itemType === 'product'
                                                             ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                                                             : 'border-slate-200 bg-slate-50 text-slate-600'
@@ -392,7 +388,7 @@ export function QuoteForm({ initialData, quickMode = false, plan }: QuoteFormPro
                                                     <Input
                                                         value={item.description}
                                                         onChange={(e) => handleUpdateItem(item.id, 'description', e.target.value)}
-                                                        className="font-medium border-transparent hover:border-slate-200 focus:border-emerald-500 bg-transparent px-0 lg:px-3 h-auto py-1 truncate"
+                                                        className="h-auto min-w-0 truncate border-transparent bg-transparent px-0 py-1 font-medium hover:border-slate-200 focus:border-emerald-500 lg:px-3"
                                                         placeholder="Descrição do item"
                                                     />
                                                 </div>
@@ -421,8 +417,8 @@ export function QuoteForm({ initialData, quickMode = false, plan }: QuoteFormPro
                                                     />
                                                 </div>
 
-                                                <div className="lg:col-span-3 flex items-center justify-between lg:justify-end gap-2 border-t lg:border-t-0 pt-3 lg:pt-0 mt-2 lg:mt-0 min-w-0">
-                                                    <span className="font-bold text-foreground text-sm whitespace-nowrap">
+                                                <div className="mt-2 flex min-w-0 items-center justify-between gap-2 border-t pt-3 lg:col-span-3 lg:mt-0 lg:justify-end lg:border-t-0 lg:pt-0">
+                                                    <span className="min-w-0 truncate text-sm font-bold text-foreground">
                                                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.quantity * item.unitPrice)}
                                                     </span>
                                                     <Button
@@ -786,10 +782,12 @@ export function QuoteForm({ initialData, quickMode = false, plan }: QuoteFormPro
                 </div>
 
                 {/* Mobile Floating Button - Visible only on mobile */}
-                <div className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 border-t border-border bg-background/95 p-4 shadow-[0_-12px_30px_rgba(15,23,42,0.12)] backdrop-blur lg:hidden">
-                    <Button type="submit" size="lg" className="w-full bg-emerald-600 font-bold" disabled={loading}>
-                        {loading ? 'Salvando...' : `Salvar (${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)})`}
-                    </Button>
+                <div className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 border-t border-border bg-background/95 px-3 py-3 shadow-[0_-12px_30px_rgba(15,23,42,0.12)] backdrop-blur lg:hidden">
+                    <div className="mx-auto max-w-2xl">
+                        <Button type="submit" size="lg" className="w-full bg-emerald-600 font-bold" disabled={loading}>
+                            {loading ? 'Salvando...' : `Salvar (${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)})`}
+                        </Button>
+                    </div>
                 </div>
 
             </div>

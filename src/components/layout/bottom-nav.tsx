@@ -54,7 +54,9 @@ export function BottomNav() {
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className="flex flex-col items-center justify-center -mt-6"
+                                className="flex min-w-0 flex-col items-center justify-center -mt-6"
+                                aria-current={isActive ? 'page' : undefined}
+                                aria-label="Criar novo orçamento"
                             >
                                 <div className="h-14 w-14 rounded-full bg-gradient-to-br from-primary to-emerald-600 text-white shadow-lg shadow-primary/30 flex items-center justify-center transition-all active:scale-95 hover:shadow-xl hover:shadow-primary/40">
                                     <Icon className="h-7 w-7" />
@@ -70,14 +72,15 @@ export function BottomNav() {
                         <Link
                             key={link.href}
                             href={link.href}
+                            aria-current={isActive ? 'page' : undefined}
                             className={cn(
-                                "flex flex-col items-center justify-center w-full h-full space-y-0.5 transition-colors",
+                                "flex h-full min-w-0 flex-1 flex-col items-center justify-center space-y-0.5 transition-colors",
                                 isActive ? "text-primary" : "text-muted-foreground hover:text-primary/70"
                             )}
                         >
                             <Icon className={cn("h-5 w-5", isActive && "fill-primary/15 stroke-primary")} />
                             <span className={cn(
-                                "text-[10px]",
+                                "max-w-full truncate text-[10px]",
                                 isActive ? "font-semibold" : "font-medium"
                             )}>{link.label}</span>
                         </Link>

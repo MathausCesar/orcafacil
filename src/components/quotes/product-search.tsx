@@ -218,7 +218,7 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
                 </div>
 
                 {showSuggestions && (
-                    <div className="fixed inset-x-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-[60] max-h-[45vh] overflow-y-auto rounded-lg border border-primary/15 bg-card shadow-lg sm:absolute sm:bottom-auto sm:left-0 sm:right-0 sm:top-full sm:z-20 sm:mt-1 sm:max-h-72">
+                    <div className="fixed inset-x-3 bottom-[calc(9rem+env(safe-area-inset-bottom))] z-[45] max-h-[40vh] overflow-y-auto overscroll-contain rounded-lg border border-primary/15 bg-card shadow-lg sm:absolute sm:bottom-auto sm:left-0 sm:right-0 sm:top-full sm:z-20 sm:mt-1 sm:max-h-72">
                         {Object.entries(
                             suggestions.reduce((groups, current) => {
                                 const key = current.folder_id || 'none'

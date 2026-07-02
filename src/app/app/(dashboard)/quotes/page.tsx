@@ -52,13 +52,15 @@ export default async function QuotesListPage({ searchParams }: { searchParams: P
     const { data: quotes } = await query
 
     return (
-        <div className="min-w-0 space-y-6 overflow-x-hidden pb-20">
+        <div className="min-w-0 space-y-6 pb-20">
+            <div className="sticky top-2 z-20 rounded-2xl bg-background/95 py-1 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+                <QuoteFilters />
+            </div>
             <QuotesView
                 quotes={quotes || []}
                 totalCount={quotes?.length ?? 0}
                 initialView={params.view === 'pipeline' ? 'pipeline' : 'list'}
             />
-            <QuoteFilters />
         </div>
     )
 }

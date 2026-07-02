@@ -402,7 +402,7 @@ export function QuotesView({ quotes: initialQuotes, totalCount, initialView = 'l
     }))
 
     return (
-        <div className="w-full min-w-0 space-y-8 overflow-hidden animate-in fade-in duration-500">
+        <div className="w-full min-w-0 space-y-8 overflow-visible animate-in fade-in duration-500">
             {/* Header & View Toggle */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <div className="flex items-center gap-3">
@@ -448,6 +448,12 @@ export function QuotesView({ quotes: initialQuotes, totalCount, initialView = 'l
                             </div>
                             <h3 className="text-lg font-semibold text-foreground">Ainda não há orçamentos</h3>
                             <p className="text-sm text-muted-foreground max-w-sm mt-1">Crie o seu primeiro orçamento para iniciar o gerenciamento de propostas.</p>
+                            <Link
+                                href="/new?quick=1"
+                                className="mt-5 inline-flex h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90"
+                            >
+                                Criar primeiro orçamento
+                            </Link>
                         </div>
                     ) : (
                         <div className="grid gap-3">
@@ -710,7 +716,7 @@ export function QuotesView({ quotes: initialQuotes, totalCount, initialView = 'l
                                                             : 'border-current/10 opacity-60'
                                                             }`}>
                                                             <p className="text-xs font-bold uppercase tracking-widest text-foreground/50">
-                                                                {isDropTarget ? 'Soltar aqui' : 'Vazio'}
+                                                                {isDropTarget ? 'Soltar aqui' : 'Sem orçamentos'}
                                                             </p>
                                                         </div>
                                                     )}

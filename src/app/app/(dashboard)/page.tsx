@@ -68,7 +68,7 @@ export default async function Dashboard() {
   const recentQuotes = quotesResult.data
 
   return (
-    <div className="space-y-8 p-4 md:p-8 max-w-7xl mx-auto">
+    <div className="mx-auto max-w-7xl space-y-6 md:space-y-8">
       <DashboardHeader
         title={profile.business_name || 'Seu Negócio'}
         profileImage={profile.logo_url}

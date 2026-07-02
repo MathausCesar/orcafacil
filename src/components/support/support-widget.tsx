@@ -472,7 +472,7 @@ export function SupportWidget() {
             <PopoverTrigger asChild>
                 <Button
                     size="icon"
-                    className="fixed bottom-20 md:bottom-6 right-4 md:right-6 h-14 w-14 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all z-50 bg-emerald-600 hover:bg-emerald-700 text-white"
+                    className="fixed bottom-[calc(9rem+env(safe-area-inset-bottom))] right-4 z-40 h-12 w-12 rounded-full bg-emerald-600 text-white shadow-2xl transition-all hover:scale-105 hover:bg-emerald-700 active:scale-95 md:bottom-6 md:right-6 md:z-50 md:h-14 md:w-14"
                     aria-label="Central de Ajuda"
                 >
                     {isOpen ? <X className="h-6 w-6" /> : <HelpCircle className="h-6 w-6" />}

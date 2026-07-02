@@ -353,7 +353,11 @@ export function ProposalCanvas({
 
     return (
         <div
-            className={cn('force-light min-h-screen overflow-x-hidden pb-16 text-slate-950 print:bg-white print:pb-0', skin.pageClass)}
+            className={cn(
+                'force-light min-h-screen overflow-x-hidden text-slate-950 print:bg-white print:pb-0',
+                canClientRespond && ['pending', 'sent'].includes(status) ? 'pb-32 lg:pb-16' : 'pb-16',
+                skin.pageClass,
+            )}
             style={{
                 '--proposal-accent': themeColor,
                 colorScheme: 'light',
@@ -662,7 +666,13 @@ export function ProposalCanvas({
                                 </div>
 
                                 {canClientRespond && ['pending', 'sent'].includes(status) ? (
-                                    <ApproveQuoteClient quoteId={quote.id} publicToken={quote.public_token} clientName={quote.client_name} themeColor={themeColor} />
+                                    <ApproveQuoteClient
+                                        quoteId={quote.id}
+                                        publicToken={quote.public_token}
+                                        clientName={quote.client_name}
+                                        themeColor={themeColor}
+                                        totalFormatted={totalFormatted}
+                                    />
                                 ) : isOwner ? (
                                     <>
                                         {quote.client_response_note && (
@@ -726,14 +736,16 @@ export function ProposalCanvas({
                                 )}
                             </div>
 
-                            <div className={cn('border p-6 text-center', skin.bottomCardClass)}>
-                                <div className="mx-auto inline-flex rounded-2xl border border-slate-200 bg-white p-3">
-                                    <QRCodeGenerator quoteId={quote.id} token={quote.public_token} size={140} />
+                            {isOwner && (
+                                <div className={cn('border p-6 text-center', skin.bottomCardClass)}>
+                                    <div className="mx-auto inline-flex rounded-2xl border border-slate-200 bg-white p-3">
+                                        <QRCodeGenerator quoteId={quote.id} token={quote.public_token} size={140} />
+                                    </div>
+                                    <p className="mt-4 text-xs leading-5 text-slate-500">
+                                        QR Code único desta proposta. Use para abrir o link de aprovação no celular.
+                                    </p>
                                 </div>
-                                <p className="mt-4 text-xs leading-5 text-slate-500">
-                                    QR Code único desta proposta. Use para abrir o link de aprovação no celular.
-                                </p>
-                            </div>
+                            )}
                         </div>
 
                         {footerText && (

@@ -58,7 +58,7 @@ export default async function DashboardLayout({
 
     return (
         <OrganizationProvider>
-            <div className="flex min-h-screen overflow-x-hidden bg-background">
+            <div className="flex min-h-screen bg-background">
                 {/* Desktop Sidebar - Hidden on Mobile */}
                 <div className="hidden lg:flex w-64 flex-col fixed inset-y-0 z-50">
                     <div className="flex-1 flex flex-col min-h-0 bg-sidebar border-r border-sidebar-border">
@@ -67,8 +67,8 @@ export default async function DashboardLayout({
                 </div>
 
                 {/* Main Content Area */}
-                <main className="min-w-0 flex-1 overflow-x-hidden transition-all duration-300 lg:pl-64">
-                    <div className="container mx-auto w-full min-w-0 max-w-2xl overflow-x-hidden p-4 pb-24 md:p-8 lg:max-w-7xl lg:pb-8">
+                <main className="min-w-0 flex-1 transition-all duration-300 lg:pl-64">
+                    <div className="container mx-auto w-full min-w-0 max-w-2xl p-3 pb-24 sm:p-4 md:p-8 lg:max-w-7xl lg:pb-8">
                         {isFree && <UpgradeBanner quotesUsed={quotesUsed} quotesLimit={5} />}
                         {children}
                     </div>

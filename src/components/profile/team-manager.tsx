@@ -160,30 +160,30 @@ export function TeamManager({ initialMembers }: { initialMembers: TeamMember[] }
                         const logoUrl = profileData?.logo_url || '';
 
                         return (
-                            <div key={member.user_id} className="flex items-center justify-between p-4 sm:p-6 transition-colors hover:bg-muted/30">
-                                <div className="flex items-center gap-4">
+                            <div key={member.user_id} className="flex flex-col gap-4 p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+                                <div className="flex min-w-0 items-center gap-4">
                                     <Avatar className="h-10 w-10 border border-border">
                                         <AvatarImage src={logoUrl} />
                                         <AvatarFallback className="bg-primary/10 text-primary">
                                             {name.substring(0, 2).toUpperCase()}
                                         </AvatarFallback>
                                     </Avatar>
-                                    <div>
-                                        <p className="font-semibold text-sm text-foreground">
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-semibold text-foreground">
                                             {name}
                                         </p>
-                                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 max-w-[150px] sm:max-w-none truncate">
-                                            <Mail className="h-3 w-3" /> {email}
+                                        <p className="mt-0.5 flex min-w-0 items-center gap-1 truncate text-xs text-muted-foreground">
+                                            <Mail className="h-3 w-3 shrink-0" /> <span className="truncate">{email}</span>
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-2 sm:gap-4">
+                                <div className="flex w-full items-center gap-2 sm:w-auto sm:gap-4">
                                     <Select
                                         value={member.role}
                                         onValueChange={(val) => handleRoleChange(member.user_id, val)}
                                     >
-                                        <SelectTrigger className="w-[110px] sm:w-[130px] h-8 text-xs border-primary/20 bg-background">
+                                        <SelectTrigger className="h-8 flex-1 border-primary/20 bg-background text-xs sm:w-[130px] sm:flex-none">
                                             <div className="flex items-center gap-1.5 truncate">
                                                 <Settings2 className="h-3 w-3 sm:hidden" />
                                                 <SelectValue />
@@ -199,7 +199,7 @@ export function TeamManager({ initialMembers }: { initialMembers: TeamMember[] }
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                        className="h-8 w-8 shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
                                         onClick={() => handleRemove(member.user_id)}
                                     >
                                         <Trash2 className="h-4 w-4" />

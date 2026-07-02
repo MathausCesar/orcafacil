@@ -7,10 +7,11 @@ import { Menu, X } from "lucide-react";
 import { MARKETING_LINKS } from "@/lib/marketing-links";
 
 const navItems = [
-    { href: MARKETING_LINKS.howItWorks, label: "Como funciona" },
-    { href: MARKETING_LINKS.professions, label: "Para quem é" },
-    { href: MARKETING_LINKS.pricing, label: "Planos" },
-    { href: MARKETING_LINKS.faq, label: "Dúvidas" },
+    { href: MARKETING_LINKS.resourcesPage, label: "Recursos" },
+    { href: MARKETING_LINKS.howItWorksPage, label: "Como funciona" },
+    { href: MARKETING_LINKS.modelsPage, label: "Modelos" },
+    { href: MARKETING_LINKS.blogPage, label: "Guias" },
+    { href: MARKETING_LINKS.pricingPage, label: "Planos" },
 ];
 
 export function MarketingHeader() {
@@ -19,7 +20,7 @@ export function MarketingHeader() {
     return (
         <header className="fixed top-0 left-0 right-0 z-50 bg-zinc-950/88 backdrop-blur-md border-b border-white/10">
             <div className="flex items-center justify-between px-4 sm:px-6 py-3">
-                <Link href="/" className="relative flex items-center shrink-0" aria-label="Página inicial da Zacly">
+                <Link href="/" className="relative flex items-center shrink-0" aria-label="Pagina inicial da Zacly">
                     <div className="relative h-10 w-10 sm:hidden">
                         <Image
                             src="/logo/zacly_icone.png"
@@ -42,7 +43,7 @@ export function MarketingHeader() {
                     </div>
                 </Link>
 
-                <nav className="hidden lg:flex items-center gap-6" aria-label="Navegação principal">
+                <nav className="hidden lg:flex items-center gap-6" aria-label="Navegacao principal">
                     {navItems.map((item) => (
                         <Link
                             key={item.href}
@@ -65,7 +66,7 @@ export function MarketingHeader() {
                         href={MARKETING_LINKS.register}
                         className="text-sm font-bold bg-white text-black px-5 py-2 rounded-full hover:bg-zinc-200 transition-colors"
                     >
-                        Criar orçamento grátis
+                        Criar orcamento gratis
                     </Link>
                 </nav>
 
@@ -105,7 +106,7 @@ export function MarketingHeader() {
                         onClick={() => setMenuOpen(false)}
                         className="w-full text-center py-3 rounded-xl text-sm font-bold bg-white text-black hover:bg-zinc-200 transition-colors"
                     >
-                        Criar orçamento grátis
+                        Criar orcamento gratis
                     </Link>
                 </div>
             )}

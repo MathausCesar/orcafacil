@@ -70,7 +70,10 @@ export async function proxy(request: NextRequest) {
 
         // --- PREVENÇÃO DE LOOPS DE REWRITE ---
         // Ignora requests que já passaram por rewrite ou são chamadas internas do App Router (/app ou /marketing visível no path)
-        if (url.pathname.startsWith('/app') || url.pathname.startsWith('/marketing') || url.pathname.includes('_next')) {
+        const isInternalAppPath = url.pathname === '/app' || url.pathname.startsWith('/app/')
+        const isInternalMarketingPath = url.pathname === '/marketing' || url.pathname.startsWith('/marketing/')
+
+        if (isInternalAppPath || isInternalMarketingPath || url.pathname.includes('_next')) {
             return response;
         }
 

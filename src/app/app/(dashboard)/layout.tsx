@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import type { Metadata } from 'next'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { DesktopSidebar } from '@/components/layout/desktop-sidebar'
 import { SupportWidget } from '@/components/support/support-widget'
@@ -7,6 +8,13 @@ import { UpgradeBanner } from '@/components/upgrade-banner'
 import { PwaInstallPrompt } from '@/components/pwa-install-prompt'
 import { getActiveOrganizationId } from '@/lib/get-active-organization'
 import { OrganizationProvider } from '@/contexts/organization-context'
+
+export const metadata: Metadata = {
+    robots: {
+        index: false,
+        follow: false,
+    },
+}
 
 export default async function DashboardLayout({
     children,

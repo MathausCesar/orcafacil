@@ -1,38 +1,45 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Hammer, PlugZap, Wrench, Paintbrush, Home, Snowflake, ShieldCheck } from "lucide-react";
 
 const professions = [
     {
         icon: Wrench,
-        title: "Mecânicos",
-        details: "Peças, mão de obra, prazo, garantia e aprovação antes de começar.",
+        title: "Mecanicos",
+        href: "/c/mecanicos",
+        details: "Pecas, mao de obra, prazo, garantia e aprovacao antes de comecar.",
     },
     {
         icon: Hammer,
         title: "Marceneiros",
-        details: "Medidas, ferragens, etapas, entrada, entrega e condições em um PDF claro.",
+        href: "/c/marceneiros",
+        details: "Medidas, ferragens, etapas, entrada, entrega e condicoes em um PDF claro.",
     },
     {
         icon: PlugZap,
         title: "Eletricistas",
-        details: "Visita, materiais, execução, urgência e validade do orçamento bem explicados.",
+        href: "/c/eletricistas",
+        details: "Visita, materiais, execucao, urgencia e validade do orcamento bem explicados.",
     },
     {
         icon: Paintbrush,
         title: "Pintores",
-        details: "Ambientes, metragem, tinta, número de demãos, preparação e prazo.",
+        href: "/c/pintores",
+        details: "Ambientes, metragem, tinta, numero de demaos, preparacao e prazo.",
     },
     {
         icon: Snowflake,
-        title: "Técnicos e instaladores",
-        details: "Diagnóstico, deslocamento, instalação, peça, garantia e próximos passos.",
+        title: "Tecnicos e instaladores",
+        href: "/c/assistencia-tecnica",
+        details: "Diagnostico, deslocamento, instalacao, peca, garantia e proximos passos.",
     },
     {
         icon: Home,
-        title: "Reformas e manutenção",
-        details: "Serviços por etapa, materiais inclusos, pagamento combinado e aceite do cliente.",
+        title: "Prestadores autonomos",
+        href: "/c/prestadores-autonomos",
+        details: "Servicos por etapa, materiais inclusos, pagamento combinado e aceite do cliente.",
     },
 ];
 
@@ -57,7 +64,7 @@ export function ProfessionFitSection() {
                             transition={{ delay: 0.1 }}
                             className="text-4xl md:text-5xl font-black text-white tracking-tight leading-tight"
                         >
-                            Para quem precisa vender serviço, não perder tempo formatando proposta.
+                            Para quem precisa vender servico, nao perder tempo formatando proposta.
                         </motion.h2>
                         <motion.p
                             initial={{ opacity: 0, y: 16 }}
@@ -66,30 +73,31 @@ export function ProfessionFitSection() {
                             transition={{ delay: 0.2 }}
                             className="mt-6 text-lg leading-relaxed text-zinc-300"
                         >
-                            O Zacly organiza o que o autônomo já faz todos os dias: explicar o serviço, mostrar preço, combinar prazo e conseguir o &quot;pode começar&quot;.
+                            O Zacly organiza o que o autonomo ja faz todos os dias: explicar o servico, mostrar preco, combinar prazo e conseguir o &quot;pode comecar&quot;.
                         </motion.p>
                         <div className="mt-8 flex items-start gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5 text-left">
                             <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-emerald-300" />
                             <p className="text-sm leading-relaxed text-emerald-50">
-                                Não precisa de CNPJ, sistema complexo ou nota fiscal para começar. A proposta é ajudar quem hoje controla clientes, serviços e orçamento no papel.
+                                Nao precisa de CNPJ, sistema complexo ou nota fiscal para comecar. A proposta e ajudar quem hoje controla clientes, servicos e orcamento no papel.
                             </p>
                         </div>
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2">
                         {professions.map((profession, index) => (
-                            <motion.div
-                                key={profession.title}
-                                initial={{ opacity: 0, y: 24 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, margin: "-60px" }}
-                                transition={{ duration: 0.45, delay: index * 0.05 }}
-                                className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:border-emerald-500/30 hover:bg-emerald-500/5"
-                            >
-                                <profession.icon className="h-6 w-6 text-emerald-300 mb-5" />
-                                <h3 className="text-lg font-black text-white">{profession.title}</h3>
-                                <p className="mt-2 text-sm leading-relaxed text-zinc-400">{profession.details}</p>
-                            </motion.div>
+                            <Link key={profession.title} href={profession.href} className="block">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 24 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true, margin: "-60px" }}
+                                    transition={{ duration: 0.45, delay: index * 0.05 }}
+                                    className="h-full rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:border-emerald-500/30 hover:bg-emerald-500/5"
+                                >
+                                    <profession.icon className="h-6 w-6 text-emerald-300 mb-5" />
+                                    <h3 className="text-lg font-black text-white">{profession.title}</h3>
+                                    <p className="mt-2 text-sm leading-relaxed text-zinc-400">{profession.details}</p>
+                                </motion.div>
+                            </Link>
                         ))}
                     </div>
                 </div>

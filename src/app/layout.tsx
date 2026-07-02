@@ -13,11 +13,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Zacly — Orçamentos Profissionais",
+    default: "Zacly - Orcamentos Profissionais",
     template: "%s | Zacly",
   },
   description:
-    "Crie orçamentos profissionais em PDF, envie pelo WhatsApp e acompanhe a aprovação do cliente.",
+    "Crie orcamentos profissionais em PDF, envie pelo WhatsApp e acompanhe a aprovacao do cliente.",
   applicationName: "Zacly",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
@@ -33,7 +33,15 @@ export const metadata: Metadata = {
     apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
   },
   authors: [{ name: "Zacly" }],
-  keywords: ["orçamento", "proposta comercial", "gerador de orçamento", "autônomo", "prestador de serviço", "pdf", "whatsapp"],
+  keywords: [
+    "orcamento",
+    "proposta comercial",
+    "gerador de orcamento",
+    "autonomo",
+    "prestador de servico",
+    "pdf",
+    "whatsapp",
+  ],
   creator: "Zacly",
   publisher: "Zacly",
   formatDetection: {
@@ -42,12 +50,9 @@ export const metadata: Metadata = {
     telephone: false,
   },
   metadataBase: new URL("https://www.zacly.com.br"),
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
-    title: "Zacly — Orçamentos Profissionais",
-    description: "Crie orçamentos em PDF, envie pelo WhatsApp e acompanhe aprovações com o Zacly.",
+    title: "Zacly - Orcamentos Profissionais",
+    description: "Crie orcamentos em PDF, envie pelo WhatsApp e acompanhe aprovacoes com o Zacly.",
     url: "https://www.zacly.com.br",
     siteName: "Zacly",
     locale: "pt_BR",
@@ -55,8 +60,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Zacly — Orçamentos Profissionais",
-    description: "Crie orçamentos profissionais em PDF pelo WhatsApp. Simples e rápido.",
+    title: "Zacly - Orcamentos Profissionais",
+    description: "Crie orcamentos profissionais em PDF pelo WhatsApp. Simples e rapido.",
   },
   robots: {
     index: true,
@@ -82,19 +87,28 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: "Zacly",
-    applicationCategory: "BusinessApplication",
-    operatingSystem: "Web",
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "BRL",
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: "Zacly",
+      url: "https://www.zacly.com.br",
+      logo: "https://www.zacly.com.br/logo/logo.png",
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "customer support",
+        email: "suporte@zacly.com.br",
+        availableLanguage: "pt-BR",
+      },
     },
-    description: "Crie orçamentos profissionais em PDF. Ferramenta simples para autônomos e prestadores de serviço.",
-  };
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "Zacly",
+      url: "https://www.zacly.com.br",
+      inLanguage: "pt-BR",
+    },
+  ];
 
   return (
     <html lang="pt-BR" suppressHydrationWarning>

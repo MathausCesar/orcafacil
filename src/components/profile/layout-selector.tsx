@@ -1,8 +1,10 @@
 'use client'
 
+import { useEffect } from 'react'
+import Link from 'next/link'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
-import { PROPOSAL_MODELS } from '@/lib/proposal-style'
+import { DEFAULT_PROPOSAL_ACCENT, FREE_PROPOSAL_MODEL, PROPOSAL_MODELS, isFreePlan } from '@/lib/proposal-style'
 import { Check, Lock, Palette } from 'lucide-react'
 
 interface LayoutSelectorProps {
@@ -106,7 +108,14 @@ function ModelPreview({ id, color }: { id: string; color: string }) {
 }
 
 export function LayoutSelector({ currentLayout, currentColor, onLayoutChange, onColorChange, plan }: LayoutSelectorProps) {
-    const isFree = !plan || plan === 'free'
+    const isFree = isFreePlan(plan)
+    const previewColor = isFree ? DEFAULT_PROPOSAL_ACCENT : currentColor
+
+    useEffect(() => {
+        if (isFree && currentLayout !== FREE_PROPOSAL_MODEL) {
+            onLayoutChange(FREE_PROPOSAL_MODEL)
+        }
+    }, [currentLayout, isFree, onLayoutChange])
 
     return (
         <div className="space-y-8">
@@ -117,7 +126,7 @@ export function LayoutSelector({ currentLayout, currentColor, onLayoutChange, on
                         Cor da marca
                     </Label>
                     <span className="rounded bg-slate-100 px-2 py-0.5 font-mono text-xs uppercase text-slate-500">
-                        {currentColor}
+                        {previewColor}
                     </span>
                 </div>
 
@@ -125,9 +134,14 @@ export function LayoutSelector({ currentLayout, currentColor, onLayoutChange, on
                     <div className="rounded-xl border bg-muted/50 p-4 text-sm text-muted-foreground">
                         <div className="flex items-start gap-3">
                             <Lock className="mt-0.5 h-5 w-5 shrink-0" />
-                            <p>
-                                No plano grátis, a cor pode ser detectada pela logo. Cores manuais ficam disponíveis nos planos pagos.
-                            </p>
+                            <div className="min-w-0">
+                                <p>
+                                    No plano gratis, a proposta usa a identidade padrao Zacly com layout Profissional. Cores, estilos e ajustes finos ficam disponiveis no Pro.
+                                </p>
+                                <Link href="/pricing" className="mt-3 inline-flex text-xs font-bold text-primary hover:underline">
+                                    Liberar personalizacao
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -137,10 +151,11 @@ export function LayoutSelector({ currentLayout, currentColor, onLayoutChange, on
                         <button
                             key={color}
                             type="button"
+                            disabled={isFree}
                             onClick={() => onColorChange(color)}
                             className={cn(
                                 'h-10 w-10 rounded-full border-2 shadow-sm transition hover:scale-105',
-                                currentColor === color
+                                previewColor === color
                                     ? 'scale-105 border-foreground ring-2 ring-background'
                                     : 'border-background'
                             )}
@@ -152,14 +167,15 @@ export function LayoutSelector({ currentLayout, currentColor, onLayoutChange, on
                     <div className="relative">
                         <input
                             type="color"
-                            value={currentColor}
+                            value={previewColor}
+                            disabled={isFree}
                             onChange={(event) => onColorChange(event.target.value)}
                             className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                             aria-label="Selecionar cor personalizada"
                         />
                         <div className={cn(
                             'flex h-10 w-10 items-center justify-center rounded-full border-2 bg-background shadow-sm transition',
-                            !defaultColors.includes(currentColor) && !isFree
+                            !defaultColors.includes(previewColor) && !isFree
                                 ? 'border-foreground ring-2 ring-background'
                                 : 'border-border hover:border-foreground/50'
                         )}>
@@ -174,32 +190,48 @@ export function LayoutSelector({ currentLayout, currentColor, onLayoutChange, on
             <section className="space-y-3">
                 <Label className="text-sm font-semibold text-foreground">Modelo da proposta</Label>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    {PROPOSAL_MODELS.map((model) => (
-                        <button
-                            key={model.id}
-                            type="button"
-                            onClick={() => onLayoutChange(model.id)}
-                            className={cn(
-                                'group relative rounded-2xl border-2 bg-card p-4 text-left transition hover:border-primary/50 hover:shadow-sm',
-                                currentLayout === model.id
-                                    ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                                    : 'border-border'
-                            )}
-                        >
-                            {currentLayout === model.id && (
-                                <div className="absolute right-3 top-3 text-primary">
-                                    <Check className="h-4 w-4" />
+                    {PROPOSAL_MODELS.map((model) => {
+                        const locked = isFree && model.id !== FREE_PROPOSAL_MODEL
+                        const selected = (isFree ? FREE_PROPOSAL_MODEL : currentLayout) === model.id
+
+                        return (
+                            <button
+                                key={model.id}
+                                type="button"
+                                disabled={locked}
+                                onClick={() => {
+                                    if (!locked) onLayoutChange(model.id)
+                                }}
+                                className={cn(
+                                    'group relative rounded-2xl border-2 bg-card p-4 text-left transition hover:border-primary/50 hover:shadow-sm',
+                                    selected
+                                        ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                                        : 'border-border',
+                                    locked && 'cursor-not-allowed opacity-65 hover:border-border hover:shadow-none'
+                                )}
+                            >
+                                {selected && (
+                                    <div className="absolute right-3 top-3 text-primary">
+                                        <Check className="h-4 w-4" />
+                                    </div>
+                                )}
+
+                                {locked && (
+                                    <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full border bg-background px-2 py-1 text-[10px] font-bold uppercase text-muted-foreground">
+                                        <Lock className="h-3 w-3" />
+                                        Pro
+                                    </div>
+                                )}
+
+                                <div className="mb-3 pr-14">
+                                    <div className="text-sm font-bold text-foreground">{model.name}</div>
+                                    <div className="mt-1 text-xs leading-5 text-muted-foreground">{model.description}</div>
                                 </div>
-                            )}
 
-                            <div className="mb-3 pr-6">
-                                <div className="text-sm font-bold text-foreground">{model.name}</div>
-                                <div className="mt-1 text-xs leading-5 text-muted-foreground">{model.description}</div>
-                            </div>
-
-                            <ModelPreview id={model.id} color={currentColor} />
-                        </button>
-                    ))}
+                                <ModelPreview id={model.id} color={previewColor} />
+                            </button>
+                        )
+                    })}
                 </div>
             </section>
         </div>

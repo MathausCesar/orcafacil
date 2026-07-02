@@ -5,6 +5,7 @@ import { createNotification } from './notifications'
 import { getAuthContext } from '@/lib/get-auth-context'
 import { PRICING } from '@/lib/pricing-copy'
 import { normalizeProfessionalContext } from '@/lib/professional-context'
+import { FREE_PROPOSAL_MODEL, isFreePlan, normalizeProposalModel } from '@/lib/proposal-style'
 
 type QuoteFormItem = {
     serviceId?: string | null
@@ -153,7 +154,8 @@ export async function createQuote(formData: FormData) {
     const installmentCount = formData.get('installment_count') ? parseInt(formData.get('installment_count') as string) : null
     const paymentMethodsStr = formData.get('payment_methods') as string
     const paymentMethods = paymentMethodsStr ? JSON.parse(paymentMethodsStr) : []
-    const layoutStyle = formData.get('layout_style') as string || null
+    const requestedLayoutStyle = formData.get('layout_style') as string || null
+    const layoutStyle = isFreePlan(userPlan) ? FREE_PROPOSAL_MODEL : normalizeProposalModel(requestedLayoutStyle)
     const professionalContext = normalizeProfessionalContext(formData.get('professional_context') as string | null)
     const afterCreate = formData.get('after_create') as string | null
 
@@ -250,6 +252,14 @@ export async function updateQuote(id: string, formData: FormData) {
     // If the client already decided or requested changes, editing creates a new version for re-approval.
     const shouldResetStatus = ['approved', 'changes_requested'].includes(currentQuote.status || '')
 
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', user.id)
+        .maybeSingle()
+
+    const userPlan = profile?.plan || 'free'
+
     const clientName = formData.get('clientName') as string
     const clientPhone = formData.get('clientPhone') as string
     const expirationDate = formData.get('expirationDate') as string || null
@@ -268,7 +278,8 @@ export async function updateQuote(id: string, formData: FormData) {
     const installmentCount = formData.get('installment_count') ? parseInt(formData.get('installment_count') as string) : null
     const paymentMethodsStr = formData.get('payment_methods') as string
     const paymentMethods = paymentMethodsStr ? JSON.parse(paymentMethodsStr) : []
-    const layoutStyle = formData.get('layout_style') as string || null
+    const requestedLayoutStyle = formData.get('layout_style') as string || null
+    const layoutStyle = isFreePlan(userPlan) ? FREE_PROPOSAL_MODEL : normalizeProposalModel(requestedLayoutStyle)
     const professionalContext = normalizeProfessionalContext(formData.get('professional_context') as string | null)
 
     const items = parseQuoteItems(itemsJson)

@@ -20,14 +20,17 @@ import { Watermark } from '@/components/quotes/watermark'
 import { getProfessionalContext } from '@/lib/professional-context'
 import { buildQuoteFollowUpMessage, getQuoteReminder } from '@/lib/quote-reminders'
 import {
+    DEFAULT_PROPOSAL_ACCENT,
     PROPOSAL_TONE_INTRO,
     ProposalFont,
     ProposalModelId,
     VisualToneId,
+    applyProposalIdentityPlanLimits,
     normalizeProposalFont,
-    normalizeProposalModel,
     normalizeVisualTone,
     parseProposalIdentitySettings,
+    resolveProposalModelForPlan,
+    isFreePlan,
 } from '@/lib/proposal-style'
 
 type QuoteItem = {
@@ -320,10 +323,11 @@ export function ProposalCanvas({
     whatsappMessage,
     totalFormatted,
 }: ProposalCanvasProps) {
+    const isFree = isFreePlan(profile?.plan)
     const businessName = profile?.business_name || 'Zacly'
-    const themeColor = normalizeColor(profile?.theme_color || profile?.primary_color)
-    const identitySettings = parseIdentitySettings(profile?.quote_settings)
-    const proposalModel = normalizeProposalModel(quote.layout_style || profile?.layout_style)
+    const themeColor = isFree ? DEFAULT_PROPOSAL_ACCENT : normalizeColor(profile?.theme_color || profile?.primary_color)
+    const identitySettings = applyProposalIdentityPlanLimits(parseIdentitySettings(profile?.quote_settings), profile?.plan)
+    const proposalModel = resolveProposalModelForPlan(profile?.plan, quote.layout_style || profile?.layout_style)
     const visualTone = normalizeVisualTone(identitySettings.visualTone)
     const proposalFont = normalizeProposalFont(identitySettings.quoteFont)
     const skin = proposalSkins[proposalModel]
@@ -332,7 +336,6 @@ export function ProposalCanvas({
     const isAgencyModel = proposalModel === 'agency'
     const status = quote.status || 'draft'
     const statusInfo = statusCopy[status] || statusCopy.draft
-    const isFree = !profile?.plan || profile.plan === 'free'
     const questionUrl = getWhatsappQuestionUrl(profile?.phone, quote.client_name)
     const itemTotal = quote.quote_items.reduce((sum, item) => {
         return sum + ((item.quantity || 0) * (item.unit_price || 0))

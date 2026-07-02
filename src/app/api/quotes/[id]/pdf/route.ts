@@ -7,9 +7,12 @@ import { getAppBaseUrl } from '@/lib/app-url'
 import type { Database } from '@/types/database.types'
 import { getProfessionalContext } from '@/lib/professional-context'
 import {
+    DEFAULT_PROPOSAL_ACCENT,
     PROPOSAL_TONE_INTRO,
-    normalizeProposalModel,
+    applyProposalIdentityPlanLimits,
+    isFreePlan,
     parseProposalIdentitySettings,
+    resolveProposalModelForPlan,
     type ProposalFont,
     type ProposalModelId,
     type VisualToneId,
@@ -809,9 +812,13 @@ function drawNotesAndFooter(
 
 async function renderQuotePdf(quote: QuoteWithItems, profile: ProfileRow | null, approvalUrl: string) {
     const businessName = pdfSafeText(profile?.business_name, 'Zacly')
-    const accent = normalizeColor(profile?.theme_color || profile?.primary_color)
-    const identitySettings = parseIdentitySettings(profile?.quote_settings, profile?.quote_font_family)
-    const proposalModel = normalizeProposalModel(quote.layout_style || profile?.layout_style)
+    const isFree = isFreePlan(profile?.plan)
+    const accent = isFree ? DEFAULT_PROPOSAL_ACCENT : normalizeColor(profile?.theme_color || profile?.primary_color)
+    const identitySettings = applyProposalIdentityPlanLimits(
+        parseIdentitySettings(profile?.quote_settings, profile?.quote_font_family),
+        profile?.plan,
+    )
+    const proposalModel = resolveProposalModelForPlan(profile?.plan, quote.layout_style || profile?.layout_style)
     const fonts = getPdfFonts(identitySettings.quoteFont)
     const skin = getPdfSkin(proposalModel, accent, identitySettings.visualTone)
     const logo = await fetchLogoImage(profile?.logo_url)

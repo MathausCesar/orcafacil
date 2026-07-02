@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getAuthContext } from '@/lib/get-auth-context'
+import { FREE_PROPOSAL_MODEL, isFreePlan } from '@/lib/proposal-style'
 import type { Json } from '@/types/database.types'
 
 type ProfileUpdateData = {
@@ -24,6 +25,13 @@ type ProfileUpdateData = {
 }
 
 type JsonObject = { [key: string]: Json | undefined }
+
+const FREE_QUOTE_SETTINGS: JsonObject = {
+    visualTone: 'balanced',
+    footerText: '',
+    quote_font_family: 'Inter',
+    whatsappMessageTemplate: '',
+}
 
 function parseJsonObject(value: unknown): JsonObject {
     if (!value) return {}
@@ -54,6 +62,7 @@ export async function updateProfile(formData: FormData) {
     const themeColor = formData.get('themeColor') as string
     const layoutStyle = formData.get('layoutStyle') as string
     const quoteSettingsStr = formData.get('quoteSettings') as string
+    const hasProposalFields = formData.has('themeColor') || formData.has('layoutStyle') || formData.has('quoteSettings')
 
     const updateData: ProfileUpdateData = {
         updated_at: new Date().toISOString(),
@@ -71,24 +80,35 @@ export async function updateProfile(formData: FormData) {
     if (formData.has('city')) updateData.city = String(formData.get('city') || '')
     if (formData.has('state')) updateData.state = String(formData.get('state') || '')
 
-    if (themeColor) updateData.theme_color = themeColor
-    if (layoutStyle) updateData.layout_style = layoutStyle
+    if (hasProposalFields) {
+        const { data: currentProfile } = await supabase
+            .from('profiles')
+            .select('plan, quote_settings')
+            .eq('id', user.id)
+            .maybeSingle()
 
-    if (quoteSettingsStr) {
-        try {
-            const parsedSettings = parseJsonObject(quoteSettingsStr)
-            const { data: currentProfile } = await supabase
-                .from('profiles')
-                .select('quote_settings')
-                .eq('id', user.id)
-                .maybeSingle()
-
+        if (isFreePlan(currentProfile?.plan)) {
+            updateData.layout_style = FREE_PROPOSAL_MODEL
             updateData.quote_settings = {
                 ...parseJsonObject(currentProfile?.quote_settings),
-                ...parsedSettings,
+                ...FREE_QUOTE_SETTINGS,
             }
-        } catch (e) {
-            console.error('Failed to parse quoteSettings', e)
+        } else {
+            if (themeColor) updateData.theme_color = themeColor
+            if (layoutStyle) updateData.layout_style = layoutStyle
+
+            if (quoteSettingsStr) {
+                try {
+                    const parsedSettings = parseJsonObject(quoteSettingsStr)
+
+                    updateData.quote_settings = {
+                        ...parseJsonObject(currentProfile?.quote_settings),
+                        ...parsedSettings,
+                    }
+                } catch (e) {
+                    console.error('Failed to parse quoteSettings', e)
+                }
+            }
         }
     }
 
@@ -110,6 +130,16 @@ export async function updateProfile(formData: FormData) {
 export async function updateThemeColor(color: string) {
     const { supabase, user } = await getAuthContext()
     if (!user) return { error: 'Unauthorized' }
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', user.id)
+        .maybeSingle()
+
+    if (isFreePlan(profile?.plan)) {
+        return { success: true, locked: true }
+    }
 
     const { error } = await supabase
         .from('profiles')

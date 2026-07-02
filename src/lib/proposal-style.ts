@@ -33,6 +33,9 @@ export const PROPOSAL_MODELS = [
 
 export type ProposalModelId = typeof PROPOSAL_MODELS[number]['id']
 
+export const FREE_PROPOSAL_MODEL: ProposalModelId = 'professional'
+export const DEFAULT_PROPOSAL_ACCENT = '#0D9B5C'
+
 export const VISUAL_TONES = [
     {
         id: 'balanced',
@@ -64,16 +67,34 @@ export type ProposalIdentitySettings = {
     whatsappMessageTemplate: string
 }
 
+export const DEFAULT_PROPOSAL_IDENTITY_SETTINGS: ProposalIdentitySettings = {
+    visualTone: 'balanced',
+    footerText: '',
+    quoteFont: 'Inter',
+    whatsappMessageTemplate: '',
+}
+
 export const PROPOSAL_TONE_INTRO: Record<VisualToneId, string> = {
     balanced: 'Escopo, valores e condicoes organizados para decisao rapida. A aprovacao deve ser feita pelo link publico enviado ao cliente.',
     formal: 'Documento comercial estruturado com escopo, condicoes e investimento para uma decisao segura do cliente.',
     creative: 'Uma proposta clara, visual e personalizada para apresentar o servico com mais presenca e confianca.',
 }
 
+export function isFreePlan(plan: string | null | undefined): boolean {
+    return !plan || plan === 'free'
+}
+
 export function normalizeProposalModel(value: string | null | undefined): ProposalModelId {
     return PROPOSAL_MODELS.some(model => model.id === value)
         ? value as ProposalModelId
         : 'professional'
+}
+
+export function resolveProposalModelForPlan(
+    plan: string | null | undefined,
+    value: string | null | undefined,
+): ProposalModelId {
+    return isFreePlan(plan) ? FREE_PROPOSAL_MODEL : normalizeProposalModel(value)
 }
 
 export function normalizeVisualTone(value: string | null | undefined): VisualToneId {
@@ -93,10 +114,8 @@ export function parseProposalIdentitySettings(
     fallbackFont?: string | null,
 ): ProposalIdentitySettings {
     const fallback: ProposalIdentitySettings = {
-        visualTone: 'balanced',
-        footerText: '',
+        ...DEFAULT_PROPOSAL_IDENTITY_SETTINGS,
         quoteFont: normalizeProposalFont(fallbackFont),
-        whatsappMessageTemplate: '',
     }
 
     if (!raw) return fallback
@@ -120,4 +139,12 @@ export function parseProposalIdentitySettings(
     } catch {
         return fallback
     }
+}
+
+export function applyProposalIdentityPlanLimits(
+    settings: ProposalIdentitySettings,
+    plan: string | null | undefined,
+): ProposalIdentitySettings {
+    if (!isFreePlan(plan)) return settings
+    return DEFAULT_PROPOSAL_IDENTITY_SETTINGS
 }

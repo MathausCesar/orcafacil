@@ -4,7 +4,7 @@ import { getAppBaseUrl } from '@/lib/app-url'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { ProposalCanvas, type ProposalProfile, type ProposalQuote } from '@/components/quotes/proposal-canvas'
-import { parseProposalIdentitySettings } from '@/lib/proposal-style'
+import { isFreePlan, parseProposalIdentitySettings } from '@/lib/proposal-style'
 import { buildQuoteApprovalMessage, buildWhatsAppLink } from '@/lib/quote-share'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -90,13 +90,14 @@ export default async function QuotePage({
     const approvalUrl = `${getAppBaseUrl()}/quotes/${quote.id}?token=${quote.public_token}`
     const pdfUrl = `/api/quotes/${quote.id}/pdf${canClientRespond ? `?token=${quote.public_token}` : ''}`
     const identitySettings = parseProposalIdentitySettings(profile?.quote_settings, profile?.quote_font_family)
+    const isFree = isFreePlan(profile?.plan)
     const whatsappMessage = buildQuoteApprovalMessage({
         clientName: quote.client_name,
         businessName,
         totalFormatted,
         validUntil: quote.expiration_date,
         approvalUrl,
-        template: identitySettings.whatsappMessageTemplate,
+        template: isFree ? '' : identitySettings.whatsappMessageTemplate,
     })
     const whatsappLink = buildWhatsAppLink(quote.client_phone, whatsappMessage)
 

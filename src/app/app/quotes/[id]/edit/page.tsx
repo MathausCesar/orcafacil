@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { QuoteForm, type QuoteItem } from '@/components/quotes/quote-form'
+import { FREE_PROPOSAL_MODEL, isFreePlan } from '@/lib/proposal-style'
 
 interface PageProps {
     params: Promise<{ id: string }>
@@ -49,6 +50,14 @@ export default async function EditQuotePage(props: PageProps) {
         redirect(`/quotes/${id}`)
     }
 
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', user.id)
+        .maybeSingle()
+
+    const isFree = isFreePlan(profile?.plan)
+
     // Transform data for QuoteForm
     const initialData = {
         id: quote.id,
@@ -66,7 +75,7 @@ export default async function EditQuotePage(props: PageProps) {
         cashDiscountType: quote.cash_discount_type || 'percent',
         paymentMethods: quote.payment_methods || [],
         installmentCount: quote.installment_count || '',
-        layoutStyle: quote.layout_style || 'professional',
+        layoutStyle: isFree ? FREE_PROPOSAL_MODEL : quote.layout_style || FREE_PROPOSAL_MODEL,
         professionalContext: quote.professional_context || 'general',
         items: (quote.quote_items as QuoteItemRecord[]).map((item): QuoteItem => ({
             id: item.id, // Or generate random if needed, but ID is fine
@@ -82,7 +91,7 @@ export default async function EditQuotePage(props: PageProps) {
 
     return (
         <div className="container max-w-4xl mx-auto py-8 px-4">
-            <QuoteForm initialData={initialData} />
+            <QuoteForm initialData={initialData} plan={profile?.plan} />
         </div>
     )
 }

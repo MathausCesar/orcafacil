@@ -16,12 +16,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import { Trash2, Save, ArrowLeft, FileText, Loader2, Settings2, Wallet, Clock, CheckCircle2, AlignLeft, LayoutTemplate, Check, Package, Wrench } from 'lucide-react'
+import { Trash2, Save, ArrowLeft, FileText, Loader2, Settings2, Wallet, Clock, CheckCircle2, AlignLeft, LayoutTemplate, Check, Package, Wrench, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { ClientAutocomplete } from '@/components/clients/client-autocomplete'
 import { useRouter } from 'next/navigation'
-import { PROPOSAL_MODELS } from '@/lib/proposal-style'
+import { FREE_PROPOSAL_MODEL, PROPOSAL_MODELS, isFreePlan } from '@/lib/proposal-style'
 import { PROFESSIONAL_CONTEXTS, getProfessionalContext } from '@/lib/professional-context'
 
 type NumericQuoteItemField = 'quantity' | 'unitPrice'
@@ -56,6 +56,7 @@ export interface QuoteItem {
 
 interface QuoteFormProps {
     quickMode?: boolean
+    plan?: string | null
     initialData?: {
         id?: string
         clientName: string
@@ -78,7 +79,8 @@ interface QuoteFormProps {
     }
 }
 
-export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
+export function QuoteForm({ initialData, quickMode = false, plan }: QuoteFormProps) {
+    const isFree = isFreePlan(plan)
     const [items, setItems] = useState<QuoteItem[]>(initialData?.items || [])
     const [loading, setLoading] = useState(false)
     const isSubmitting = useRef(false)
@@ -103,7 +105,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
     )
     const [paymentMethods, setPaymentMethods] = useState<string[]>(initialData?.paymentMethods || [])
     const [installmentCount, setInstallmentCount] = useState(initialData?.installmentCount || '')
-    const [layoutStyle, setLayoutStyle] = useState(initialData?.layoutStyle || 'professional')
+    const [layoutStyle, setLayoutStyle] = useState(isFree ? FREE_PROPOSAL_MODEL : initialData?.layoutStyle || FREE_PROPOSAL_MODEL)
     const [professionalContext, setProfessionalContext] = useState(initialData?.professionalContext || 'general')
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(!quickMode)
 
@@ -116,6 +118,12 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
             setDate(d.toISOString().split('T')[0])
         }
     }, [date])
+
+    useEffect(() => {
+        if (isFree && layoutStyle !== FREE_PROPOSAL_MODEL) {
+            setLayoutStyle(FREE_PROPOSAL_MODEL)
+        }
+    }, [isFree, layoutStyle])
 
     const handleAddItem = (product: {
         serviceId?: string | null
@@ -244,7 +252,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                 formData.set('installment_count', installmentCount)
             }
         }
-        formData.set('layout_style', layoutStyle)
+        formData.set('layout_style', isFree ? FREE_PROPOSAL_MODEL : layoutStyle)
         formData.set('professional_context', professionalContext)
         if (quickMode && !initialData?.id) {
             formData.set('after_create', 'pipeline')
@@ -539,7 +547,7 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                                 <span className="flex min-w-0 flex-col items-start">
                                     <span className="font-semibold text-foreground">Mostrar ajustes da proposta</span>
                                     <span className="text-xs font-normal text-muted-foreground">
-                                        Escolha layout, pagamento, cronograma e detalhes extras.
+                                        {isFree ? 'Revise pagamento, cronograma e detalhes extras.' : 'Escolha layout, pagamento, cronograma e detalhes extras.'}
                                     </span>
                                 </span>
                             </Button>
@@ -560,23 +568,45 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
                                             </div>
                                             <Label className="font-medium">Modelo visual</Label>
                                         </div>
+                                        {isFree && (
+                                            <div className="rounded-xl border bg-muted/40 p-3 text-xs leading-5 text-muted-foreground">
+                                                <div className="flex items-start gap-2">
+                                                    <Lock className="mt-0.5 h-4 w-4 shrink-0" />
+                                                    <p>
+                                                        No plano gratis, cada proposta usa o modelo Profissional. Os outros modelos entram no Pro.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                            {PROPOSAL_MODELS.map((l) => (
-                                                <button
-                                                    key={l.id}
-                                                    type="button"
-                                                    onClick={() => setLayoutStyle(l.id)}
-                                                    className={`relative p-3 rounded-xl border-2 text-center transition-all text-xs font-semibold ${layoutStyle === l.id
-                                                        ? 'border-primary bg-primary/5 text-primary'
-                                                        : 'border-border bg-card text-muted-foreground hover:border-primary/30'
-                                                        }`}
-                                                >
-                                                    {layoutStyle === l.id && <Check className="absolute top-1.5 right-1.5 h-3 w-3 text-primary" />}
-                                                    {l.name}
-                                                </button>
-                                            ))}
+                                            {PROPOSAL_MODELS.map((l) => {
+                                                const locked = isFree && l.id !== FREE_PROPOSAL_MODEL
+                                                const selected = (isFree ? FREE_PROPOSAL_MODEL : layoutStyle) === l.id
+
+                                                return (
+                                                    <button
+                                                        key={l.id}
+                                                        type="button"
+                                                        disabled={locked}
+                                                        onClick={() => {
+                                                            if (!locked) setLayoutStyle(l.id)
+                                                        }}
+                                                        className={`relative p-3 rounded-xl border-2 text-center transition-all text-xs font-semibold ${selected
+                                                            ? 'border-primary bg-primary/5 text-primary'
+                                                            : 'border-border bg-card text-muted-foreground hover:border-primary/30'
+                                                            } ${locked ? 'cursor-not-allowed opacity-60 hover:border-border' : ''}`}
+                                                    >
+                                                        {selected && <Check className="absolute top-1.5 right-1.5 h-3 w-3 text-primary" />}
+                                                        {locked && <Lock className="absolute top-1.5 right-1.5 h-3 w-3 text-muted-foreground" />}
+                                                        <span>{l.name}</span>
+                                                        {locked && <span className="mt-1 block text-[10px] uppercase tracking-wide">Pro</span>}
+                                                    </button>
+                                                )
+                                            })}
                                         </div>
-                                        <p className="text-xs text-muted-foreground leading-snug">Cada orçamento salva o modelo escolhido no momento da criação.</p>
+                                        <p className="text-xs text-muted-foreground leading-snug">
+                                            {isFree ? 'O modelo Profissional foi escolhido por manter a proposta clara e confiavel.' : 'Cada orçamento salva o modelo escolhido no momento da criação.'}
+                                        </p>
                                     </div>
                                     <div className="p-4 space-y-3">
                                         <div className="flex items-center gap-3">

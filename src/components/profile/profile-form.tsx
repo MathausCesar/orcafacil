@@ -11,6 +11,7 @@ import { Save, Loader2, Building2, Palette, Rocket } from 'lucide-react'
 import { LogoUpload } from '@/components/profile/logo-upload'
 import { LayoutSelector } from '@/components/profile/layout-selector'
 import { QuoteSettings, QuoteSettingsData } from '@/components/profile/quote-settings'
+import { DEFAULT_PROPOSAL_ACCENT, FREE_PROPOSAL_MODEL, isFreePlan } from '@/lib/proposal-style'
 import { toast } from 'sonner'
 import { extractColors } from 'extract-colors'
 
@@ -39,8 +40,9 @@ interface ProfileFormProps {
 
 export function ProfileForm({ initialProfile, userId, section = 'all' }: ProfileFormProps) {
     const [loading, setLoading] = useState(false)
-    const [themeColor, setThemeColor] = useState(initialProfile?.theme_color || '#0D9B5C')
-    const [layoutStyle, setLayoutStyle] = useState(initialProfile?.layout_style || 'professional')
+    const isFree = isFreePlan(initialProfile?.plan)
+    const [themeColor, setThemeColor] = useState(isFree ? DEFAULT_PROPOSAL_ACCENT : initialProfile?.theme_color || DEFAULT_PROPOSAL_ACCENT)
+    const [layoutStyle, setLayoutStyle] = useState(isFree ? FREE_PROPOSAL_MODEL : initialProfile?.layout_style || FREE_PROPOSAL_MODEL)
     const [logoUrl, setLogoUrl] = useState<string | null>(initialProfile?.logo_url || null)
     const [businessName, setBusinessName] = useState(initialProfile?.business_name || '')
 
@@ -116,14 +118,17 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
                 const filtered = colors.filter(c => c.lightness > 0.15 && c.lightness < 0.85)
                 const best = filtered.length > 0 ? filtered[0] : colors[0]
                 const dominant = best.hex
-                setThemeColor(dominant)
 
-                // Persist immediately — user shouldn't need to click Save for color to apply
-                await updateThemeColor(dominant)
+                if (!isFree) {
+                    setThemeColor(dominant)
 
-                toast.success('Cor da marca detectada!', {
-                    description: 'O tema do orçamento foi ajustado para combinar com sua logo.'
-                })
+                    // Persist immediately - user shouldn't need to click Save for color to apply
+                    await updateThemeColor(dominant)
+
+                    toast.success('Cor da marca detectada!', {
+                        description: 'O tema do orcamento foi ajustado para combinar com sua logo.'
+                    })
+                }
             }
         } catch (e) {
             console.error('Color extraction failed', e)
@@ -133,9 +138,13 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
     const handleSubmit = async (formData: FormData) => {
         setLoading(true)
         if (showProposal) {
-            formData.append('themeColor', themeColor)
-            formData.append('layoutStyle', layoutStyle)
-            if (quoteSettings) {
+            if (isFree) {
+                formData.append('layoutStyle', FREE_PROPOSAL_MODEL)
+            } else {
+                formData.append('themeColor', themeColor)
+                formData.append('layoutStyle', layoutStyle)
+            }
+            if (!isFree && quoteSettings) {
                 formData.append('quoteSettings', JSON.stringify(quoteSettings))
             }
         }
@@ -370,10 +379,12 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
                         <CardContent className="pt-6 space-y-8">
 
                             <LayoutSelector
-                                currentLayout={layoutStyle}
-                                currentColor={themeColor}
-                                onLayoutChange={setLayoutStyle}
-                                onColorChange={setThemeColor}
+                                currentLayout={isFree ? FREE_PROPOSAL_MODEL : layoutStyle}
+                                currentColor={isFree ? DEFAULT_PROPOSAL_ACCENT : themeColor}
+                                onLayoutChange={(value) => setLayoutStyle(isFree ? FREE_PROPOSAL_MODEL : value)}
+                                onColorChange={(value) => {
+                                    if (!isFree) setThemeColor(value)
+                                }}
                                 plan={initialProfile?.plan}
                             />
 

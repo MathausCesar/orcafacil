@@ -1,7 +1,7 @@
 import { QuoteForm } from '@/components/quotes/quote-form'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveOrganizationId } from '@/lib/get-active-organization'
-import { normalizeProposalModel } from '@/lib/proposal-style'
+import { FREE_PROPOSAL_MODEL, isFreePlan, normalizeProposalModel } from '@/lib/proposal-style'
 import { getProfessionalContext } from '@/lib/professional-context'
 import { parseOnboardingQuoteSettings } from '@/lib/onboarding-catalog'
 
@@ -19,7 +19,7 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
         ? await Promise.all([
             supabase
                 .from('profiles')
-                .select('layout_style, quote_settings')
+                .select('layout_style, quote_settings, plan')
                 .eq('id', user.id)
                 .maybeSingle(),
             orgId
@@ -32,6 +32,7 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
         : [{ data: null }, { count: 0 }]
 
     const profile = profileResult.data
+    const isFree = isFreePlan(profile?.plan)
     const quickMode = quick === '1' || (quoteCountResult.count ?? 0) === 0
     const onboardingSettings = quickMode
         ? parseOnboardingQuoteSettings(profile?.quote_settings)
@@ -42,9 +43,10 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
     return (
         <QuoteForm
             quickMode={quickMode}
+            plan={profile?.plan}
             initialData={{
                 clientName: clientName || '',
-                layoutStyle: normalizeProposalModel(profile?.layout_style),
+                layoutStyle: isFree ? FREE_PROPOSAL_MODEL : normalizeProposalModel(profile?.layout_style),
                 professionalContext: quickMode ? professionalContext.id : 'general',
                 showTimeline: quickMode,
                 estimatedDays: quickMode ? String(professionalContext.defaultEstimatedDays) : '',

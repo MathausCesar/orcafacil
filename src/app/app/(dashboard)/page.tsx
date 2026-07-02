@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { DashboardHeader } from '@/components/dashboard/header'
 import { DashboardStats } from '@/components/dashboard/dashboard-stats'
+import { FirstRunGuide } from '@/components/dashboard/first-run-guide'
 import { QuoteStatusBadge } from '@/components/quotes/quote-status-badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -22,8 +23,10 @@ export default async function Dashboard() {
 
   const orgId = await getActiveOrganizationId(supabase)
 
-  // Parallel fetch: profile + recent quotes
-  const [profileResult, quotesResult] = await Promise.all([
+  const emptyCountResult = { count: 0, data: null, error: null }
+
+  // Parallel fetch: profile, recent quotes and guided first-run progress
+  const [profileResult, quotesResult, clientsCountResult, quotesCountResult, activePipelineResult] = await Promise.all([
     supabase
       .from('profiles')
       .select('business_name, logo_url, onboarded_at')
@@ -34,7 +37,26 @@ export default async function Dashboard() {
       .select('*, quote_items(description)')
       .eq('organization_id', orgId || '')
       .order('created_at', { ascending: false })
-      .limit(5)
+      .limit(5),
+    orgId
+      ? supabase
+        .from('clients')
+        .select('id', { count: 'exact', head: true })
+        .eq('organization_id', orgId)
+      : Promise.resolve(emptyCountResult),
+    orgId
+      ? supabase
+        .from('quotes')
+        .select('id', { count: 'exact', head: true })
+        .eq('organization_id', orgId)
+      : Promise.resolve(emptyCountResult),
+    orgId
+      ? supabase
+        .from('quotes')
+        .select('id', { count: 'exact', head: true })
+        .eq('organization_id', orgId)
+        .in('status', ['sent', 'approved', 'in_progress', 'completed'])
+      : Promise.resolve(emptyCountResult),
   ])
 
   const profile = profileResult.data
@@ -51,6 +73,12 @@ export default async function Dashboard() {
         title={profile.business_name || 'Seu Negócio'}
         profileImage={profile.logo_url}
         className="bg-background/50 backdrop-blur-sm p-4 rounded-2xl border border-border shadow-sm"
+      />
+
+      <FirstRunGuide
+        clientCount={clientsCountResult.count || 0}
+        quoteCount={quotesCountResult.count || 0}
+        activePipelineCount={activePipelineResult.count || 0}
       />
 
       {/* Main Action - Elegant Gradient */}

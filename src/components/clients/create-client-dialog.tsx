@@ -17,9 +17,10 @@ import type { ClientOption } from '@/components/clients/client-autocomplete'
 interface CreateClientDialogProps {
     trigger?: React.ReactNode;
     onSuccess?: (client: ClientOption | null) => void;
+    redirectToQuoteAfterCreate?: boolean;
 }
 
-export function CreateClientDialog({ trigger, onSuccess }: CreateClientDialogProps) {
+export function CreateClientDialog({ trigger, onSuccess, redirectToQuoteAfterCreate = false }: CreateClientDialogProps) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [personType, setPersonType] = useState('pf')
@@ -35,8 +36,12 @@ export function CreateClientDialog({ trigger, onSuccess }: CreateClientDialogPro
             } else {
                 toast.success('Cliente cadastrado com sucesso!')
                 setOpen(false)
-                router.refresh()
                 if (onSuccess) onSuccess(result.client)
+                if (redirectToQuoteAfterCreate && result.client?.name) {
+                    router.push(`/new?quick=1&clientName=${encodeURIComponent(result.client.name)}`)
+                } else {
+                    router.refresh()
+                }
             }
         } catch {
             toast.error('Erro ao cadastrar cliente')

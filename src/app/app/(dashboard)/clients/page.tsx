@@ -1,14 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Search, Users } from 'lucide-react'
+import Link from 'next/link'
+import { ArrowRight, Search, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CreateClientDialog } from '@/components/clients/create-client-dialog'
 import { ClientCardExpandable } from '@/components/clients/client-card-expandable'
 import { getActiveOrganizationId } from '@/lib/get-active-organization'
 
-export default async function ClientsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-    const { q } = await searchParams
+export default async function ClientsPage({ searchParams }: { searchParams: Promise<{ q?: string; first?: string }> }) {
+    const { q, first } = await searchParams
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -35,13 +36,32 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
     }
 
     const { data: clients } = await query
+    const isFirstRun = first === '1'
+    const shouldGuideAfterCreate = isFirstRun && (clients?.length ?? 0) === 0
 
     return (
         <div className="space-y-6 pb-24">
             <div className="flex flex-wrap justify-between items-center gap-3">
                 <h1 className="text-xl md:text-2xl font-bold text-foreground">Meus Clientes</h1>
-                <CreateClientDialog />
+                <CreateClientDialog redirectToQuoteAfterCreate={shouldGuideAfterCreate} />
             </div>
+
+            {isFirstRun && (
+                <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm">
+                    <p className="font-semibold text-foreground">Passo 1 de 3: cadastre um cliente real</p>
+                    <p className="mt-1 text-muted-foreground">
+                        Depois de salvar o primeiro cliente, o Zacly abre a tela de proposta com o nome dele preenchido.
+                    </p>
+                    {(clients?.length ?? 0) > 0 && (
+                        <Button asChild className="mt-3">
+                            <Link href="/new?quick=1">
+                                Criar proposta agora
+                                <ArrowRight className="h-4 w-4" />
+                            </Link>
+                        </Button>
+                    )}
+                </div>
+            )}
 
             {/* Search */}
             <div className="relative">
@@ -62,7 +82,10 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
                         <Users className="h-12 w-12 mx-auto mb-3 text-primary/25" />
                         <p>Nenhum cliente encontrado.</p>
                         <div className="mt-4">
-                            <CreateClientDialog trigger={<Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10">Cadastrar Primeiro Cliente</Button>} />
+                            <CreateClientDialog
+                                redirectToQuoteAfterCreate={shouldGuideAfterCreate}
+                                trigger={<Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10">Cadastrar Primeiro Cliente</Button>}
+                            />
                         </div>
                     </div>
                 ) : (

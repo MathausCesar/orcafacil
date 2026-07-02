@@ -10,6 +10,7 @@ interface SearchParams {
     from?: string
     to?: string
     sort?: string
+    view?: string
 }
 
 export default async function QuotesListPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
@@ -51,8 +52,12 @@ export default async function QuotesListPage({ searchParams }: { searchParams: P
     const { data: quotes } = await query
 
     return (
-        <div className="space-y-6 pb-20">
-            <QuotesView quotes={quotes || []} totalCount={quotes?.length ?? 0} />
+        <div className="min-w-0 space-y-6 overflow-x-hidden pb-20">
+            <QuotesView
+                quotes={quotes || []}
+                totalCount={quotes?.length ?? 0}
+                initialView={params.view === 'pipeline' ? 'pipeline' : 'list'}
+            />
             <QuoteFilters />
         </div>
     )

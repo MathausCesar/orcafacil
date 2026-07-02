@@ -41,6 +41,7 @@ interface Quote {
 interface QuotesViewProps {
     quotes: Quote[]
     totalCount: number
+    initialView?: 'list' | 'pipeline'
 }
 
 const PIPELINE_COLUMNS = [
@@ -184,7 +185,7 @@ function DraggableQuoteCard({
         <div
             ref={setNodeRef}
             style={style}
-            className={`group relative bg-background rounded-xl border border-border/60 shadow-sm transition-all duration-300 ${isDragging ? 'opacity-30 scale-95' : 'hover:shadow-md hover:border-foreground/20 hover:-translate-y-0.5'
+            className={`group relative bg-card rounded-xl border border-border shadow-sm shadow-black/5 transition-all duration-300 ${isDragging ? 'opacity-30 scale-95' : 'hover:shadow-md hover:border-foreground/20 hover:-translate-y-0.5'
                 }`}
         >
             <div className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl ${colAccent} opacity-30 group-hover:opacity-100 transition-opacity duration-300`} />
@@ -213,7 +214,7 @@ function DraggableQuoteCard({
                             </div>
                         </div>
                         <div className="flex items-end justify-between border-t border-border/40 pt-2 mt-1">
-                            <div className={`text-[9px] xl:text-[10px] uppercase font-bold tracking-wider ${colColor} bg-background px-1.5 py-0.5 rounded-md border border-inherit truncate`}>
+                            <div className={`text-[9px] xl:text-[10px] uppercase font-bold tracking-wider ${colColor} bg-card px-1.5 py-0.5 rounded-md border border-inherit truncate`}>
                                 {quote.id.split('-')[0]}
                             </div>
                             <p className="font-black text-foreground text-xs xl:text-sm tracking-tight shrink-0">
@@ -260,9 +261,9 @@ function DroppableColumn({ id, children, className }: { id: string; children: Re
 // ===========================
 // Main Component
 // ===========================
-export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProps) {
+export function QuotesView({ quotes: initialQuotes, totalCount, initialView = 'list' }: QuotesViewProps) {
     const router = useRouter()
-    const [view, setView] = useState<'list' | 'pipeline'>('list')
+    const [view, setView] = useState<'list' | 'pipeline'>(initialView)
     const [quotes, setQuotes] = useState(initialQuotes)
     const [activeQuote, setActiveQuote] = useState<Quote | null>(null)
     const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
@@ -401,7 +402,7 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
     }))
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="w-full min-w-0 space-y-8 overflow-hidden animate-in fade-in duration-500">
             {/* Header & View Toggle */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <div className="flex items-center gap-3">
@@ -413,7 +414,7 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                     )}
                 </div>
 
-                <div className="flex items-center bg-muted/50 p-1 rounded-full border border-border/50 shadow-inner w-full sm:w-auto">
+                <div className="flex w-full min-w-0 items-center rounded-full border border-border/50 bg-muted/50 p-1 shadow-inner sm:w-auto">
                     <button
                         onClick={() => setView('list')}
                         className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2 text-sm font-semibold rounded-full transition-all duration-300 ${view === 'list'
@@ -453,14 +454,14 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                             {quotes.map((quote) => (
                                 <Link key={quote.id} href={`/quotes/${quote.id}`}>
                                     <Card className="hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 border border-border/60 bg-card group overflow-hidden relative">
-                                        <CardContent className="p-0 flex flex-col sm:flex-row sm:items-center justify-between">
+                                        <CardContent className="flex min-w-0 flex-col justify-between p-0 sm:flex-row sm:items-center">
                                             <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/20 group-hover:bg-primary transition-colors duration-300" />
-                                            <div className="p-5 flex items-center gap-4 flex-1">
+                                            <div className="flex min-w-0 flex-1 items-center gap-4 p-5">
                                                 <div className="hidden sm:flex h-10 w-10 shrink-0 rounded-full bg-primary/10 items-center justify-center">
                                                     <FileText className="h-5 w-5 text-primary" />
                                                 </div>
-                                                <div className="flex flex-col gap-1">
-                                                    <p className="font-bold text-foreground group-hover:text-primary transition-colors text-base sm:text-lg">
+                                                <div className="flex min-w-0 flex-col gap-1">
+                                                    <p className="truncate text-base font-bold text-foreground transition-colors group-hover:text-primary sm:text-lg">
                                                         {quote.client_name}
                                                     </p>
                                                     <p className="text-xs sm:text-sm font-medium text-muted-foreground">
@@ -493,7 +494,7 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                     {/* ====================== */}
                     {/* MOBILE: Timeline com botões avançar/regredir */}
                     {/* ====================== */}
-                    <div className="md:hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="xl:hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {totalQuotes > 0 && (
                             <div className="mb-6">
                                 <div className="flex h-2 rounded-full overflow-hidden bg-muted/50 border border-border/30">
@@ -566,8 +567,8 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                                                             <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${col.accent} opacity-40`} />
 
                                                             {/* Card content - clickable */}
-                                                            <Link href={`/quotes/${quote.id}`} className="flex items-center justify-between gap-3 p-4 pl-5 hover:bg-muted/30 transition-colors">
-                                                                <div className="min-w-0">
+                                                            <Link href={`/quotes/${quote.id}`} className="flex min-w-0 items-center justify-between gap-3 p-4 pl-5 transition-colors hover:bg-muted/30">
+                                                                <div className="min-w-0 flex-1">
                                                                     <p className="font-semibold text-sm text-foreground truncate">
                                                                         {quote.client_name}
                                                                     </p>
@@ -579,7 +580,7 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                                                                         <PaymentPill quote={quote} />
                                                                     </div>
                                                                 </div>
-                                                                <p className="font-black text-foreground text-sm tracking-tight shrink-0">
+                                                                <p className="shrink-0 text-sm font-black tracking-tight text-foreground">
                                                                     {fmt(quote.total)}
                                                                 </p>
                                                             </Link>
@@ -589,10 +590,10 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                                                                 {prevCol && prevIdx >= 0 ? (
                                                                     <button
                                                                         onClick={() => moveQuoteToStage(quote, prevIdx)}
-                                                                        className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors active:bg-muted/80 hover:bg-muted/50 ${prevCol.color}`}
+                                                                        className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 px-2 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors hover:bg-muted/50 active:bg-muted/80 ${prevCol.color}`}
                                                                     >
                                                                         <ChevronLeft className="h-3.5 w-3.5" />
-                                                                        {prevCol.label}
+                                                                        <span className="truncate">{prevCol.label}</span>
                                                                     </button>
                                                                 ) : (
                                                                     <div className="flex-1" />
@@ -601,9 +602,9 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                                                                 {nextCol && nextIdx >= 0 ? (
                                                                     <button
                                                                         onClick={() => moveQuoteToStage(quote, nextIdx)}
-                                                                        className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors active:bg-muted/80 hover:bg-muted/50 ${nextCol.color}`}
+                                                                        className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 px-2 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors hover:bg-muted/50 active:bg-muted/80 ${nextCol.color}`}
                                                                     >
-                                                                        {nextCol.label}
+                                                                        <span className="truncate">{nextCol.label}</span>
                                                                         <ChevronRight className="h-3.5 w-3.5" />
                                                                     </button>
                                                                 ) : (
@@ -637,7 +638,7 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                         onDragOver={handleDragOver}
                         onDragEnd={handleDragEnd}
                     >
-                        <div className="hidden md:block animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="hidden min-w-0 animate-in fade-in slide-in-from-bottom-4 duration-500 xl:block">
                             {/* Progress Bar */}
                             {totalQuotes > 0 && (
                                 <div className="mb-6 px-1">
@@ -668,8 +669,8 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                             )}
 
                             {/* Kanban Columns */}
-                            <div className="overflow-x-auto pb-2">
-                                <div className="grid min-w-[1120px] grid-cols-[repeat(7,minmax(0,1fr))] gap-3 pt-2">
+                            <div className="w-full min-w-0 max-w-full rounded-2xl pb-1">
+                                <div className="grid min-w-0 grid-cols-1 gap-3 pt-2 xl:grid-cols-3 2xl:grid-cols-4">
                                     {PIPELINE_COLUMNS.map(col => {
                                         const colQuotes = quotes.filter(q => getColumnId(q.status) === col.id)
                                         const isDropTarget = overId === col.id
@@ -678,21 +679,21 @@ export function QuotesView({ quotes: initialQuotes, totalCount }: QuotesViewProp
                                             <DroppableColumn
                                                 key={col.id}
                                                 id={col.id}
-                                                className={`min-w-0 flex flex-col rounded-2xl border ${col.border} ${col.bg} relative overflow-hidden transition-all duration-300 hover:shadow-lg ${isDropTarget ? 'ring-2 ring-primary shadow-xl scale-[1.02]' : ''}`}
+                                                className={`relative flex min-w-0 flex-col overflow-hidden rounded-2xl border ${col.border} ${col.bg} transition-all duration-300 hover:shadow-lg ${isDropTarget ? 'ring-2 ring-primary shadow-xl scale-[1.02]' : ''}`}
                                             >
                                                 <div className={`absolute top-0 left-0 right-0 h-1.5 ${col.accent} opacity-80`} />
-                                                <div className="flex items-center justify-between px-3 xl:px-4 pt-4 pb-2">
-                                                    <div className="flex items-center gap-2">
+                                                <div className="flex min-w-0 items-center justify-between gap-2 px-3 pb-2 pt-4">
+                                                    <div className="flex min-w-0 items-center gap-2">
                                                         <span className={`w-2 h-2 rounded-full ${col.accent} shadow-sm`} />
-                                                        <h3 className={`text-[10px] xl:text-xs font-black tracking-widest uppercase ${col.color}`}>
+                                                        <h3 className={`truncate text-[10px] font-black uppercase tracking-widest ${col.color}`}>
                                                             {col.label}
                                                         </h3>
                                                     </div>
-                                                    <span className="text-[10px] xl:text-xs bg-background/80 backdrop-blur-md border border-border/50 px-2 py-0.5 rounded-full text-foreground font-bold shadow-sm">
+                                                    <span className="shrink-0 rounded-full border border-border/50 bg-background/80 px-2 py-0.5 text-[10px] font-bold text-foreground shadow-sm backdrop-blur-md">
                                                         {colQuotes.length}
                                                     </span>
                                                 </div>
-                                                <div className="flex px-2 xl:px-3 pb-3 flex-col gap-2 overflow-y-auto max-h-[65vh] scrollbar-none min-h-[80px]">
+                                                <div className="flex min-h-[80px] flex-col gap-2 overflow-y-auto px-2 pb-3 scrollbar-none max-h-[min(65vh,42rem)]">
                                                     {colQuotes.map((quote) => (
                                                         <DraggableQuoteCard
                                                             key={quote.id}

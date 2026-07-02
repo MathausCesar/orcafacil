@@ -246,6 +246,9 @@ export function QuoteForm({ initialData, quickMode = false }: QuoteFormProps) {
         }
         formData.set('layout_style', layoutStyle)
         formData.set('professional_context', professionalContext)
+        if (quickMode && !initialData?.id) {
+            formData.set('after_create', 'pipeline')
+        }
 
         try {
             let result;

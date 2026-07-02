@@ -1,13 +1,15 @@
 import PDFDocument from 'pdfkit'
 import { NextRequest } from 'next/server'
+import QRCode from 'qrcode'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { getAppBaseUrl } from '@/lib/app-url'
 import type { Database } from '@/types/database.types'
 import { getProfessionalContext } from '@/lib/professional-context'
 import {
-    normalizeProposalFont,
+    PROPOSAL_TONE_INTRO,
     normalizeProposalModel,
-    normalizeVisualTone,
+    parseProposalIdentitySettings,
     type ProposalFont,
     type ProposalModelId,
     type VisualToneId,
@@ -41,13 +43,10 @@ type QuoteWithItems = QuoteRow & {
     quote_items: QuoteItemRow[]
 }
 
-type PdfIdentitySettings = {
-    visualTone: VisualToneId
-    footerText: string
-    quoteFont: ProposalFont
-}
+type PdfIdentitySettings = ReturnType<typeof parseProposalIdentitySettings>
 
 type PdfSkin = {
+    model: ProposalModelId
     headerBg: string
     headerText: string
     mutedHeaderText: string
@@ -65,6 +64,14 @@ type LogoImage = {
     buffer: Buffer
     contentType: string
 } | null
+
+function getQuoteSubtotal(quote: QuoteWithItems) {
+    return quote.quote_items.reduce((sum, item) => sum + ((item.quantity || 0) * (item.unit_price || 0)), 0)
+}
+
+function getQuoteTotal(quote: QuoteWithItems) {
+    return quote.total ?? getQuoteSubtotal(quote)
+}
 
 function formatCurrency(value: number | null | undefined) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0)
@@ -90,30 +97,7 @@ function normalizeColor(value: string | null | undefined) {
 }
 
 function parseIdentitySettings(raw: unknown, fallbackFont: string | null | undefined): PdfIdentitySettings {
-    const fallback: PdfIdentitySettings = {
-        visualTone: 'balanced',
-        footerText: '',
-        quoteFont: normalizeProposalFont(fallbackFont),
-    }
-
-    if (!raw) return fallback
-
-    try {
-        const value = typeof raw === 'string' ? JSON.parse(raw) : raw
-        if (!value || typeof value !== 'object') return fallback
-
-        const record = value as Record<string, unknown>
-
-        return {
-            visualTone: normalizeVisualTone(typeof record.visualTone === 'string' ? record.visualTone : undefined),
-            footerText: typeof record.footerText === 'string' ? record.footerText.trim() : '',
-            quoteFont: normalizeProposalFont(
-                typeof record.quote_font_family === 'string' ? record.quote_font_family : fallbackFont,
-            ),
-        }
-    } catch {
-        return fallback
-    }
+    return parseProposalIdentitySettings(raw, fallbackFont)
 }
 
 function getPdfFonts(font: ProposalFont) {
@@ -129,6 +113,7 @@ function getPdfSkin(model: ProposalModelId, accent: string, tone: VisualToneId):
     const creative = tone === 'creative'
 
     const common = {
+        model,
         border: sober ? '#cbd5e1' : '#e2e8f0',
         cardBg: sober ? '#f8fafc' : creative ? '#f0fdf4' : '#f8fafc',
         roundness: model === 'classic' || model === 'minimalist' ? 2 : model === 'agency' ? 12 : 8,
@@ -299,6 +284,22 @@ async function fetchLogoImage(url: string | null | undefined): Promise<LogoImage
     }
 }
 
+async function generateApprovalQr(approvalUrl: string) {
+    try {
+        return await QRCode.toBuffer(approvalUrl, {
+            type: 'png',
+            width: 132,
+            margin: 1,
+            color: {
+                dark: '#0f172a',
+                light: '#ffffff',
+            },
+        })
+    } catch {
+        return null
+    }
+}
+
 function drawLogo(
     doc: PDFKit.PDFDocument,
     logo: LogoImage,
@@ -339,34 +340,99 @@ function drawHeader(
     const right = doc.page.width - doc.page.margins.right
     const pageWidth = right - left
     const businessName = pdfSafeText(profile?.business_name, 'Zacly')
-    const headerHeight = 150
+    const clientName = pdfSafeText(quote.client_name, 'Cliente')
+    const quoteTotal = formatCurrency(getQuoteTotal(quote))
+    const headerHeight = skin.model === 'agency' ? 172 : skin.model === 'minimalist' ? 132 : 150
 
     doc.save()
     doc.rect(0, 0, doc.page.width, doc.page.height).fill(skin.pageBg)
     doc.restore()
 
+    if (skin.model === 'classic') {
+        doc.rect(0, 0, doc.page.width, headerHeight).fill(skin.headerBg)
+        doc.strokeColor('#d7cbbb').lineWidth(1).moveTo(left, 34).lineTo(right, 34).stroke()
+        doc.strokeColor('#d7cbbb').lineWidth(1).moveTo(left, headerHeight - 24).lineTo(right, headerHeight - 24).stroke()
+        doc.rect(left, headerHeight - 13, pageWidth, 3).fill(accent)
+
+        drawLogo(doc, logo, businessName, left, 50, accent, fonts)
+        doc.fillColor(skin.headerText).font(fonts.bold).fontSize(20).text('Proposta comercial', left + 98, 48, {
+            width: pageWidth - 250,
+            align: 'center',
+            lineGap: 1,
+        })
+        doc.fillColor(skin.mutedHeaderText).font(fonts.regular).fontSize(8.5).text(`Orcamento #${quote.id.slice(0, 8)}`, left + 98, 75, {
+            width: pageWidth - 250,
+            align: 'center',
+        })
+        doc.fillColor(skin.headerText).font(fonts.bold).fontSize(12).text(clientName, left + 98, 94, {
+            width: pageWidth - 250,
+            align: 'center',
+        })
+
+        const metaX = right - 132
+        doc.fillColor(skin.mutedHeaderText).font(fonts.regular).fontSize(8).text('Emitido', metaX, 50, { width: 132, align: 'right' })
+        doc.fillColor(skin.headerText).font(fonts.bold).fontSize(9).text(formatDate(quote.created_at), metaX, 63, { width: 132, align: 'right' })
+        doc.fillColor(skin.mutedHeaderText).font(fonts.regular).fontSize(8).text('Total', metaX, 88, { width: 132, align: 'right' })
+        doc.fillColor(skin.headerText).font(fonts.bold).fontSize(11).text(quoteTotal, metaX, 101, { width: 132, align: 'right' })
+        doc.y = headerHeight + 24
+        return
+    }
+
+    if (skin.model === 'minimalist') {
+        doc.rect(0, 0, doc.page.width, headerHeight).fill('#ffffff')
+        doc.rect(0, 0, doc.page.width, 7).fill(accent)
+        doc.strokeColor(skin.border).lineWidth(1).moveTo(left, headerHeight - 1).lineTo(right, headerHeight - 1).stroke()
+
+        drawLogo(doc, logo, businessName, left, 38, accent, fonts)
+        doc.fillColor(skin.headerText).font(fonts.bold).fontSize(19).text('Proposta comercial', left + 104, 40, {
+            width: pageWidth - 270,
+        })
+        doc.fillColor(skin.mutedHeaderText).font(fonts.regular).fontSize(8.5).text(`Orcamento #${quote.id.slice(0, 8)} para ${clientName}`, left + 104, 67, {
+            width: pageWidth - 270,
+        })
+        doc.fillColor(skin.headerText).font(fonts.bold).fontSize(11).text(businessName, left + 104, 87, {
+            width: pageWidth - 270,
+        })
+
+        const metaX = right - 155
+        doc.fillColor(skin.mutedHeaderText).font(fonts.regular).fontSize(8).text('Validade', metaX, 42, { width: 155, align: 'right' })
+        doc.fillColor(skin.headerText).font(fonts.bold).fontSize(10).text(formatDate(quote.expiration_date), metaX, 55, { width: 155, align: 'right' })
+        doc.fillColor(accent).font(fonts.bold).fontSize(13).text(quoteTotal, metaX, 84, { width: 155, align: 'right' })
+        doc.y = headerHeight + 24
+        return
+    }
+
     doc.rect(0, 0, doc.page.width, headerHeight).fill(skin.headerBg)
-    doc.rect(0, headerHeight - 7, doc.page.width, 7).fill(accent)
+    doc.rect(0, headerHeight - (skin.model === 'agency' ? 10 : 7), doc.page.width, skin.model === 'agency' ? 10 : 7).fill(accent)
+
+    if (skin.model === 'agency') {
+        doc.roundedRect(right - 245, 28, 210, 92, 22).fill(accent)
+        doc.roundedRect(right - 235, 38, 190, 72, 18).fill('#ffffff')
+        doc.fillColor('#0f172a').font(fonts.bold).fontSize(10).text('Investimento', right - 215, 52, { width: 150 })
+        doc.fillColor('#0f172a').font(fonts.bold).fontSize(17).text(quoteTotal, right - 215, 72, { width: 150 })
+    }
 
     drawLogo(doc, logo, businessName, left, 35, accent, fonts)
 
     const titleX = left + 102
     doc.fillColor(skin.headerText).font(fonts.bold).fontSize(22).text('Proposta comercial', titleX, 38, {
-        width: pageWidth - 270,
+        width: skin.model === 'agency' ? pageWidth - 360 : pageWidth - 270,
         lineGap: 1,
     })
     doc.fillColor(skin.mutedHeaderText).font(fonts.regular).fontSize(9).text(`Orcamento #${quote.id.slice(0, 8)}`, titleX, 67)
     doc.fillColor(skin.headerText).font(fonts.bold).fontSize(12).text(businessName, titleX, 89, {
-        width: pageWidth - 270,
+        width: skin.model === 'agency' ? pageWidth - 360 : pageWidth - 270,
         lineGap: 1,
     })
 
     const metaX = right - 170
-    doc.fillColor(skin.mutedHeaderText).font(fonts.regular).fontSize(8)
-    doc.text('Emitido em', metaX, 40, { width: 170, align: 'right' })
-    doc.fillColor(skin.headerText).font(fonts.bold).fontSize(10).text(formatDate(quote.created_at), metaX, 53, { width: 170, align: 'right' })
-    doc.fillColor(skin.mutedHeaderText).font(fonts.regular).fontSize(8).text('Validade', metaX, 79, { width: 170, align: 'right' })
-    doc.fillColor(skin.headerText).font(fonts.bold).fontSize(10).text(formatDate(quote.expiration_date), metaX, 92, { width: 170, align: 'right' })
+    if (skin.model !== 'agency') {
+        doc.fillColor(skin.mutedHeaderText).font(fonts.regular).fontSize(8)
+        doc.text('Emitido em', metaX, 40, { width: 170, align: 'right' })
+        doc.fillColor(skin.headerText).font(fonts.bold).fontSize(10).text(formatDate(quote.created_at), metaX, 53, { width: 170, align: 'right' })
+        doc.fillColor(skin.mutedHeaderText).font(fonts.regular).fontSize(8).text('Validade', metaX, 79, { width: 170, align: 'right' })
+        doc.fillColor(skin.headerText).font(fonts.bold).fontSize(10).text(formatDate(quote.expiration_date), metaX, 92, { width: 170, align: 'right' })
+    }
 
     doc.y = headerHeight + 26
 }
@@ -434,7 +500,7 @@ function drawPlanSection(
     ensureSpace(doc, titleHeight + descriptionHeight + 96)
     drawSectionTitle(doc, `Plano de execucao: ${pdfSafeText(professionalContext.name)}`, accent, fonts, left)
 
-    doc.fillColor('#334155').font(fonts.regular).fontSize(10).text(toneIntro[visualTone], left, doc.y, {
+    doc.fillColor('#334155').font(fonts.regular).fontSize(10).text(pdfSafeText(PROPOSAL_TONE_INTRO[visualTone], toneIntro[visualTone]), left, doc.y, {
         width: pageWidth,
         lineGap: 2,
     })
@@ -655,6 +721,51 @@ function drawTimelineSection(
     doc.y = startY + cardHeight + 24
 }
 
+function drawApprovalSection(
+    doc: PDFKit.PDFDocument,
+    approvalUrl: string,
+    qrBuffer: Buffer | null,
+    skin: PdfSkin,
+    accent: string,
+    fonts: ReturnType<typeof getPdfFonts>,
+) {
+    const left = doc.page.margins.left
+    const right = doc.page.width - doc.page.margins.right
+    const pageWidth = right - left
+    const boxHeight = 126
+
+    ensureSpace(doc, boxHeight + 56)
+    drawSectionTitle(doc, 'Aprovacao segura', accent, fonts, left)
+
+    const y = doc.y
+    drawBox(doc, left, y, pageWidth, boxHeight, skin.cardBg, skin.border, skin.roundness)
+
+    const textWidth = qrBuffer ? pageWidth - 170 : pageWidth - 36
+    doc.roundedRect(left + 18, y + 18, 38, 38, 12).fill(accent)
+    doc.fillColor('#ffffff').font(fonts.bold).fontSize(16).text('OK', left + 18, y + 29, { width: 38, align: 'center' })
+    doc.fillColor('#0f172a').font(fonts.bold).fontSize(14).text('A decisao oficial e do cliente', left + 70, y + 18, {
+        width: textWidth - 52,
+    })
+    doc.fillColor('#475569').font(fonts.regular).fontSize(9.5).text(
+        'O prestador nao aprova a propria proposta. O cliente deve usar o link publico ou o QR code abaixo para aprovar, recusar ou pedir ajustes.',
+        left + 70,
+        y + 42,
+        { width: textWidth - 52, lineGap: 2 },
+    )
+    doc.fillColor('#334155').font(fonts.bold).fontSize(8.5).text(pdfSafeText(approvalUrl), left + 70, y + 90, {
+        width: textWidth - 52,
+        lineBreak: false,
+    })
+
+    if (qrBuffer) {
+        const qrX = right - 118
+        doc.roundedRect(qrX - 8, y + 14, 104, 104, 12).fillAndStroke('#ffffff', skin.border)
+        doc.image(qrBuffer, qrX, y + 22, { fit: [88, 88], align: 'center', valign: 'center' })
+    }
+
+    doc.y = y + boxHeight + 26
+}
+
 function drawNotesAndFooter(
     doc: PDFKit.PDFDocument,
     quote: QuoteWithItems,
@@ -696,7 +807,7 @@ function drawNotesAndFooter(
     })
 }
 
-async function renderQuotePdf(quote: QuoteWithItems, profile: ProfileRow | null) {
+async function renderQuotePdf(quote: QuoteWithItems, profile: ProfileRow | null, approvalUrl: string) {
     const businessName = pdfSafeText(profile?.business_name, 'Zacly')
     const accent = normalizeColor(profile?.theme_color || profile?.primary_color)
     const identitySettings = parseIdentitySettings(profile?.quote_settings, profile?.quote_font_family)
@@ -704,6 +815,7 @@ async function renderQuotePdf(quote: QuoteWithItems, profile: ProfileRow | null)
     const fonts = getPdfFonts(identitySettings.quoteFont)
     const skin = getPdfSkin(proposalModel, accent, identitySettings.visualTone)
     const logo = await fetchLogoImage(profile?.logo_url)
+    const approvalQr = await generateApprovalQr(approvalUrl)
 
     const doc = new PDFDocument({
         size: 'A4',
@@ -727,9 +839,10 @@ async function renderQuotePdf(quote: QuoteWithItems, profile: ProfileRow | null)
     drawPeopleSection(doc, quote, profile, skin, fonts)
     drawPlanSection(doc, quote, identitySettings.visualTone, accent, skin, fonts)
     drawItemsTable(doc, quote, skin, accent, fonts)
+    drawTimelineSection(doc, quote, skin, accent, fonts)
     drawSummary(doc, quote, skin, fonts)
     drawPaymentSection(doc, quote, profile, accent, fonts)
-    drawTimelineSection(doc, quote, skin, accent, fonts)
+    drawApprovalSection(doc, approvalUrl, approvalQr, skin, accent, fonts)
     drawNotesAndFooter(doc, quote, identitySettings.footerText, accent, fonts)
 
     const range = doc.bufferedPageRange()
@@ -795,7 +908,8 @@ export async function GET(
         .eq('id', typedQuote.user_id)
         .maybeSingle()
 
-    const pdf = await renderQuotePdf(typedQuote, profile)
+    const approvalUrl = `${getAppBaseUrl()}/quotes/${typedQuote.id}?token=${typedQuote.public_token}`
+    const pdf = await renderQuotePdf(typedQuote, profile, approvalUrl)
     const fileName = `orcamento-${safeFileName(typedQuote.client_name)}.pdf`
 
     return new Response(new Uint8Array(pdf), {

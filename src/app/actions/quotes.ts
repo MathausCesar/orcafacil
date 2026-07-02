@@ -155,6 +155,7 @@ export async function createQuote(formData: FormData) {
     const paymentMethods = paymentMethodsStr ? JSON.parse(paymentMethodsStr) : []
     const layoutStyle = formData.get('layout_style') as string || null
     const professionalContext = normalizeProfessionalContext(formData.get('professional_context') as string | null)
+    const afterCreate = formData.get('after_create') as string | null
 
     const items = parseQuoteItems(itemsJson)
 
@@ -216,7 +217,12 @@ export async function createQuote(formData: FormData) {
     )
 
     revalidatePath('/')
-    return { success: true, redirect: `/quotes/${quote.id}` }
+    revalidatePath('/quotes')
+
+    return {
+        success: true,
+        redirect: afterCreate === 'pipeline' ? '/quotes?view=pipeline' : `/quotes/${quote.id}`
+    }
 }
 
 export async function updateQuote(id: string, formData: FormData) {

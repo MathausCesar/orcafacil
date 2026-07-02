@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, Home, Loader2, RotateCcw } from "lucide-react";
+import { ArrowRight, CheckCircle2, Home, Loader2, RotateCcw, UserPlus } from "lucide-react";
 import { useOnboarding } from "@/components/onboarding/onboarding-context";
 import { applyOnboardingKit } from "@/app/actions/onboarding";
 import { Progress } from "@/components/ui/progress";
@@ -107,7 +107,7 @@ export function LoadingSuccess() {
                 </h2>
                 <p className="text-muted-foreground">
                     {complete
-                        ? "Criamos seu catalogo inicial. Agora o melhor proximo passo e gerar seu primeiro orcamento."
+                        ? "Criamos seu catalogo inicial. Agora siga a trilha: cliente, proposta e pipeline."
                         : error || status}
                 </p>
             </div>
@@ -116,9 +116,10 @@ export function LoadingSuccess() {
 
             {complete && (
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <Link href="/new?quick=1" className="sm:col-span-2">
+                    <Link href="/clients?first=1" className="sm:col-span-2">
                         <Button className="h-12 w-full font-semibold">
-                            Criar primeiro orcamento
+                            <UserPlus className="mr-2 h-4 w-4" />
+                            Cadastrar primeiro cliente
                             <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                     </Link>

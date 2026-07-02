@@ -20,12 +20,14 @@ import { Watermark } from '@/components/quotes/watermark'
 import { getProfessionalContext } from '@/lib/professional-context'
 import { buildQuoteFollowUpMessage, getQuoteReminder } from '@/lib/quote-reminders'
 import {
+    PROPOSAL_TONE_INTRO,
     ProposalFont,
     ProposalModelId,
     VisualToneId,
     normalizeProposalFont,
     normalizeProposalModel,
     normalizeVisualTone,
+    parseProposalIdentitySettings,
 } from '@/lib/proposal-style'
 
 type QuoteItem = {
@@ -87,11 +89,7 @@ export type ProposalProfile = {
     quote_settings?: unknown
 }
 
-type ProposalIdentitySettings = {
-    visualTone?: VisualToneId
-    footerText?: string
-    quote_font_family?: ProposalFont
-}
+type ProposalIdentitySettings = ReturnType<typeof parseProposalIdentitySettings>
 
 type ProposalSkin = {
     pageClass: string
@@ -273,28 +271,7 @@ function normalizeColor(value: string | null | undefined) {
 }
 
 function parseIdentitySettings(raw: unknown): ProposalIdentitySettings {
-    if (!raw) return {}
-
-    try {
-        const value = typeof raw === 'string' ? JSON.parse(raw) : raw
-
-        if (!value || typeof value !== 'object') return {}
-
-        const record = value as Record<string, unknown>
-        const footerText = typeof record.footerText === 'string' ? record.footerText.trim() : ''
-        const visualTone = typeof record.visualTone === 'string' ? normalizeVisualTone(record.visualTone) : 'balanced'
-        const quoteFont = typeof record.quote_font_family === 'string'
-            ? normalizeProposalFont(record.quote_font_family)
-            : 'Inter'
-
-        return {
-            visualTone,
-            footerText,
-            quote_font_family: quoteFont,
-        }
-    } catch {
-        return {}
-    }
+    return parseProposalIdentitySettings(raw)
 }
 
 function getFontFamily(font: ProposalFont) {
@@ -348,9 +325,11 @@ export function ProposalCanvas({
     const identitySettings = parseIdentitySettings(profile?.quote_settings)
     const proposalModel = normalizeProposalModel(quote.layout_style || profile?.layout_style)
     const visualTone = normalizeVisualTone(identitySettings.visualTone)
-    const proposalFont = normalizeProposalFont(identitySettings.quote_font_family)
+    const proposalFont = normalizeProposalFont(identitySettings.quoteFont)
     const skin = proposalSkins[proposalModel]
-    const footerText = identitySettings.footerText?.trim()
+    const footerText = identitySettings.footerText.trim()
+    const isDocumentModel = proposalModel === 'classic' || proposalModel === 'minimalist'
+    const isAgencyModel = proposalModel === 'agency'
     const status = quote.status || 'draft'
     const statusInfo = statusCopy[status] || statusCopy.draft
     const isFree = !profile?.plan || profile.plan === 'free'
@@ -420,14 +399,26 @@ export function ProposalCanvas({
             </header>
 
             <main className="mx-auto w-full max-w-6xl overflow-x-hidden px-3 py-6 sm:px-6 lg:py-10 print:max-w-none print:px-0 print:py-0">
-                <article className={cn('relative w-full max-w-full overflow-hidden border print:rounded-none print:border-0 print:shadow-none', skin.articleClass)}>
+                <article
+                    data-proposal-model={proposalModel}
+                    className={cn('relative w-full max-w-full overflow-hidden border print:rounded-none print:border-0 print:shadow-none', skin.articleClass)}
+                >
                     {isFree && <Watermark />}
 
                     <section className={cn('relative overflow-hidden px-4 py-8 sm:px-10 lg:px-12', skin.heroClass)}>
                         <div className={cn('absolute inset-y-0 right-0 w-2/5', skin.heroAccentClass)} />
-                        <div className="relative grid min-w-0 gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+                        <div
+                            className={cn(
+                                'relative grid min-w-0 gap-8',
+                                isDocumentModel
+                                    ? 'lg:grid-cols-1 lg:text-center'
+                                    : isAgencyModel
+                                        ? 'lg:grid-cols-[1fr_0.9fr] lg:items-end'
+                                        : 'lg:grid-cols-[1.2fr_0.8fr] lg:items-end',
+                            )}
+                        >
                             <div className="min-w-0">
-                                <div className="mb-8 flex min-w-0 items-center gap-4">
+                                <div className={cn('mb-8 flex min-w-0 items-center gap-4', isDocumentModel && 'justify-center')}>
                                     {profile?.logo_url ? (
                                         <div className="relative h-14 w-24 shrink-0 overflow-hidden rounded-2xl bg-white p-3 sm:h-16 sm:w-28">
                                             <Image src={profile.logo_url} alt={businessName} fill className="object-contain p-2" unoptimized />
@@ -450,15 +441,20 @@ export function ProposalCanvas({
                                 <p className="text-xs font-bold uppercase tracking-[0.28em]" style={{ color: themeColor }}>
                                     Orçamento profissional
                                 </p>
-                                <h2 className="mt-3 max-w-3xl break-words text-4xl font-black leading-none tracking-tight sm:text-5xl lg:text-6xl">
+                                <h2
+                                    className={cn(
+                                        'mt-3 max-w-3xl break-words font-black leading-none tracking-tight',
+                                        isDocumentModel ? 'mx-auto text-3xl sm:text-4xl lg:text-5xl' : 'text-4xl sm:text-5xl lg:text-6xl',
+                                    )}
+                                >
                                     {quote.client_name}
                                 </h2>
-                                <p className={cn('mt-5 max-w-2xl text-base leading-7', skin.heroSoftClass)}>
-                                    {toneIntro[visualTone]}
+                                <p className={cn('mt-5 max-w-2xl text-base leading-7', skin.heroSoftClass, isDocumentModel && 'mx-auto')}>
+                                    {PROPOSAL_TONE_INTRO[visualTone] || toneIntro[visualTone]}
                                 </p>
                             </div>
 
-                            <div className={cn('min-w-0 border p-4 sm:p-5', skin.metaPanelClass)}>
+                            <div className={cn('min-w-0 border p-4 sm:p-5', skin.metaPanelClass, isDocumentModel && 'mx-auto w-full max-w-3xl')}>
                                 <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                                     <span className={cn('rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-[0.12em]', statusInfo.className)}>
                                         {statusInfo.label}

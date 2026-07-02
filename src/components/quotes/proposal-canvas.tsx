@@ -670,7 +670,12 @@ export function ProposalCanvas({
                                                 <p className="mt-2 whitespace-pre-wrap">{quote.client_response_note}</p>
                                             </div>
                                         )}
-                                        <QuoteStatusActions quoteId={quote.id} currentStatus={status} isOwner={isOwner} />
+                                        <QuoteStatusActions
+                                            quoteId={quote.id}
+                                            currentStatus={status}
+                                            isOwner={isOwner}
+                                            whatsappLink={whatsappLink}
+                                        />
                                         <QuoteStockActions
                                             quoteId={quote.id}
                                             status={status}

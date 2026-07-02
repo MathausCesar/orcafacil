@@ -2,8 +2,10 @@
 
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { cn } from '@/lib/utils'
+import { DEFAULT_QUOTE_APPROVAL_MESSAGE_TEMPLATE } from '@/lib/quote-share'
 import {
     PROPOSAL_FONTS,
     ProposalFont,
@@ -12,7 +14,7 @@ import {
     normalizeProposalFont,
     normalizeVisualTone,
 } from '@/lib/proposal-style'
-import { BriefcaseBusiness, Lock, MessageSquareQuote, Sparkles, SquarePen } from 'lucide-react'
+import { BriefcaseBusiness, Lock, MessageCircle, MessageSquareQuote, Sparkles, SquarePen } from 'lucide-react'
 
 export interface QuoteSettingsData {
     [key: string]: unknown
@@ -22,6 +24,7 @@ export interface QuoteSettingsData {
     logoSize?: 'small' | 'medium' | 'large'
     logoPosition?: 'header' | 'footer'
     logoAlignment?: 'left' | 'center' | 'right'
+    whatsappMessageTemplate?: string
 }
 
 interface QuoteSettingsProps {
@@ -43,6 +46,7 @@ export function QuoteSettings({ settings, plan, onChange }: QuoteSettingsProps) 
         visualTone: normalizeVisualTone(settings?.visualTone),
         footerText: settings?.footerText || '',
         quote_font_family: normalizeProposalFont(settings?.quote_font_family),
+        whatsappMessageTemplate: typeof settings?.whatsappMessageTemplate === 'string' ? settings.whatsappMessageTemplate : '',
     }
 
     const updateSettings = <Key extends keyof QuoteSettingsData>(key: Key, value: QuoteSettingsData[Key]) => {
@@ -78,6 +82,48 @@ export function QuoteSettings({ settings, plan, onChange }: QuoteSettingsProps) 
                         )
                     })}
                 </RadioGroup>
+            </section>
+
+            <div className="h-px w-full bg-border" />
+
+            <section className="space-y-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <Label htmlFor="whatsappMessageTemplate" className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                        <MessageCircle className="h-4 w-4" />
+                        Mensagem de envio pelo WhatsApp
+                    </Label>
+                    <div className="flex items-center gap-3">
+                        <span className="text-xs text-muted-foreground">
+                            {currentSettings.whatsappMessageTemplate?.length || 0}/700
+                        </span>
+                        {currentSettings.whatsappMessageTemplate && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateSettings('whatsappMessageTemplate', '')}
+                            >
+                                Usar padrão
+                            </Button>
+                        )}
+                    </div>
+                </div>
+                <Textarea
+                    id="whatsappMessageTemplate"
+                    value={currentSettings.whatsappMessageTemplate || ''}
+                    onChange={(event) => updateSettings('whatsappMessageTemplate', event.target.value.slice(0, 700))}
+                    placeholder={DEFAULT_QUOTE_APPROVAL_MESSAGE_TEMPLATE}
+                    className="min-h-44 resize-y focus-visible:ring-primary"
+                />
+                <div className="rounded-xl border bg-muted/30 p-3 text-xs leading-5 text-muted-foreground">
+                    <p className="font-semibold text-foreground">Variáveis disponíveis:</p>
+                    <p className="mt-1">
+                        {'{cliente}'} nome do cliente, {'{empresa}'} sua empresa, {'{total}'} valor total, {'{validade_linha}'} validade formatada e {'{link}'} link seguro de aprovação.
+                    </p>
+                    <p className="mt-1">
+                        Se a mensagem personalizada não tiver {'{link}'}, o Zacly adiciona o link de aprovação automaticamente no final.
+                    </p>
+                </div>
             </section>
 
             <div className="h-px w-full bg-border" />

@@ -10,14 +10,31 @@ interface QuoteActionsProps {
     quoteId: string
     currentStatus: string
     isOwner: boolean
+    whatsappLink?: string
 }
 
 type OwnerStatus = 'sent' | 'in_progress' | 'completed'
 
-export function QuoteStatusActions({ quoteId, currentStatus, isOwner }: QuoteActionsProps) {
+export function QuoteStatusActions({ quoteId, currentStatus, isOwner, whatsappLink }: QuoteActionsProps) {
     const [loading, setLoading] = useState(false)
 
+    const openPreparedWhatsApp = (targetWindow: Window | null) => {
+        if (!whatsappLink) return
+
+        if (targetWindow) {
+            targetWindow.opener = null
+            targetWindow.location.href = whatsappLink
+            return
+        }
+
+        window.open(whatsappLink, '_blank', 'noopener,noreferrer')
+    }
+
     const handleStatusChange = async (status: OwnerStatus) => {
+        const whatsappWindow = status === 'sent' && whatsappLink
+            ? window.open('', '_blank')
+            : null
+
         setLoading(true)
         try {
             if (!isOwner) {
@@ -26,13 +43,18 @@ export function QuoteStatusActions({ quoteId, currentStatus, isOwner }: QuoteAct
 
             await updateQuoteStatus(quoteId, status)
 
+            if (status === 'sent') {
+                openPreparedWhatsApp(whatsappWindow)
+            }
+
             const messages: Record<string, string> = {
-                sent: 'Marcado como enviado!',
+                sent: whatsappLink ? 'Marcado como enviado. Abrindo WhatsApp...' : 'Marcado como enviado!',
                 in_progress: 'Execução iniciada!',
                 completed: 'Orçamento concluído!',
             }
             toast.success(messages[status])
         } catch {
+            whatsappWindow?.close()
             toast.error('Erro ao atualizar status.')
         } finally {
             setLoading(false)

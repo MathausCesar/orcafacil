@@ -4,6 +4,8 @@ import { getAppBaseUrl } from '@/lib/app-url'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { ProposalCanvas, type ProposalProfile, type ProposalQuote } from '@/components/quotes/proposal-canvas'
+import { parseProposalIdentitySettings } from '@/lib/proposal-style'
+import { buildQuoteApprovalMessage, buildWhatsAppLink } from '@/lib/quote-share'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params
@@ -16,46 +18,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
             follow: false,
         },
     }
-}
-
-function buildWhatsAppLink(phone: string | null, message: string) {
-    const encodedMessage = encodeURIComponent(message)
-    const digits = phone?.replace(/\D/g, '')
-
-    if (!digits) {
-        return `https://wa.me/?text=${encodedMessage}`
-    }
-
-    return `https://wa.me/${digits}?text=${encodedMessage}`
-}
-
-function buildWhatsAppMessage({
-    clientName,
-    businessName,
-    totalFormatted,
-    validUntil,
-    approvalUrl,
-}: {
-    clientName: string
-    businessName: string
-    totalFormatted: string
-    validUntil: string | null
-    approvalUrl: string
-}) {
-    const lines = [
-        `Olá, ${clientName}.`,
-        ``,
-        `${businessName} preparou sua proposta comercial.`,
-        `Total: ${totalFormatted}`,
-        ...(validUntil ? [`Validade: ${new Intl.DateTimeFormat('pt-BR').format(new Date(validUntil))}`] : []),
-        ``,
-        `Abra o link para visualizar, aprovar ou recusar:`,
-        approvalUrl,
-        ``,
-        `Qualquer dúvida, responda por aqui.`,
-    ]
-
-    return lines.join('\n')
 }
 
 export default async function QuotePage({
@@ -127,12 +89,14 @@ export default async function QuotePage({
     const businessName = profile?.business_name || 'Zacly'
     const approvalUrl = `${getAppBaseUrl()}/quotes/${quote.id}?token=${quote.public_token}`
     const pdfUrl = `/api/quotes/${quote.id}/pdf${canClientRespond ? `?token=${quote.public_token}` : ''}`
-    const whatsappMessage = buildWhatsAppMessage({
+    const identitySettings = parseProposalIdentitySettings(profile?.quote_settings, profile?.quote_font_family)
+    const whatsappMessage = buildQuoteApprovalMessage({
         clientName: quote.client_name,
         businessName,
         totalFormatted,
         validUntil: quote.expiration_date,
         approvalUrl,
+        template: identitySettings.whatsappMessageTemplate,
     })
     const whatsappLink = buildWhatsAppLink(quote.client_phone, whatsappMessage)
 

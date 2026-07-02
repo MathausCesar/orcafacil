@@ -61,6 +61,7 @@ export type ProposalIdentitySettings = {
     visualTone: VisualToneId
     footerText: string
     quoteFont: ProposalFont
+    whatsappMessageTemplate: string
 }
 
 export const PROPOSAL_TONE_INTRO: Record<VisualToneId, string> = {
@@ -95,6 +96,7 @@ export function parseProposalIdentitySettings(
         visualTone: 'balanced',
         footerText: '',
         quoteFont: normalizeProposalFont(fallbackFont),
+        whatsappMessageTemplate: '',
     }
 
     if (!raw) return fallback
@@ -111,6 +113,9 @@ export function parseProposalIdentitySettings(
             quoteFont: normalizeProposalFont(
                 typeof record.quote_font_family === 'string' ? record.quote_font_family : fallbackFont,
             ),
+            whatsappMessageTemplate: typeof record.whatsappMessageTemplate === 'string'
+                ? record.whatsappMessageTemplate.trim()
+                : '',
         }
     } catch {
         return fallback

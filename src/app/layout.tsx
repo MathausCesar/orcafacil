@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
+import { buildZaclyOrganizationJsonLd, buildZaclyWebSiteJsonLd } from "@/lib/zacly-entity";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -87,28 +88,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const jsonLd = [
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      name: "Zacly",
-      url: "https://www.zacly.com.br",
-      logo: "https://www.zacly.com.br/logo/logo.png",
-      contactPoint: {
-        "@type": "ContactPoint",
-        contactType: "customer support",
-        email: "suporte@zacly.com.br",
-        availableLanguage: "pt-BR",
-      },
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      name: "Zacly",
-      url: "https://www.zacly.com.br",
-      inLanguage: "pt-BR",
-    },
-  ];
+  const jsonLd = [buildZaclyOrganizationJsonLd(), buildZaclyWebSiteJsonLd()];
 
   return (
     <html lang="pt-BR" suppressHydrationWarning>

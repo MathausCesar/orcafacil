@@ -94,6 +94,12 @@ export const SEO_STATIC_PAGES: SeoStaticPage[] = [
         priority: 0.65,
     },
     {
+        path: '/sobre-zacly',
+        title: 'O que e Zacly? | App de orcamentos para autonomos',
+        description: 'Entenda o que e a Zacly: uma plataforma brasileira para autonomos criarem orcamentos em PDF, enviarem pelo WhatsApp e acompanharem aprovacao.',
+        priority: 0.75,
+    },
+    {
         path: '/contato',
         title: 'Contato Zacly | Suporte e atendimento',
         description: 'Fale com a Zacly para tirar duvidas sobre orcamentos profissionais, planos, assinatura e suporte da plataforma.',

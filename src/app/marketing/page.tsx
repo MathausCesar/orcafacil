@@ -10,6 +10,7 @@ import { MarketingFooter } from "@/components/marketing/marketing-footer";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MARKETING_COPY, PRICING, YEARLY_SAVINGS, formatCurrencyBR } from "@/lib/pricing-copy";
 import { marketingFaqs } from "@/lib/marketing-faqs";
+import { buildZaclyOrganizationJsonLd, ZACLY_ENTITY } from "@/lib/zacly-entity";
 
 const BASE_URL = "https://www.zacly.com.br";
 
@@ -17,6 +18,7 @@ const jsonLdSoftware = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     name: "Zacly",
+    alternateName: ZACLY_ENTITY.alternateName,
     url: BASE_URL,
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
@@ -68,20 +70,7 @@ const jsonLdFaq = {
     })),
 };
 
-const jsonLdOrganization = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "Zacly",
-    url: BASE_URL,
-    contactPoint: [
-        {
-            "@type": "ContactPoint",
-            contactType: "customer support",
-            email: "suporte@zacly.com.br",
-            availableLanguage: "Portuguese",
-        },
-    ],
-};
+const jsonLdOrganization = buildZaclyOrganizationJsonLd();
 
 export const metadata: Metadata = {
     metadataBase: new URL(BASE_URL),

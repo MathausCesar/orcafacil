@@ -22,6 +22,7 @@ export const MARKETING_LINKS = {
     blogPage: "/blog",
     modelsPage: "/modelos",
     aboutPage: "/sobre",
+    brandPage: "/sobre-zacly",
     contactPage: "/contato",
     exampleQuote: "#exemplo",
     howItWorks: "#como-funciona",

@@ -67,6 +67,9 @@ export function MarketingFooter() {
                         <Link href={MARKETING_LINKS.aboutPage} className="text-xs text-zinc-600 hover:text-white transition-colors">
                             Sobre
                         </Link>
+                        <Link href={MARKETING_LINKS.brandPage} className="text-xs text-zinc-600 hover:text-white transition-colors">
+                            O que e Zacly
+                        </Link>
                         <Link href={MARKETING_LINKS.contactPage} className="text-xs text-zinc-600 hover:text-white transition-colors">
                             Contato
                         </Link>

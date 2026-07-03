@@ -66,6 +66,16 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                 description: 'Tente fazer login com sua senha. Se não conseguir, refaça o cadastro.'
             })
             router.replace('/login')
+        } else if (message === 'auth_session_expired') {
+            toast.error('Sessao de login expirada.', {
+                description: 'Clique em Continuar com Google novamente para iniciar um novo acesso.'
+            })
+            router.replace('/login')
+        } else if (message === 'oauth_provider_error') {
+            toast.error('Nao foi possivel concluir o login com Google.', {
+                description: 'Confira a conta selecionada e tente novamente.'
+            })
+            router.replace('/login')
         }
     }, [searchParams, router])
 

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse, type NextRequest } from 'next/server'
 import { type EmailOtpType } from '@supabase/supabase-js'
+import { getAuthCallbackMessage, logAuthCallbackFailure } from '@/lib/auth-callback-error'
 
 export const dynamic = 'force-dynamic'
 
@@ -37,6 +38,7 @@ export async function GET(request: NextRequest) {
     const fallbackNext = type === 'recovery' ? '/update-password' : '/login'
     const next = getSafeNext(searchParams.get('next'), fallbackNext)
     const redirectTo = buildRedirectUrl(request, next)
+    let failureMessage: 'auth_code_error' | 'auth_session_expired' | 'oauth_provider_error' = 'auth_code_error'
 
     const supabase = await createClient()
 
@@ -47,7 +49,8 @@ export async function GET(request: NextRequest) {
             return NextResponse.redirect(redirectTo)
         }
 
-        console.error('exchangeCodeForSession (marketing) error:', error)
+        failureMessage = getAuthCallbackMessage(error)
+        logAuthCallbackFailure('exchangeCodeForSession (marketing) error', error, { next })
     } else if (token_hash && type) {
         const { error } = await supabase.auth.verifyOtp({
             type,
@@ -58,17 +61,23 @@ export async function GET(request: NextRequest) {
             return NextResponse.redirect(redirectTo)
         }
 
-        console.error('verifyOtp (marketing) error:', error)
+        failureMessage = getAuthCallbackMessage(error)
+        logAuthCallbackFailure('verifyOtp (marketing) error', error, { next, type })
     }
 
     const authError = searchParams.get('error_description') || searchParams.get('error')
     if (authError) {
-        console.error('Callback auth error from Supabase URL (marketing):', authError)
+        failureMessage = 'oauth_provider_error'
+        console.error('Callback auth error from Supabase URL (marketing):', {
+            message: authError,
+            errorCode: searchParams.get('error_code'),
+            next,
+        })
     }
 
     const fallback = request.nextUrl.clone()
     fallback.pathname = '/login'
     fallback.search = ''
-    fallback.searchParams.set('message', 'auth_code_error')
+    fallback.searchParams.set('message', failureMessage)
     return NextResponse.redirect(fallback)
 }

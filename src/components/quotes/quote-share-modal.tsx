@@ -62,6 +62,12 @@ export function QuoteShareModal({
         setMarkingSent(true)
         try {
             await updateQuoteStatus(quoteId, 'sent')
+            posthog.capture('quote_status_changed', {
+                previous_status: quoteStatus || 'unknown',
+                next_status: 'sent',
+                source: 'share_modal',
+                opened_whatsapp: false,
+            })
         } catch (error) {
             console.error('Failed to mark quote as sent:', error)
         } finally {

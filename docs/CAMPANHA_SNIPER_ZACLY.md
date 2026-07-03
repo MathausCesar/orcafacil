@@ -1,135 +1,226 @@
 # Campanha sniper Zacly
 
-## Objetivo da primeira rodada
+## Decisao da primeira rodada
 
-Validar aquisicao paga com pouco dinheiro, focando em usuarios que ja sentem dor de orcamento manual e precisam enviar proposta profissional pelo WhatsApp.
+Primeira campanha: mecanicos autonomos e pequenas oficinas.
 
-Meta da rodada: gerar os primeiros cadastros qualificados, medir onboarding concluido, criacao de proposta, envio da proposta e tentativa de upgrade.
+Recorte certo: oficina pequena que ainda envia preco pelo WhatsApp, audio, papel, caderno ou planilha simples.
 
-## Publico inicial
+Recorte errado: oficina procurando ERP completo, emissao de nota fiscal, compras complexas, integracao com autopecas ou estoque avancado.
 
-Rodada 1: marceneiros e moveis planejados.
+## Hipotese central
 
-Motivo: o servico costuma ter ticket maior, exige apresentacao visual, prazo, itens detalhados e aprovacoes por WhatsApp. Isso aumenta a chance de o usuario perceber valor no app antes de pagar.
+O cliente da oficina nao compara apenas preco. Ele compara confianca.
 
-Rodada 2: eletricistas.
+Quando o mecanico envia apenas "fica R$ 1.340" no WhatsApp, o cliente tende a pedir desconto ou sumir. Quando recebe uma proposta com pecas, mao de obra, prazo, condicoes e link de aprovacao, o valor fica mais justificavel.
 
-Motivo: dor frequente, alto volume, muita decisao pelo celular e necessidade de separar material, mao de obra e prazo.
+## Objetivo da rodada
 
-## Canal recomendado
+Validar aquisicao paga com pouco dinheiro antes de escalar.
 
-Comecar por Google Search.
+Meta: gerar cadastros qualificados que avancem no funil ate criacao e envio de proposta.
 
-Evitar Display, Performance Max e publico amplo no inicio. Com pouco dinheiro, a prioridade e capturar intencao ativa, nao gerar alcance.
+Evento principal de qualidade: `quote_share_clicked`.
+
+Evento de compra/intencao: `checkout_started`.
+
+## Pagina de destino
+
+URL base:
+
+`https://zacly.com.br/c/mecanicos`
+
+URL para Google Ads:
+
+`https://zacly.com.br/c/mecanicos?utm_source=google&utm_medium=cpc&utm_campaign=sniper_mecanicos&utm_content=search_01&utm_term={keyword}`
+
+Observacao: os botoes da landing preservam UTMs e click IDs ao enviar o usuario para `app.zacly.com.br/register`.
 
 ## Orcamento inicial
 
-Plano conservador: R$ 15 a R$ 20 por dia durante 7 dias.
+Conservador:
 
-Regra de escala: so aumentar quando houver sinal de qualidade, nao apenas clique barato.
+- R$ 15 a R$ 20 por dia.
+- 7 dias corridos.
+- Rede de Pesquisa do Google.
+- Sem Display, Performance Max ou publico amplo no inicio.
 
-Sinais de qualidade:
-- 20% ou mais dos cadastros concluem onboarding.
-- 30% ou mais dos onboardings criam uma proposta.
-- 40% ou mais das propostas criadas sao compartilhadas.
-- Pelo menos uma tentativa de checkout a cada 20 a 30 propostas criadas.
+Regra: nao escalar por clique barato. Escalar somente se houver avanco no funil.
 
-## Campanha 1: marceneiros
+## Estrutura da campanha
 
-Nome sugerido: `ZACLY_BR_Search_Marceneiros_AltaIntencao`
+Nome:
 
-Pagina de destino:
+`ZACLY_BR_Search_Mecanicos_AltaIntencao`
 
-`https://zacly.com.br/c/marceneiros?utm_source=google&utm_medium=cpc&utm_campaign=sniper_marceneiros&utm_content=search_01&utm_term={keyword}`
+Tipo:
 
-Grupos de anuncios:
+Google Search.
 
-1. App e sistema
-- "app para marceneiro"
-- "sistema para marcenaria simples"
-- "sistema de orcamento para marcenaria"
-- "app de orcamento para marcenaria"
+Lance inicial:
 
-2. Proposta e orcamento
-- "orcamento profissional marcenaria"
-- "modelo de orcamento para marcenaria"
-- "proposta comercial marcenaria"
-- "orcamento moveis planejados"
+Maximizar cliques com limite de CPC, se a conta ainda nao tiver conversoes suficientes.
 
-Negativas iniciais:
-- vaga
-- emprego
-- salario
-- curso
-- faculdade
-- gratis download
-- pdf pronto
-- planilha pronta
-- projeto gratuito
-- como abrir marcenaria
+Quando houver volume:
 
-## Oferta do anuncio
+Migrar para maximizar conversoes usando eventos importados ou meta equivalente.
 
-Mensagem central:
+## Grupos de anuncios
 
-Crie orcamentos profissionais para marcenaria, envie pelo WhatsApp e acompanhe a aprovacao do cliente.
+### Grupo 1: Orcamento para oficina
 
-Promessa de baixo risco:
+Intencao: usuario ja quer melhorar como passa orcamento.
 
-Comece gratis. O plano pago entra quando o usuario precisar de mais propostas e personalizacao.
+Palavras em frase/exata:
 
-## Exemplos de anuncios
+- "orcamento oficina mecanica"
+- "orcamento para oficina mecanica"
+- "orcamento oficina mecanica pelo whatsapp"
+- "modelo de orcamento oficina mecanica"
+- "orcamento para cliente oficina mecanica"
+- "gerador de orcamento para oficina"
 
-Titulo 1: Orcamento para marcenaria
+Anuncio:
 
-Titulo 2: Envie proposta pelo WhatsApp
+Titulo 1: Orcamento para oficina mecanica
 
-Titulo 3: Comece gratis na Zacly
-
-Descricao: Monte propostas profissionais com itens, prazo, PDF e link de aprovacao. Feito para autonomos que hoje controlam tudo no papel.
-
----
-
-Titulo 1: App simples para marceneiros
-
-Titulo 2: Proposta profissional em minutos
+Titulo 2: Envie pelo WhatsApp
 
 Titulo 3: Cliente aprova no link
 
-Descricao: Organize clientes, servicos e orcamentos sem complicar sua rotina. Teste gratis e use pelo celular.
+Descricao: Crie proposta com pecas, mao de obra, prazo e total. Pare de mandar preco solto no WhatsApp. Comece gratis.
 
-## Eventos que agora sustentam a campanha
+### Grupo 2: App simples para mecanico
 
-- `marketing_attribution_captured`: origem UTM e clique pago capturados.
-- `auth_signup_started`: usuario iniciou cadastro.
-- `auth_signup_submitted`: cadastro por e-mail enviado.
-- `auth_google_started`: usuario iniciou login/cadastro Google.
-- `auth_login_completed`: login concluido.
-- `onboarding_completed`: usuario terminou configuracao inicial.
-- `quote_created`: proposta criada.
-- `quote_updated`: proposta editada.
-- `quote_share_opened`: usuario abriu compartilhamento.
-- `quote_share_clicked`: usuario copiou link, enviou WhatsApp, e-mail ou PDF.
-- `quote_status_changed`: proposta mudou de etapa.
-- `quote_limit_reached`: usuario bateu limite do plano gratis.
-- `checkout_started`: usuario tentou assinar.
-- `checkout_returned_success`: usuario voltou do Stripe com pagamento concluido.
-- `checkout_returned_canceled`: usuario abandonou ou cancelou checkout.
+Intencao: usuario busca ferramenta, mas nao necessariamente ERP.
 
-## Criterio de decisao apos 7 dias
+Palavras em frase/exata:
 
-Manter e otimizar:
+- "app para mecanico autonomo"
+- "app para oficina mecanica"
+- "sistema simples para oficina mecanica"
+- "app de orcamento para oficina"
+- "app para ordem de servico oficina simples"
 
-Se houver propostas criadas e compartilhadas com custo aceitavel, pausar palavras fracas e concentrar verba nas palavras que chegam ate `quote_share_clicked`.
+Anuncio:
 
-Trocar nicho:
+Titulo 1: App simples para mecanico
 
-Se houver clique e cadastro, mas pouca proposta criada, testar eletricistas com a mesma estrutura.
+Titulo 2: Orcamento profissional rapido
 
-Corrigir produto/oferta:
+Titulo 3: Sem ERP complicado
 
-Se houver proposta criada, mas nenhum envio ou checkout, revisar limite free, mensagem de upgrade, tela de proposta e fluxo de envio por WhatsApp.
+Descricao: Monte orcamentos com servicos, pecas e aprovacao do cliente. Feito para oficina pequena usar pelo celular.
 
-## Proxima melhoria recomendada
+### Grupo 3: Ordem de servico simples
 
-Criar uma landing page ainda mais direta para campanha paga, com exemplo de proposta de marcenaria acima da dobra e CTA "Criar meu primeiro orcamento gratis". A pagina atual serve para iniciar, mas uma versao paga pode reduzir dispersao e aumentar conversao.
+Intencao: usuario quer organizacao, mas pode esperar sistema mais completo. Monitorar com cuidado.
+
+Palavras em frase/exata:
+
+- "ordem de servico oficina mecanica simples"
+- "modelo ordem de servico oficina mecanica"
+- "ordem de servico para mecanico autonomo"
+- "controle de orcamentos oficina mecanica"
+
+Anuncio:
+
+Titulo 1: Ordem de servico simples
+
+Titulo 2: Orcamento com aprovacao
+
+Titulo 3: Para oficina pequena
+
+Descricao: Organize proposta, itens, status e aprovacao do cliente. Ideal para sair do papel e do WhatsApp solto.
+
+## Palavras negativas iniciais
+
+- nota fiscal
+- emissor nfe
+- emitir nota
+- erp completo
+- financeiro completo
+- sistema gratis download
+- baixar gratis
+- planilha gratis
+- excel
+- curso
+- vaga
+- emprego
+- salario
+- manual de reparo
+- diagrama eletrico
+- tabela fipe
+- pecas usadas
+- autopecas atacado
+- fornecedor
+- catalogo tecdoc
+
+## Mensagem da landing
+
+Headline:
+
+Orcamento profissional para oficina mecanica, sem virar ERP.
+
+Subheadline:
+
+Pare de mandar preco solto no WhatsApp. Crie uma proposta com pecas, mao de obra, prazo, total e link de aprovacao para o cliente fechar com mais confianca.
+
+CTA:
+
+Criar meu primeiro orcamento gratis.
+
+Filtro de expectativa:
+
+Nao e ERP completo. Nao e nota fiscal. E uma forma simples de vender melhor o servico da oficina.
+
+## Funil no PostHog
+
+Funil minimo:
+
+1. `marketing_attribution_captured`
+2. `quote_created`
+3. `quote_share_clicked`
+4. `checkout_started`
+
+Eventos auxiliares:
+
+- `quote_share_opened`
+- `quote_status_changed`
+- `quote_limit_reached`
+- `checkout_returned_success`
+- `checkout_returned_canceled`
+
+## Leitura dos resultados
+
+### Sinais bons
+
+- Usuario cria proposta no mesmo dia do clique.
+- Proposta tem item de servico e/ou produto.
+- Usuario compartilha link ou WhatsApp.
+- Usuario bate limite free ou abre checkout.
+
+### Sinais ruins
+
+- Muito clique e quase nenhum cadastro: copy ou pagina desalinhada.
+- Cadastro sem proposta: onboarding ou primeira proposta com atrito.
+- Proposta sem compartilhamento: proposta nao parece pronta para cliente.
+- Muitos cliques de "sistema para oficina" sem uso: palavra esta trazendo publico de ERP.
+
+## Criterio apos 7 dias
+
+Manter:
+
+Se `quote_share_clicked` aparecer com custo aceitavel e houver pelo menos alguns `checkout_started`.
+
+Otimizar:
+
+Se houver `quote_created`, mas pouco `quote_share_clicked`, melhorar fluxo de envio e CTA dentro da proposta.
+
+Pausar grupo:
+
+Se palavras de "sistema" trouxerem gente procurando ERP completo.
+
+Segunda bala:
+
+Marcenaria / moveis sob medida. Dor de orcamento e apresentacao e muito forte, mas a frequencia tende a ser menor que mecanica.

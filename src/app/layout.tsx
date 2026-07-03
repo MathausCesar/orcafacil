@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/react";
 import { ThemeProvider } from "@/components/theme-provider";
+import { GoogleAdsTag } from "@/components/providers/google-ads-tag";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { buildZaclyOrganizationJsonLd, buildZaclyWebSiteJsonLd } from "@/lib/zacly-entity";
 
@@ -93,6 +94,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
+        <GoogleAdsTag />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

@@ -1,8 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { CheckCircle2, Zap, Loader2, TrendingDown } from "lucide-react"
 import { toast } from "sonner"
+import { usePostHog } from "posthog-js/react"
 import {
     PRICING,
     YEARLY_DISCOUNT_PCT,
@@ -60,12 +62,34 @@ const FEATURES_COMMON = [
 
 export default function PricingPage() {
     const [loading, setLoading] = useState<"monthly" | "yearly" | null>(null)
+    const searchParams = useSearchParams()
+    const posthog = usePostHog()
+
+    useEffect(() => {
+        if (searchParams.get("canceled") === "true") {
+            posthog.capture("checkout_returned_canceled", {
+                source: "pricing_page",
+                requested_plan: searchParams.get("plan") || "unknown",
+            })
+        }
+    }, [posthog, searchParams])
 
     const handleCheckout = async (plan: "monthly" | "yearly") => {
         setLoading(plan)
+        posthog.capture("checkout_started", {
+            plan,
+            billing_interval: plan === "yearly" ? "year" : "month",
+            source: "pricing_page",
+            requested_plan: searchParams.get("plan") || "none",
+        })
         try {
             await redirectToCheckout(plan)
         } catch (err: unknown) {
+            posthog.capture("checkout_start_failed", {
+                plan,
+                billing_interval: plan === "yearly" ? "year" : "month",
+                source: "pricing_page",
+            })
             const message = err instanceof Error ? err.message : "Não foi possível abrir o checkout. Tente novamente."
             toast.error(message)
             setLoading(null)

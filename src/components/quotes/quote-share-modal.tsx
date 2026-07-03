@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Share2, Mail, Copy, Download, Check, MessageCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { updateQuoteStatus } from '@/app/actions/quotes'
+import { usePostHog } from 'posthog-js/react'
 
 interface QuoteShareModalProps {
     quoteId: string
@@ -25,6 +26,8 @@ interface QuoteShareModalProps {
     quoteStatus?: string | null
     pdfUrl: string
 }
+
+type ShareMethod = 'whatsapp' | 'email' | 'pdf' | 'copy'
 
 export function QuoteShareModal({
     quoteId,
@@ -39,9 +42,22 @@ export function QuoteShareModal({
     const [open, setOpen] = useState(false)
     const [copied, setCopied] = useState(false)
     const [markingSent, setMarkingSent] = useState(false)
+    const posthog = usePostHog()
+
+    const shouldMarkAsSent = ['draft', 'pending'].includes(quoteStatus || '')
+
+    const trackShare = (method: ShareMethod) => {
+        posthog.capture('quote_share_clicked', {
+            method,
+            previous_status: quoteStatus || 'unknown',
+            marked_as_sent: shouldMarkAsSent,
+            source: 'share_modal',
+            has_whatsapp_link: Boolean(whatsappLink),
+        })
+    }
 
     const markAsSentIfNeeded = async () => {
-        if (!['draft', 'pending'].includes(quoteStatus || '')) return
+        if (!shouldMarkAsSent) return
 
         setMarkingSent(true)
         try {
@@ -57,6 +73,7 @@ export function QuoteShareModal({
         try {
             await markAsSentIfNeeded()
             await navigator.clipboard.writeText(approvalUrl)
+            trackShare('copy')
             setCopied(true)
             toast.success('Link copiado.')
             setTimeout(() => setCopied(false), 2000)
@@ -65,7 +82,8 @@ export function QuoteShareModal({
         }
     }
 
-    const handleExternalShare = async () => {
+    const handleExternalShare = async (method: ShareMethod) => {
+        trackShare(method)
         await markAsSentIfNeeded()
         setOpen(false)
     }
@@ -74,7 +92,18 @@ export function QuoteShareModal({
     const emailBody = encodeURIComponent(whatsappMessage)
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog
+            open={open}
+            onOpenChange={(nextOpen) => {
+                setOpen(nextOpen)
+                if (nextOpen) {
+                    posthog.capture('quote_share_opened', {
+                        previous_status: quoteStatus || 'unknown',
+                        has_whatsapp_link: Boolean(whatsappLink),
+                    })
+                }
+            }}
+        >
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2 border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-50">
                     <Share2 className="h-4 w-4" />
@@ -93,7 +122,7 @@ export function QuoteShareModal({
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                     <div className="flex flex-col gap-3">
-                        <a href={whatsappLink} target="_blank" rel="noreferrer" onClick={handleExternalShare}>
+                        <a href={whatsappLink} target="_blank" rel="noreferrer" onClick={() => handleExternalShare('whatsapp')}>
                             <Button
                                 disabled={markingSent}
                                 variant="outline"
@@ -124,7 +153,7 @@ export function QuoteShareModal({
                             </div>
                         </Button>
 
-                        <a href={`mailto:?subject=${emailSubject}&body=${emailBody}`} onClick={handleExternalShare}>
+                        <a href={`mailto:?subject=${emailSubject}&body=${emailBody}`} onClick={() => handleExternalShare('email')}>
                             <Button
                                 disabled={markingSent}
                                 variant="outline"
@@ -140,7 +169,7 @@ export function QuoteShareModal({
                             </Button>
                         </a>
 
-                        <a href={pdfUrl} onClick={handleExternalShare}>
+                        <a href={pdfUrl} onClick={() => handleExternalShare('pdf')}>
                             <Button
                                 disabled={markingSent}
                                 variant="outline"

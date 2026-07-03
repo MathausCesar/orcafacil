@@ -19,6 +19,7 @@ import {
 import { Mail, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { usePostHog } from 'posthog-js/react'
 
 type AuthActionResult = {
     error?: string
@@ -44,6 +45,7 @@ function getSafeNextPath(searchParams: { get: (name: string) => string | null })
 export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | 'register' }) {
     const router = useRouter()
     const searchParams = useSearchParams()
+    const posthog = usePostHog()
     const nextPath = getSafeNextPath(searchParams)
     const [loading, setLoading] = useState(false)
     const [mode, setMode] = useState<'login' | 'register'>(defaultMode)
@@ -81,6 +83,12 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
 
     const handleSubmit = async (formData: FormData, action: typeof login | typeof signup) => {
         setLoading(true)
+        const authFlow = action === signup ? 'signup' : 'login'
+        posthog.capture(action === signup ? 'auth_signup_started' : 'auth_login_started', {
+            method: 'password',
+            next_path: nextPath || '/',
+        })
+
         try {
             if (action === signup) {
                 const password = formData.get('password') as string;
@@ -100,9 +108,18 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                 setCountdown(30)
 
                 if (result?.success) {
+                    posthog.capture('auth_signup_submitted', {
+                        method: 'password',
+                        next_path: nextPath || '/',
+                    })
                     setEmailSent(formData.get('email') as string)
                     setShowSuccessDialog(true)
                 } else if (result?.error) {
+                    posthog.capture('auth_flow_error', {
+                        flow: authFlow,
+                        method: 'password',
+                        reason: 'action_error',
+                    })
                     toast.error(result?.error?.includes('rate limit') || result?.error?.includes('many requests')
                         ? 'Muitas tentativas. Aguarde um minuto antes de tentar novamente.'
                         : result.error)
@@ -110,14 +127,28 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
             } else {
                 // Login action
                 if (result?.error) {
+                    posthog.capture('auth_flow_error', {
+                        flow: authFlow,
+                        method: 'password',
+                        reason: 'action_error',
+                    })
                     toast.error(result.error)
                 } else if (result?.success && result?.redirect) {
+                    posthog.capture('auth_login_completed', {
+                        method: 'password',
+                        next_path: result.redirect,
+                    })
                     // Successful login - hard navigation to force full session refresh
                     toast.success('Login realizado com sucesso!')
                     window.location.href = result.redirect
                 }
             }
         } catch {
+            posthog.capture('auth_flow_error', {
+                flow: authFlow,
+                method: 'password',
+                reason: 'unexpected_error',
+            })
             toast.error('Ocorreu um erro inesperado.')
         } finally {
             setLoading(false)
@@ -258,8 +289,17 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                         <div className="space-y-4">
                             <form action={async () => {
                                 setLoading(true);
+                                posthog.capture('auth_google_started', {
+                                    flow: mode,
+                                    next_path: nextPath || '/',
+                                })
                                 const result = await signInWithGoogle(nextPath || undefined);
                                 if (result?.error) {
+                                    posthog.capture('auth_flow_error', {
+                                        flow: mode,
+                                        method: 'google',
+                                        reason: 'action_error',
+                                    })
                                     toast.error(result.error);
                                     setLoading(false);
                                 }

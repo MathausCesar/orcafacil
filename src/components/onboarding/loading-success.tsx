@@ -9,9 +9,11 @@ import { applyOnboardingKit } from "@/app/actions/onboarding";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { usePostHog } from "posthog-js/react";
 
 export function LoadingSuccess() {
     const { data, prevStep } = useOnboarding();
+    const posthog = usePostHog();
     const [progress, setProgress] = useState(0);
     const [status, setStatus] = useState("Iniciando setup...");
     const [complete, setComplete] = useState(false);
@@ -64,6 +66,14 @@ export function LoadingSuccess() {
             if (!active) return;
 
             if (res.success) {
+                posthog.capture("onboarding_completed", {
+                    category_id: data.category?.id,
+                    category_name: data.category?.name,
+                    specialty_count: data.specialties.length,
+                    pricing_tier: data.pricingTier,
+                    has_logo: Boolean(data.logoUrl),
+                    has_theme_color: Boolean(data.themeColor),
+                });
                 setProgress(100);
                 setStatus("Catalogo inicial criado.");
                 setComplete(true);
@@ -78,7 +88,7 @@ export function LoadingSuccess() {
         return () => {
             active = false;
         };
-    }, [data]);
+    }, [data, posthog]);
 
     return (
         <div className="mx-auto w-full max-w-md space-y-8 p-4 text-center">

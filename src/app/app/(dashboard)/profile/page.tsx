@@ -12,6 +12,7 @@ import { TeamManager } from '@/components/profile/team-manager'
 import { getActiveOrganizationId } from '@/lib/get-active-organization'
 import { CancelSubscriptionButton } from '@/components/profile/cancel-subscription-button'
 import { ProfileSettingsTabs } from '@/components/profile/profile-settings-tabs'
+import { CheckoutReturnTracker } from '@/components/profile/checkout-return-tracker'
 
 interface TeamMember {
     user_id: string
@@ -176,6 +177,10 @@ export default async function ProfilePage() {
 
     return (
         <div className="space-y-6 pb-20">
+            <CheckoutReturnTracker
+                plan={profile?.plan}
+                subscriptionStatus={profile?.subscription_status}
+            />
             <div className="flex items-center gap-2">
                 <Link href="/">
                     <Button variant="ghost" size="icon" className="hover:bg-primary/10 hover:text-primary">

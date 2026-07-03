@@ -5,6 +5,7 @@ import { updateQuoteStatus } from '@/app/actions/quotes'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, Clock, Loader2, PlayCircle, ShieldCheck, Trophy, Send, FileText, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
+import { usePostHog } from 'posthog-js/react'
 
 interface QuoteActionsProps {
     quoteId: string
@@ -17,6 +18,7 @@ type OwnerStatus = 'sent' | 'in_progress' | 'completed'
 
 export function QuoteStatusActions({ quoteId, currentStatus, isOwner, whatsappLink }: QuoteActionsProps) {
     const [loading, setLoading] = useState(false)
+    const posthog = usePostHog()
 
     const openPreparedWhatsApp = (targetWindow: Window | null) => {
         if (!whatsappLink) return
@@ -42,6 +44,23 @@ export function QuoteStatusActions({ quoteId, currentStatus, isOwner, whatsappLi
             }
 
             await updateQuoteStatus(quoteId, status)
+
+            posthog.capture('quote_status_changed', {
+                previous_status: currentStatus,
+                next_status: status,
+                source: 'quote_detail_action',
+                opened_whatsapp: status === 'sent' && Boolean(whatsappLink),
+            })
+
+            if (status === 'sent' && whatsappLink) {
+                posthog.capture('quote_share_clicked', {
+                    method: 'whatsapp',
+                    previous_status: currentStatus,
+                    marked_as_sent: true,
+                    source: 'mark_as_sent_action',
+                    has_whatsapp_link: true,
+                })
+            }
 
             if (status === 'sent') {
                 openPreparedWhatsApp(whatsappWindow)

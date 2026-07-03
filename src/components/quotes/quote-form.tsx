@@ -23,6 +23,7 @@ import { ClientAutocomplete } from '@/components/clients/client-autocomplete'
 import { useRouter } from 'next/navigation'
 import { FREE_PROPOSAL_MODEL, PROPOSAL_MODELS, isFreePlan } from '@/lib/proposal-style'
 import { PROFESSIONAL_CONTEXTS, getProfessionalContext } from '@/lib/professional-context'
+import { usePostHog } from 'posthog-js/react'
 
 type NumericQuoteItemField = 'quantity' | 'unitPrice'
 
@@ -41,6 +42,14 @@ function parseBrazilianNumber(value: string) {
 
 function formatNumberInput(value: number) {
     return String(value).replace('.', ',')
+}
+
+function getQuoteTotalBand(value: number) {
+    if (value < 500) return 'under_500'
+    if (value < 1500) return '500_1499'
+    if (value < 5000) return '1500_4999'
+    if (value < 10000) return '5000_9999'
+    return '10000_plus'
 }
 
 export interface QuoteItem {
@@ -110,6 +119,7 @@ export function QuoteForm({ initialData, quickMode = false, plan }: QuoteFormPro
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(!quickMode)
 
     const router = useRouter()
+    const posthog = usePostHog()
 
     useEffect(() => {
         if (!date) {
@@ -254,6 +264,25 @@ export function QuoteForm({ initialData, quickMode = false, plan }: QuoteFormPro
         }
         formData.set('layout_style', isFree ? FREE_PROPOSAL_MODEL : layoutStyle)
         formData.set('professional_context', professionalContext)
+
+        const productItemCount = items.filter((item) => item.itemType === 'product').length
+        const serviceItemCount = items.length - productItemCount
+        const quoteAnalyticsPayload = {
+            item_count: items.length,
+            service_item_count: serviceItemCount,
+            product_item_count: productItemCount,
+            total_band: getQuoteTotalBand(total),
+            has_client_phone: Boolean(clientPhone),
+            layout_style: isFree ? FREE_PROPOSAL_MODEL : layoutStyle,
+            professional_context: professionalContext,
+            plan_type: isFree ? 'free' : 'paid',
+            quick_mode: quickMode,
+            has_detailed_items: showDetailedItems,
+            has_timeline: showTimeline,
+            has_payment_options: showPaymentOptions,
+            payment_method_count: paymentMethods.length,
+        }
+
         try {
             let result;
             if (initialData?.id) {
@@ -273,11 +302,13 @@ export function QuoteForm({ initialData, quickMode = false, plan }: QuoteFormPro
                     },
                     duration: 10000,
                 })
+                posthog.capture('quote_limit_reached', quoteAnalyticsPayload)
                 router.push('/pricing')
                 return
             } else if (result?.error) {
                 toast.error(result.error)
             } else if (result?.success) {
+                posthog.capture(initialData?.id ? 'quote_updated' : 'quote_created', quoteAnalyticsPayload)
                 toast.success(initialData?.id ? 'Orçamento atualizado!' : 'Orçamento criado!')
                 if (result.redirect) {
                     router.push(result.redirect)

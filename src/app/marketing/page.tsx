@@ -3,6 +3,7 @@ import { HeroSection } from "@/components/marketing/hero-section";
 import { PainAgitationSection } from "@/components/marketing/pain-agitation-section";
 import { ProfessionFitSection } from "@/components/marketing/profession-fit-section";
 import { FeatureShowcase } from "@/components/marketing/feature-showcase";
+import { LogoPersonalizationSection } from "@/components/marketing/logo-personalization-section";
 import { TrustSection } from "@/components/marketing/trust-section";
 import { PricingSection } from "@/components/marketing/pricing-section";
 import { FaqSection } from "@/components/marketing/faq-section";
@@ -50,6 +51,7 @@ const jsonLdSoftware = {
     featureList: [
         "Criação de orçamentos em PDF em até 1 minuto",
         "Personalização com a marca do profissional",
+        "Analise automatica da logo para sugerir a identidade visual da proposta",
         "Envio direto pelo WhatsApp",
         "Aprovação do cliente por link",
         "Acompanhamento de propostas",
@@ -158,6 +160,7 @@ export default function MarketingPage() {
                 <HeroSection />
                 <PainAgitationSection />
                 <ProfessionFitSection />
+                <LogoPersonalizationSection />
                 <FeatureShowcase />
                 <TrustSection />
                 <PricingSection />

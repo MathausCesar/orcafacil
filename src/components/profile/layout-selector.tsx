@@ -123,7 +123,7 @@ export function LayoutSelector({ currentLayout, currentColor, onLayoutChange, on
                 <div className="flex items-center justify-between">
                     <Label className="flex items-center gap-2 text-sm font-semibold text-foreground">
                         <Palette className="h-4 w-4" />
-                        Cor da marca
+                        Cor da marca da proposta
                     </Label>
                     <span className="rounded bg-slate-100 px-2 py-0.5 font-mono text-xs uppercase text-slate-500">
                         {previewColor}
@@ -144,6 +144,12 @@ export function LayoutSelector({ currentLayout, currentColor, onLayoutChange, on
                             </div>
                         </div>
                     </div>
+                )}
+
+                {!isFree && (
+                    <p className="text-xs leading-5 text-muted-foreground">
+                        Se voce enviou uma logo, o Zacly usa a cor detectada como ponto de partida. Voce pode ajustar manualmente sem perder a organizacao do layout.
+                    </p>
                 )}
 
                 <div className={cn('flex flex-wrap items-center gap-3', isFree && 'pointer-events-none opacity-50')}>

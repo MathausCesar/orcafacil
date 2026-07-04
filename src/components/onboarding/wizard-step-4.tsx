@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Palette, Sparkles } from "lucide-react";
 import { LogoUpload } from "@/components/profile/logo-upload";
 import { extractColors } from "extract-colors";
 import { toast } from "sonner";
@@ -83,6 +83,7 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
                             currentLogoUrl={logoUrl}
                             userId={userId}
                             onUploadComplete={handleLogoUploaded}
+                            onColorExtracted={setThemeColor}
                         />
                         {themeColor && (
                             <div className="mt-3 flex items-center gap-2">
@@ -96,6 +97,19 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
                         <p className="mt-1 max-w-[120px] text-center text-[10px] text-muted-foreground">
                             Ela sera usada no topo das suas propostas.
                         </p>
+                        <div className="mt-4 w-full rounded-xl border border-primary/15 bg-primary/5 p-3 text-left">
+                            <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                                <Sparkles className="h-4 w-4 text-primary" />
+                                Layout com sua identidade
+                            </div>
+                            <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
+                                O Zacly analisa a logo, encontra uma cor de marca e usa isso como base visual da proposta.
+                            </p>
+                            <div className="mt-3 flex items-center gap-2 text-[11px] font-semibold text-muted-foreground">
+                                <Palette className="h-3.5 w-3.5" />
+                                Menos configuracao manual.
+                            </div>
+                        </div>
                     </div>
 
                     <div className="w-full space-y-4 md:w-2/3">

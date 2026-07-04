@@ -90,6 +90,7 @@ const HELP_FAQ_ITEMS = [
     { category: 'Conta & Plano', q: 'Onde ficam minhas configurações?', a: 'No celular, toque no nome da empresa no topo e escolha "Configurações". No computador, use o menu lateral.' },
     { category: 'Conta & Plano', q: 'Como faço upgrade para o plano Pro?', a: 'Acesse a área de planos pelo app ou pelo banner de upgrade. Escolha mensal ou anual e finalize pelo checkout seguro.' },
     { category: 'Conta & Plano', q: 'Como cancelo minha assinatura?', a: 'Acesse Configurações e use a opção de cancelamento. O acesso Pro permanece ativo até o fim do período já pago.' },
+    { category: 'PDF & Aprovação', q: 'Como a logo ajuda na proposta?', a: 'Quando voce envia sua logo, o Zacly analisa a imagem, detecta uma cor de marca e usa essa base para orientar o visual das propostas. No plano Pro, essa identidade aparece com mais personalizacao.' },
     { category: 'PDF & Aprovação', q: 'Como personalizo o visual da proposta?', a: 'Acesse Configurações e ajuste a identidade da proposta: logo, cor, modelo visual, tom e mensagem final.' },
     { category: 'PDF & Aprovação', q: 'O PDF respeita o modelo escolhido?', a: 'Sim. Cada orçamento salva o modelo visual escolhido no momento da criação ou edição.' },
     { category: 'PDF & Aprovação', q: 'O PDF sai com marca d\'água no plano gratuito?', a: 'No plano gratuito, o PDF pode manter marca Zacly e limitar personalizações. Com o plano Pro, a proposta fica mais completa e profissional.' },

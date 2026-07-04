@@ -1,100 +1,159 @@
-/**
- * Extrai a cor primária ou dominante de uma imagem carregada.
- * Utiliza um elemento <canvas> invisível para amostrar pixeis do centro e da imagem como um todo.
- */
+const FALLBACK_COLOR = '#0D9B5C'
+const DARK_NEUTRAL_COLOR = '#111827'
+
+type ColorBucket = {
+    r: number
+    g: number
+    b: number
+    count: number
+    saturation: number
+    lightness: number
+}
+
+function componentToHex(value: number) {
+    const hex = Math.max(0, Math.min(255, Math.round(value))).toString(16)
+    return hex.length === 1 ? `0${hex}` : hex
+}
+
+function rgbToHex(r: number, g: number, b: number) {
+    return `#${componentToHex(r)}${componentToHex(g)}${componentToHex(b)}`
+}
+
+function rgbToHsl(r: number, g: number, b: number) {
+    const red = r / 255
+    const green = g / 255
+    const blue = b / 255
+    const max = Math.max(red, green, blue)
+    const min = Math.min(red, green, blue)
+    const lightness = (max + min) / 2
+
+    if (max === min) {
+        return { saturation: 0, lightness }
+    }
+
+    const delta = max - min
+    const saturation = lightness > 0.5
+        ? delta / (2 - max - min)
+        : delta / (max + min)
+
+    return { saturation, lightness }
+}
+
+function scoreBucket(bucket: ColorBucket) {
+    const readableLightness = bucket.lightness > 0.18 && bucket.lightness < 0.82 ? 1.25 : 0.72
+    return bucket.count * (0.85 + bucket.saturation) * readableLightness
+}
 
 export function extractPrimaryColor(imageSrc: string): Promise<string> {
     return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = 'Anonymous'; // Evita problemas de CORS quando possível
+        const img = new Image()
+        img.crossOrigin = 'Anonymous'
 
         img.onload = () => {
             try {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
+                const canvas = document.createElement('canvas')
+                const ctx = canvas.getContext('2d')
 
                 if (!ctx) {
-                    throw new Error('Canvas 2D context not supported');
+                    throw new Error('Canvas 2D context not supported')
                 }
 
-                // Usamos um tamanho reduzido para processamento rápido (Média global de cor)
-                const MAX_SIZE = 50;
+                const MAX_SIZE = 64
+                let width = img.width
+                let height = img.height
 
-                let width = img.width;
-                let height = img.height;
-
-                if (width > height) {
-                    if (width > MAX_SIZE) {
-                        height *= MAX_SIZE / width;
-                        width = MAX_SIZE;
-                    }
-                } else {
-                    if (height > MAX_SIZE) {
-                        width *= MAX_SIZE / height;
-                        height = MAX_SIZE;
-                    }
+                if (width > height && width > MAX_SIZE) {
+                    height *= MAX_SIZE / width
+                    width = MAX_SIZE
+                } else if (height > MAX_SIZE) {
+                    width *= MAX_SIZE / height
+                    height = MAX_SIZE
                 }
 
-                canvas.width = width;
-                canvas.height = height;
+                canvas.width = Math.max(1, Math.round(width))
+                canvas.height = Math.max(1, Math.round(height))
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
 
-                ctx.drawImage(img, 0, 0, width, height);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data
+                const buckets = new Map<string, ColorBucket>()
+                let neutralR = 0
+                let neutralG = 0
+                let neutralB = 0
+                let neutralCount = 0
 
-                const imageData = ctx.getImageData(0, 0, width, height).data;
-                const length = imageData.length;
+                for (let i = 0; i < imageData.length; i += 4) {
+                    const alpha = imageData[i + 3]
+                    if (alpha < 180) continue
 
-                let r = 0, g = 0, b = 0, count = 0;
+                    const r = imageData[i]
+                    const g = imageData[i + 1]
+                    const b = imageData[i + 2]
+                    const isNearWhite = r > 242 && g > 242 && b > 242
+                    if (isNearWhite) continue
 
-                // Percorrer os bytes da imagem pegando apenas pixels com opacidade alta
-                for (let i = 0; i < length; i += 4) {
-                    const alpha = imageData[i + 3];
+                    const { saturation, lightness } = rgbToHsl(r, g, b)
 
-                    // Ignorar pixels "transparentes" ou próximos a isso (comuns em PNGs de logo)
-                    if (alpha > 200) {
-                        // Ignorar também pixels muito próximos a branco (fundo de logo JPEG) e preto
-                        const red = imageData[i];
-                        const green = imageData[i + 1];
-                        const blue = imageData[i + 2];
-
-                        const isWhite = red > 240 && green > 240 && blue > 240;
-                        const isBlack = red < 15 && green < 15 && blue < 15;
-
-                        if (!isWhite && !isBlack) {
-                            r += red;
-                            g += green;
-                            b += blue;
-                            count++;
+                    if (saturation < 0.08) {
+                        if (lightness > 0.08 && lightness < 0.72) {
+                            neutralR += r
+                            neutralG += g
+                            neutralB += b
+                            neutralCount += 1
                         }
+                        continue
+                    }
+
+                    if (lightness < 0.10 || lightness > 0.90) continue
+
+                    const key = `${Math.round(r / 24)}-${Math.round(g / 24)}-${Math.round(b / 24)}`
+                    const current = buckets.get(key)
+
+                    if (current) {
+                        current.r += r
+                        current.g += g
+                        current.b += b
+                        current.count += 1
+                        current.saturation += saturation
+                        current.lightness += lightness
+                    } else {
+                        buckets.set(key, { r, g, b, count: 1, saturation, lightness })
                     }
                 }
 
-                if (count === 0) {
-                    // Fallback: se a logo inteira for branco/preto/transparente, retornar uma cor padrão
-                    resolve('#000000');
-                    return;
+                const ranked = Array.from(buckets.values())
+                    .map((bucket) => ({
+                        ...bucket,
+                        r: bucket.r / bucket.count,
+                        g: bucket.g / bucket.count,
+                        b: bucket.b / bucket.count,
+                        saturation: bucket.saturation / bucket.count,
+                        lightness: bucket.lightness / bucket.count,
+                    }))
+                    .sort((a, b) => scoreBucket(b) - scoreBucket(a))
+
+                if (ranked[0]) {
+                    resolve(rgbToHex(ranked[0].r, ranked[0].g, ranked[0].b))
+                    return
                 }
 
-                // Media das cores
-                r = Math.floor(r / count);
-                g = Math.floor(g / count);
-                b = Math.floor(b / count);
+                if (neutralCount > 0) {
+                    const r = neutralR / neutralCount
+                    const g = neutralG / neutralCount
+                    const b = neutralB / neutralCount
+                    resolve(rgbToHsl(r, g, b).lightness < 0.22 ? DARK_NEUTRAL_COLOR : rgbToHex(r, g, b))
+                    return
+                }
 
-                const toHex = (c: number) => {
-                    const hex = c.toString(16);
-                    return hex.length === 1 ? '0' + hex : hex;
-                };
-
-                const hexColor = `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-                resolve(hexColor);
+                resolve(FALLBACK_COLOR)
             } catch (err) {
-                reject(err);
+                reject(err)
             }
-        };
+        }
 
         img.onerror = () => {
-            reject(new Error('Failed to load image for color extraction'));
-        };
+            reject(new Error('Failed to load image for color extraction'))
+        }
 
-        img.src = imageSrc;
-    });
+        img.src = imageSrc
+    })
 }

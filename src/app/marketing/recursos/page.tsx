@@ -38,7 +38,7 @@ const features = [
     {
         icon: Palette,
         title: 'Modelos e identidade visual',
-        body: 'Planos pagos liberam modelos, cores, fontes e mensagem personalizada para cada operacao.',
+        body: 'Envie sua logo, deixe o Zacly detectar a cor da marca e use modelos visuais mais profissionais no plano Pro.',
     },
 ]
 

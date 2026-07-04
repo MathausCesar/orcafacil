@@ -11,7 +11,9 @@ import {
     FileText,
     Gauge,
     MessageCircle,
+    Palette,
     ShieldCheck,
+    Sparkles,
     Wrench,
     XCircle,
 } from "lucide-react"
@@ -112,6 +114,7 @@ export const metadata: Metadata = {
         "app para mecanico autonomo",
         "sistema simples para oficina mecanica",
         "orcamento oficina pelo whatsapp",
+        "orcamento com logo da oficina",
         "ordem de servico oficina simples",
     ],
     alternates: {
@@ -290,6 +293,54 @@ export default function MechanicLandingPage() {
                                 <p className="mt-3 text-sm leading-6 text-zinc-400">{item.text}</p>
                             </article>
                         ))}
+                    </div>
+                </div>
+            </section>
+
+            <section className="border-y border-white/10 bg-zinc-900 px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+                <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+                    <div>
+                        <p className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-emerald-300">
+                            <Sparkles className="h-4 w-4" />
+                            Identidade da oficina
+                        </p>
+                        <h2 className="mt-5 text-3xl font-black tracking-tight text-white sm:text-4xl">
+                            A proposta sai com a cara da sua oficina.
+                        </h2>
+                        <p className="mt-5 text-base leading-7 text-zinc-400">
+                            Ao enviar sua logo, o Zacly identifica uma cor de marca e usa isso para orientar o visual da proposta. O cliente recebe algo com aparencia de empresa, nao apenas uma mensagem de preco.
+                        </p>
+                        <div className="mt-8">
+                            <CampaignRegisterLink campaign={CAMPAIGN} content="logo_identity_cta" className={ctaClass}>
+                                Testar com minha logo
+                                <ArrowRight className="h-4 w-4" />
+                            </CampaignRegisterLink>
+                        </div>
+                    </div>
+
+                    <div className="rounded-lg border border-white/10 bg-white p-4 text-zinc-950 shadow-2xl shadow-black/25">
+                        <div className="rounded-lg bg-zinc-950 p-4 text-white">
+                            <div className="flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-white p-2 text-center text-[10px] font-black leading-tight text-zinc-950">
+                                        AUTO PRIME
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300">Cor detectada</p>
+                                        <p className="mt-1 text-lg font-black">#22C55E</p>
+                                    </div>
+                                </div>
+                                <Palette className="h-7 w-7 text-emerald-300" />
+                            </div>
+                        </div>
+                        <div className="mt-4 rounded-lg border border-zinc-200 p-4">
+                            <div className="mb-4 h-2 w-24 rounded-full bg-emerald-500" />
+                            <h3 className="text-xl font-black">Troca de pastilha e revisao</h3>
+                            <p className="mt-2 text-sm text-zinc-500">Pecas, mao de obra, prazo, garantia e link de aprovacao em uma proposta unica.</p>
+                            <div className="mt-5 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-black text-emerald-950">
+                                Aprovar proposta
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

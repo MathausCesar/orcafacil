@@ -12,9 +12,9 @@ const features = [
     },
     {
         title: "Modelos profissionais com sua marca",
-        description: "Escolha um modelo de proposta e mantenha a identidade visual organizada, sem virar bagunça de cores e fontes.",
+        description: "Envie sua logo e o Zacly detecta a cor principal para sugerir uma proposta com identidade visual organizada.",
         icon: LayoutTemplate,
-        highlight: "Cara de empresa.",
+        highlight: "Sua marca no layout.",
     },
     {
         title: "Envio pelo WhatsApp em poucos cliques",

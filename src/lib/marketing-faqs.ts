@@ -22,6 +22,11 @@ export const marketingFaqs = [
             "Não. O cliente abre um link, visualiza a proposta e pode aprovar direto pelo navegador do celular.",
     },
     {
+        question: "Como a logo entra na proposta?",
+        answer:
+            "Voce envia sua logo, o Zacly identifica uma cor principal e usa essa base para orientar a identidade visual da proposta. No plano Pro, os modelos ficam mais personalizados com a sua marca.",
+    },
+    {
         question: "Isso substitui meu orçamento no WhatsApp?",
         answer:
             "Ele melhora o que você já faz no WhatsApp. Em vez de mandar preço solto, você envia uma proposta com descrição, itens, prazo, condições e link de aprovação.",

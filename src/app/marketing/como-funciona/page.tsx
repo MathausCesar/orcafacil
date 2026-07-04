@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { CheckCircle2, MessageCircle, UserRoundPlus, Wrench } from 'lucide-react'
+import { CheckCircle2, MessageCircle, Palette, Sparkles, UserRoundPlus, Wrench } from 'lucide-react'
 import { SectionBlock, SeoPageLayout } from '@/components/marketing/seo-page-layout'
 import { SEO_BASE_URL } from '@/lib/seo-site-content'
 
@@ -32,6 +32,24 @@ const steps = [
     },
 ]
 
+const visualIdentitySteps = [
+    {
+        title: 'Logo enviada',
+        body: 'A marca fica salva no perfil da empresa.',
+        icon: Sparkles,
+    },
+    {
+        title: 'Cor detectada',
+        body: 'O app encontra uma cor segura para destaques.',
+        icon: Palette,
+    },
+    {
+        title: 'Proposta personalizada',
+        body: 'Modelos Pro usam a identidade da marca com organizacao.',
+        icon: CheckCircle2,
+    },
+]
+
 export default function ComoFuncionaPage() {
     return (
         <SeoPageLayout
@@ -53,6 +71,26 @@ export default function ComoFuncionaPage() {
                                 <h2 className="mt-6 text-xl font-black text-white">{step.title}</h2>
                                 <p className="mt-3 text-sm leading-6 text-zinc-400">{step.body}</p>
                             </div>
+                        )
+                    })}
+                </div>
+            </SectionBlock>
+
+            <SectionBlock
+                title="A logo tambem ajuda a montar a proposta."
+                eyebrow="Identidade visual"
+                description="Quando o profissional envia a logo, o Zacly identifica uma cor de marca e usa essa base para deixar a proposta mais coerente, sem exigir conhecimento de design."
+            >
+                <div className="grid gap-4 md:grid-cols-3">
+                    {visualIdentitySteps.map((step) => {
+                        const Icon = step.icon
+
+                        return (
+                        <div key={step.title} className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                            <Icon className="h-7 w-7 text-emerald-400" />
+                            <h2 className="mt-5 text-xl font-black text-white">{step.title}</h2>
+                            <p className="mt-3 text-sm leading-6 text-zinc-400">{step.body}</p>
+                        </div>
                         )
                     })}
                 </div>

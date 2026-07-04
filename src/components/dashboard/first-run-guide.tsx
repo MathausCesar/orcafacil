@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, CheckCircle2, Circle, FileText, KanbanSquare, UserPlus } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Circle, FileText, KanbanSquare, Palette, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface FirstRunGuideProps {
@@ -123,6 +123,20 @@ export function FirstRunGuide({ clientCount, quoteCount, activePipelineCount }: 
 
             <div className="mt-4 rounded-xl bg-muted/40 px-4 py-3 text-xs leading-5 text-muted-foreground">
                 Dica: depois de aprovada pelo cliente, a proposta pode seguir para execucao e concluido pelo pipeline.
+            </div>
+
+            <div className="mt-3 flex flex-col gap-3 rounded-xl border border-primary/15 bg-primary/5 px-4 py-3 text-xs leading-5 text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-2">
+                    <Palette className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <span>
+                        Envie sua logo em Configuracoes: o Zacly detecta a cor da marca e deixa suas propostas mais personalizadas.
+                    </span>
+                </div>
+                <Button asChild variant="outline" size="sm" className="shrink-0">
+                    <Link href="/profile">
+                        Ajustar logo
+                    </Link>
+                </Button>
             </div>
         </section>
     )

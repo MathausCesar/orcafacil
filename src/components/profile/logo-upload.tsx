@@ -72,7 +72,10 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
             const urlWithCacheBust = `${publicUrl}?v=${Date.now()}`
 
             setExtractingColor(true)
-            toast.info('Analisando cores da logo...', { icon: <Sparkles className="h-4 w-4 text-amber-500" /> })
+            toast.info('Analisando sua logo...', {
+                description: 'Vamos detectar a cor principal para usar na identidade da proposta.',
+                icon: <Sparkles className="h-4 w-4 text-amber-500" />,
+            })
             let extractedColor = null
 
             try {
@@ -94,7 +97,9 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
             if (updateError) throw updateError
 
             setPreviewUrl(urlWithCacheBust)
-            toast.success('Logo e paleta atualizadas!')
+            toast.success('Logo analisada e paleta atualizada!', {
+                description: extractedColor ? 'A cor da marca foi aplicada como base visual.' : 'A logo foi salva no seu perfil.',
+            })
 
             // Notify parent about new URL for color extraction
             if (onUploadComplete) {
@@ -117,7 +122,7 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
     return (
         <div className="flex flex-col items-center gap-3">
             <div
-                className="relative h-24 w-24 rounded-full border-2 border-primary/20 bg-primary/5 overflow-hidden ring-4 ring-primary/10 cursor-pointer group hover:border-primary/50 transition-colors"
+                className="group relative h-28 w-28 cursor-pointer overflow-hidden rounded-2xl border-2 border-primary/20 bg-background shadow-sm ring-4 ring-primary/10 transition-colors hover:border-primary/50"
                 onClick={() => fileInputRef.current?.click()}
             >
                 {previewUrl ? (
@@ -125,15 +130,16 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
                         src={previewUrl}
                         alt="Logo"
                         fill
-                        className="object-cover"
+                        className="object-contain p-3"
                         unoptimized
                     />
                 ) : (
-                    <div className="flex items-center justify-center h-full text-primary/40 text-xs text-center p-2">
-                        Sem Logo
+                    <div className="flex h-full flex-col items-center justify-center gap-2 p-3 text-center text-xs font-semibold text-primary/60">
+                        <Sparkles className="h-5 w-5" />
+                        Enviar logo
                     </div>
                 )}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/45 opacity-0 transition-opacity group-hover:opacity-100">
                     {(uploading || extractingColor) ? (
                         <Loader2 className="h-6 w-6 text-white animate-spin" />
                     ) : (
@@ -158,7 +164,7 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading || extractingColor}
             >
-                {(uploading || extractingColor) ? 'Processando...' : 'Alterar Logo'}
+                {(uploading || extractingColor) ? 'Analisando...' : previewUrl ? 'Trocar logo' : 'Enviar logo'}
             </Button>
         </div>
     )

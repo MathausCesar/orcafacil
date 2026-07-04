@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Save, Loader2, Building2, Palette, Rocket } from 'lucide-react'
+import { Save, Loader2, Building2, Palette, Rocket, Sparkles, CheckCircle2 } from 'lucide-react'
 import { LogoUpload } from '@/components/profile/logo-upload'
 import { LayoutSelector } from '@/components/profile/layout-selector'
 import { QuoteSettings, QuoteSettingsData } from '@/components/profile/quote-settings'
@@ -27,6 +27,7 @@ interface ProfileFormProps {
         email?: string | null
         layout_style?: string | null
         logo_url?: string | null
+        primary_color?: string | null
         neighborhood?: string | null
         phone?: string | null
         plan?: string | null
@@ -41,7 +42,11 @@ interface ProfileFormProps {
 export function ProfileForm({ initialProfile, userId, section = 'all' }: ProfileFormProps) {
     const [loading, setLoading] = useState(false)
     const isFree = isFreePlan(initialProfile?.plan)
-    const [themeColor, setThemeColor] = useState(isFree ? DEFAULT_PROPOSAL_ACCENT : initialProfile?.theme_color || DEFAULT_PROPOSAL_ACCENT)
+    const [themeColor, setThemeColor] = useState(
+        isFree
+            ? initialProfile?.primary_color || DEFAULT_PROPOSAL_ACCENT
+            : initialProfile?.theme_color || initialProfile?.primary_color || DEFAULT_PROPOSAL_ACCENT
+    )
     const [layoutStyle, setLayoutStyle] = useState(isFree ? FREE_PROPOSAL_MODEL : initialProfile?.layout_style || FREE_PROPOSAL_MODEL)
     const [logoUrl, setLogoUrl] = useState<string | null>(initialProfile?.logo_url || null)
     const [businessName, setBusinessName] = useState(initialProfile?.business_name || '')
@@ -202,6 +207,35 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
                                 </div>
 
                                 <div className="flex-1 space-y-4 w-full">
+                                    <div className="rounded-xl border border-primary/15 bg-primary/5 p-4">
+                                        <div className="flex items-start gap-3">
+                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                                <Sparkles className="h-5 w-5" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-bold text-foreground">Analise automatica da logo</p>
+                                                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                                                    Envie sua logo e o Zacly identifica a cor principal para deixar a proposta com uma identidade visual mais coerente.
+                                                </p>
+                                                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-muted-foreground">
+                                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1">
+                                                        <span className="h-3 w-3 rounded-full border border-border" style={{ backgroundColor: themeColor }} />
+                                                        {themeColor.toUpperCase()}
+                                                    </span>
+                                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-700">
+                                                        <CheckCircle2 className="h-3.5 w-3.5" />
+                                                        {logoUrl ? 'Logo pronta para propostas' : 'Envie a logo para ativar'}
+                                                    </span>
+                                                </div>
+                                                {isFree && (
+                                                    <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
+                                                        No plano gratis a proposta mantem a identidade Zacly. No Pro, sua marca assume os modelos visuais.
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="businessName">Nome da Empresa</Label>

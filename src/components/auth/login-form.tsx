@@ -20,6 +20,7 @@ import { Mail, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { usePostHog } from 'posthog-js/react'
+import { addExceptionStep, captureException } from '@/lib/analytics'
 
 type AuthActionResult = {
     error?: string
@@ -88,6 +89,11 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
             method: 'password',
             next_path: nextPath || '/',
         })
+        addExceptionStep('auth_form_submitted', {
+            flow: authFlow,
+            method: 'password',
+            next_path: nextPath || '/',
+        })
 
         try {
             if (action === signup) {
@@ -143,11 +149,16 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                     window.location.href = result.redirect
                 }
             }
-        } catch {
+        } catch (error) {
             posthog.capture('auth_flow_error', {
                 flow: authFlow,
                 method: 'password',
                 reason: 'unexpected_error',
+            })
+            captureException(error, {
+                source: 'auth_form',
+                flow: authFlow,
+                method: 'password',
             })
             toast.error('Ocorreu um erro inesperado.')
         } finally {
@@ -293,14 +304,33 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                                     flow: mode,
                                     next_path: nextPath || '/',
                                 })
-                                const result = await signInWithGoogle(nextPath || undefined);
-                                if (result?.error) {
+                                addExceptionStep('auth_google_started', {
+                                    flow: mode,
+                                    next_path: nextPath || '/',
+                                })
+                                try {
+                                    const result = await signInWithGoogle(nextPath || undefined);
+                                    if (result?.error) {
+                                        posthog.capture('auth_flow_error', {
+                                            flow: mode,
+                                            method: 'google',
+                                            reason: 'action_error',
+                                        })
+                                        toast.error(result.error);
+                                        setLoading(false);
+                                    }
+                                } catch (error) {
                                     posthog.capture('auth_flow_error', {
                                         flow: mode,
                                         method: 'google',
-                                        reason: 'action_error',
+                                        reason: 'unexpected_error',
                                     })
-                                    toast.error(result.error);
+                                    captureException(error, {
+                                        source: 'auth_google',
+                                        flow: mode,
+                                        method: 'google',
+                                    })
+                                    toast.error('Nao foi possivel iniciar o login com Google.');
                                     setLoading(false);
                                 }
                             }}>

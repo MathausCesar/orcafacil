@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/alert-dialog'
 import { CheckCircle2, XCircle, Loader2, ThumbsUp, ThumbsDown, PencilLine } from 'lucide-react'
 import { toast } from 'sonner'
+import { usePostHog } from 'posthog-js/react'
+import { addExceptionStep, captureException } from '@/lib/analytics'
 
 interface ApproveQuoteClientProps {
     quoteId: string
@@ -31,6 +33,7 @@ export function ApproveQuoteClient({ quoteId, publicToken, clientName, themeColo
     const [dialog, setDialog] = useState<DecisionDialog>(null)
     const [note, setNote] = useState('')
     const [done, setDone] = useState<ClientDecision | null>(null)
+    const posthog = usePostHog()
 
     const resetDialog = () => {
         setDialog(null)
@@ -46,6 +49,17 @@ export function ApproveQuoteClient({ quoteId, publicToken, clientName, themeColo
                 ? 'changes_requested'
                 : 'rejected'
 
+        addExceptionStep('quote_client_decision_started', {
+            decision: status,
+            quote_id: quoteId,
+            has_note: Boolean(note.trim()),
+        })
+        posthog.capture('quote_client_decision_started', {
+            decision: status,
+            quote_id: quoteId,
+            has_note: Boolean(note.trim()),
+        })
+
         if (status !== 'approved' && note.trim().length < 5) {
             toast.error('Informe um motivo ou pedido de ajuste.')
             return
@@ -55,6 +69,11 @@ export function ApproveQuoteClient({ quoteId, publicToken, clientName, themeColo
         try {
             await approveQuotePublic(quoteId, publicToken, status, note)
             setDone(status)
+            posthog.capture('quote_client_decision_completed', {
+                decision: status,
+                quote_id: quoteId,
+                has_note: Boolean(note.trim()),
+            })
             toast.success(
                 status === 'approved'
                     ? 'Orcamento aprovado!'
@@ -64,6 +83,16 @@ export function ApproveQuoteClient({ quoteId, publicToken, clientName, themeColo
             )
         } catch (error) {
             console.error(error)
+            posthog.capture('quote_client_decision_failed', {
+                decision: status,
+                quote_id: quoteId,
+                reason: 'action_error',
+            })
+            captureException(error, {
+                source: 'quote_client_decision',
+                decision: status,
+                quote_id: quoteId,
+            })
             toast.error('Erro ao processar', {
                 description: error instanceof Error ? error.message : 'Tente novamente ou entre em contato com o prestador.',
             })

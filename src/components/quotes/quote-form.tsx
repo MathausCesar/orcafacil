@@ -24,6 +24,7 @@ import { useRouter } from 'next/navigation'
 import { FREE_PROPOSAL_MODEL, PROPOSAL_MODELS, isFreePlan } from '@/lib/proposal-style'
 import { PROFESSIONAL_CONTEXTS, getProfessionalContext } from '@/lib/professional-context'
 import { usePostHog } from 'posthog-js/react'
+import { addExceptionStep, captureException } from '@/lib/analytics'
 
 type NumericQuoteItemField = 'quantity' | 'unitPrice'
 
@@ -283,6 +284,8 @@ export function QuoteForm({ initialData, quickMode = false, plan }: QuoteFormPro
             payment_method_count: paymentMethods.length,
         }
 
+        addExceptionStep(initialData?.id ? 'quote_update_started' : 'quote_create_started', quoteAnalyticsPayload)
+
         try {
             let result;
             if (initialData?.id) {
@@ -306,6 +309,10 @@ export function QuoteForm({ initialData, quickMode = false, plan }: QuoteFormPro
                 router.push('/pricing')
                 return
             } else if (result?.error) {
+                posthog.capture(initialData?.id ? 'quote_update_failed' : 'quote_create_failed', {
+                    ...quoteAnalyticsPayload,
+                    reason: 'action_error',
+                })
                 toast.error(result.error)
             } else if (result?.success) {
                 posthog.capture(initialData?.id ? 'quote_updated' : 'quote_created', quoteAnalyticsPayload)
@@ -314,7 +321,16 @@ export function QuoteForm({ initialData, quickMode = false, plan }: QuoteFormPro
                     router.push(result.redirect)
                 }
             }
-        } catch {
+        } catch (error) {
+            posthog.capture(initialData?.id ? 'quote_update_failed' : 'quote_create_failed', {
+                ...quoteAnalyticsPayload,
+                reason: 'unexpected_error',
+            })
+            captureException(error, {
+                source: 'quote_form',
+                flow: initialData?.id ? 'update_quote' : 'create_quote',
+                ...quoteAnalyticsPayload,
+            })
             toast.error('Erro ao salvar orçamento.')
         } finally {
             isSubmitting.current = false;

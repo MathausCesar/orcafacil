@@ -14,6 +14,7 @@ import { Share2, Mail, Copy, Download, Check, MessageCircle } from 'lucide-react
 import { toast } from 'sonner'
 import { updateQuoteStatus } from '@/app/actions/quotes'
 import { usePostHog } from 'posthog-js/react'
+import { captureException } from '@/lib/analytics'
 
 interface QuoteShareModalProps {
     quoteId: string
@@ -69,6 +70,11 @@ export function QuoteShareModal({
                 opened_whatsapp: false,
             })
         } catch (error) {
+            captureException(error, {
+                source: 'quote_share_mark_sent',
+                quote_id: quoteId,
+                previous_status: quoteStatus || 'unknown',
+            })
             console.error('Failed to mark quote as sent:', error)
         } finally {
             setMarkingSent(false)
@@ -83,7 +89,11 @@ export function QuoteShareModal({
             setCopied(true)
             toast.success('Link copiado.')
             setTimeout(() => setCopied(false), 2000)
-        } catch {
+        } catch (error) {
+            captureException(error, {
+                source: 'quote_share_copy_link',
+                quote_id: quoteId,
+            })
             toast.error('Erro ao copiar o link.')
         }
     }

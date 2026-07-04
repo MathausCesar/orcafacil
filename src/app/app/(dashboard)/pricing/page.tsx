@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { CheckCircle2, Zap, Loader2, TrendingDown } from "lucide-react"
 import { toast } from "sonner"
 import { usePostHog } from "posthog-js/react"
+import { addExceptionStep, captureException } from "@/lib/analytics"
 import {
     PRICING,
     YEARLY_DISCOUNT_PCT,
@@ -82,9 +83,19 @@ export default function PricingPage() {
             source: "pricing_page",
             requested_plan: searchParams.get("plan") || "none",
         })
+        addExceptionStep("checkout_started", {
+            plan,
+            billing_interval: plan === "yearly" ? "year" : "month",
+            source: "pricing_page",
+        })
         try {
             await redirectToCheckout(plan)
         } catch (err: unknown) {
+            captureException(err, {
+                source: "pricing_checkout",
+                plan,
+                billing_interval: plan === "yearly" ? "year" : "month",
+            })
             posthog.capture("checkout_start_failed", {
                 plan,
                 billing_interval: plan === "yearly" ? "year" : "month",

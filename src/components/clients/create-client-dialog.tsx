@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { CepInput } from './cep-input'
 import type { ClientOption } from '@/components/clients/client-autocomplete'
+import { addExceptionStep, captureEvent, captureException } from '@/lib/analytics'
 
 interface CreateClientDialogProps {
     trigger?: React.ReactNode;
@@ -29,11 +30,42 @@ export function CreateClientDialog({ trigger, onSuccess, redirectToQuoteAfterCre
     const handleSubmit = async (formData: FormData) => {
         if (loading) return // Prevent double submission
         setLoading(true)
+        const hasPhone = Boolean(String(formData.get('phone') || '').trim())
+        const hasEmail = Boolean(String(formData.get('email') || '').trim())
+        const hasAddress = Boolean(String(formData.get('address') || '').trim() || String(formData.get('cep') || '').trim())
+
+        addExceptionStep('client_create_started', {
+            person_type: personType,
+            has_phone: hasPhone,
+            has_email: hasEmail,
+            has_address: hasAddress,
+            redirect_to_quote: redirectToQuoteAfterCreate,
+        })
+        captureEvent('client_create_started', {
+            person_type: personType,
+            has_phone: hasPhone,
+            has_email: hasEmail,
+            has_address: hasAddress,
+            redirect_to_quote: redirectToQuoteAfterCreate,
+        })
+
         try {
             const result = await createClientAction(formData)
             if (result.error) {
+                captureEvent('client_create_failed', {
+                    person_type: personType,
+                    reason: 'action_error',
+                    redirect_to_quote: redirectToQuoteAfterCreate,
+                })
                 toast.error(result.error)
             } else {
+                captureEvent('client_created', {
+                    person_type: personType,
+                    has_phone: hasPhone,
+                    has_email: hasEmail,
+                    has_address: hasAddress,
+                    redirect_to_quote: redirectToQuoteAfterCreate,
+                })
                 toast.success('Cliente cadastrado com sucesso!')
                 setOpen(false)
                 if (onSuccess) onSuccess(result.client)
@@ -43,7 +75,12 @@ export function CreateClientDialog({ trigger, onSuccess, redirectToQuoteAfterCre
                     router.refresh()
                 }
             }
-        } catch {
+        } catch (error) {
+            captureException(error, {
+                source: 'client_create_dialog',
+                person_type: personType,
+                redirect_to_quote: redirectToQuoteAfterCreate,
+            })
             toast.error('Erro ao cadastrar cliente')
         } finally {
             setLoading(false)

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { CheckCircle, Clock, Loader2, PlayCircle, ShieldCheck, Trophy, Send, FileText, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { usePostHog } from 'posthog-js/react'
+import { addExceptionStep, captureException } from '@/lib/analytics'
 
 interface QuoteActionsProps {
     quoteId: string
@@ -36,6 +37,13 @@ export function QuoteStatusActions({ quoteId, currentStatus, isOwner, whatsappLi
         const whatsappWindow = status === 'sent' && whatsappLink
             ? window.open('', '_blank')
             : null
+
+        addExceptionStep('quote_status_change_started', {
+            previous_status: currentStatus,
+            next_status: status,
+            source: 'quote_detail_action',
+            opened_whatsapp: status === 'sent' && Boolean(whatsappLink),
+        })
 
         setLoading(true)
         try {
@@ -72,8 +80,14 @@ export function QuoteStatusActions({ quoteId, currentStatus, isOwner, whatsappLi
                 completed: 'Orçamento concluído!',
             }
             toast.success(messages[status])
-        } catch {
+        } catch (error) {
             whatsappWindow?.close()
+            captureException(error, {
+                source: 'quote_status_action',
+                previous_status: currentStatus,
+                next_status: status,
+                opened_whatsapp: status === 'sent' && Boolean(whatsappLink),
+            })
             toast.error('Erro ao atualizar status.')
         } finally {
             setLoading(false)

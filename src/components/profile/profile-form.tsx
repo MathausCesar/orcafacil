@@ -10,8 +10,10 @@ import { Button } from '@/components/ui/button'
 import { Save, Loader2, Building2, Palette, Rocket, Sparkles, CheckCircle2 } from 'lucide-react'
 import { LogoUpload } from '@/components/profile/logo-upload'
 import { LogoIdentityPreview } from '@/components/profile/logo-identity-preview'
+import { BrandKitSummary } from '@/components/profile/brand-kit-summary'
 import { LayoutSelector } from '@/components/profile/layout-selector'
 import { QuoteSettings, QuoteSettingsData } from '@/components/profile/quote-settings'
+import { buildBrandKitFromLogoAnalysis, getBrandKitFromQuoteSettings, type BrandKit } from '@/lib/brand-kit'
 import { DEFAULT_PROPOSAL_ACCENT, FREE_PROPOSAL_MODEL, isFreePlan } from '@/lib/proposal-style'
 import { toast } from 'sonner'
 import type { LogoIdentityAnalysis } from '@/lib/color-extractor'
@@ -123,8 +125,11 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
         return null
     }
 
+    const getInitialBrandKit = (): BrandKit | null => getBrandKitFromQuoteSettings(initialProfile?.quote_settings)
+
     const [quoteSettings, setQuoteSettings] = useState<QuoteSettingsData | null>(getInitialSettings())
     const [logoAnalysis, setLogoAnalysis] = useState<LogoIdentityAnalysis | null>(getInitialLogoAnalysis())
+    const [brandKit, setBrandKit] = useState<BrandKit | null>(getInitialBrandKit())
     const showCompany = section === 'all' || section === 'company'
     const showProposal = section === 'all' || section === 'proposal'
     const saveLabel = section === 'proposal' ? 'Salvar proposta' : 'Salvar perfil'
@@ -139,8 +144,17 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
     const handleLogoAnalyzed = async (analysis: LogoIdentityAnalysis) => {
         setLogoAnalysis(analysis)
         setThemeColor(analysis.safeAccentColor)
+        const generatedBrandKit = buildBrandKitFromLogoAnalysis(analysis)
+        setBrandKit(generatedBrandKit)
+        setQuoteSettings((current) => ({
+            ...(current || {}),
+            footerText: current?.footerText || '',
+            brandKit: generatedBrandKit,
+            logoAnalysis: analysis,
+        }))
 
         if (!isFree) {
+            setLayoutStyle(analysis.recommendedModel)
             const result = await updateThemeColor(analysis.safeAccentColor)
             if (result?.error) {
                 toast.error('Nao foi possivel salvar a cor detectada.')
@@ -252,6 +266,8 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
                                         fallbackColor={themeColor}
                                         isFree={isFree}
                                     />
+
+                                    <BrandKitSummary brandKit={brandKit} isFree={isFree} />
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">

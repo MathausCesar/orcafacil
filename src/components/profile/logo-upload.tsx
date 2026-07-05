@@ -1,13 +1,16 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Camera, Loader2, Sparkles } from 'lucide-react'
+import { useRef, useState } from 'react'
 import Image from 'next/image'
-import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { Camera, Loader2, Sparkles } from 'lucide-react'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { createClient } from '@/lib/supabase/client'
 import { analyzeLogoIdentity, type LogoIdentityAnalysis } from '@/lib/color-extractor'
+import { buildBrandKitFromLogoAnalysis } from '@/lib/brand-kit'
+import { prepareLogoFile } from '@/lib/logo-image-prep'
+import { isFreePlan } from '@/lib/proposal-style'
 import { captureEvent } from '@/lib/analytics'
 import type { Database, Json } from '@/types/database.types'
 
@@ -41,25 +44,31 @@ function parseJsonObject(value: unknown): JsonObject {
     }
 }
 
-export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorExtracted, onLogoAnalyzed }: LogoUploadProps) {
+export function LogoUpload({
+    currentLogoUrl,
+    userId,
+    onUploadComplete,
+    onColorExtracted,
+    onLogoAnalyzed,
+}: LogoUploadProps) {
     const [uploading, setUploading] = useState(false)
     const [extractingColor, setExtractingColor] = useState(false)
     const [previewUrl, setPreviewUrl] = useState(currentLogoUrl)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const router = useRouter()
 
-    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
+    const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0]
         if (!file) return
-
-        if (file.size > 2 * 1024 * 1024) {
-            toast.error('A imagem deve ter no máximo 2MB.')
-            return
-        }
 
         const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
         if (!allowedTypes.includes(file.type)) {
             toast.error('Envie uma imagem PNG, JPG ou WebP.')
+            return
+        }
+
+        if (file.size > 6 * 1024 * 1024) {
+            toast.error('A imagem esta muito pesada. Envie uma logo de ate 6MB.')
             return
         }
 
@@ -70,23 +79,42 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
         })
 
         try {
+            const preparedLogo = await prepareLogoFile(file)
+            const uploadFile = preparedLogo.file
+
+            if (uploadFile.size > 2 * 1024 * 1024) {
+                toast.error('A logo ainda ficou acima de 2MB. Tente uma imagem menor.')
+                return
+            }
+
+            if (preparedLogo.improved) {
+                captureEvent('logo_image_improved', {
+                    cropped: preparedLogo.cropped,
+                    resized: preparedLogo.resized,
+                    crop_ratio: preparedLogo.cropRatio,
+                    original_width: preparedLogo.originalWidth,
+                    original_height: preparedLogo.originalHeight,
+                    output_width: preparedLogo.outputWidth,
+                    output_height: preparedLogo.outputHeight,
+                })
+            }
+
             const supabase = createClient()
-            const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg'
+            const ext = uploadFile.type === 'image/png' ? 'png' : uploadFile.type === 'image/webp' ? 'webp' : 'jpg'
             const filePath = `${userId}/logo.${ext}`
 
-            // Clean up any existing logo files to avoid orphaned files (e.g. user switches from .png to .jpg)
             const { data: existingFiles } = await supabase.storage
                 .from('logos')
                 .list(userId)
 
             if (existingFiles && existingFiles.length > 0) {
-                const filesToDelete = existingFiles.map(f => `${userId}/${f.name}`)
+                const filesToDelete = existingFiles.map((existingFile) => `${userId}/${existingFile.name}`)
                 await supabase.storage.from('logos').remove(filesToDelete)
             }
 
             const { error: uploadError } = await supabase.storage
                 .from('logos')
-                .upload(filePath, file, { upsert: true })
+                .upload(filePath, uploadFile, { upsert: true })
 
             if (uploadError) throw uploadError
 
@@ -94,7 +122,6 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
                 .from('logos')
                 .getPublicUrl(filePath)
 
-            // Add cache-busting param so browsers/CDN always fetch the new image
             const urlWithCacheBust = `${publicUrl}?v=${Date.now()}`
 
             setExtractingColor(true)
@@ -102,6 +129,7 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
                 description: 'Vamos detectar a cor principal para usar na identidade da proposta.',
                 icon: <Sparkles className="h-4 w-4 text-amber-500" />,
             })
+
             let logoAnalysis: LogoIdentityAnalysis | null = null
             let extractedColor: string | null = null
 
@@ -116,16 +144,25 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
             if (extractedColor) {
                 updatePayload.primary_color = extractedColor
             }
+
             if (logoAnalysis) {
                 const { data: currentProfile } = await supabase
                     .from('profiles')
-                    .select('quote_settings')
+                    .select('plan, quote_settings')
                     .eq('id', userId)
                     .maybeSingle()
+
+                const brandKit = buildBrandKitFromLogoAnalysis(logoAnalysis)
 
                 updatePayload.quote_settings = {
                     ...parseJsonObject(currentProfile?.quote_settings),
                     logoAnalysis: logoAnalysis as unknown as Json,
+                    brandKit: brandKit as unknown as Json,
+                }
+
+                if (!isFreePlan(currentProfile?.plan)) {
+                    updatePayload.theme_color = logoAnalysis.safeAccentColor
+                    updatePayload.layout_style = logoAnalysis.recommendedModel
                 }
             }
 
@@ -138,21 +175,19 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
 
             setPreviewUrl(urlWithCacheBust)
             toast.success('Logo analisada e visual preparado!', {
-                description: logoAnalysis?.warnings.length
-                    ? 'A proposta vai usar sua marca com ajustes para manter a leitura.'
-                    : extractedColor ? 'Sua marca ja pode aparecer nos modelos de proposta.' : 'A logo foi salva no seu perfil.',
+                description: preparedLogo.improved
+                    ? 'Tambem melhoramos o enquadramento da logo antes de aplicar no visual.'
+                    : logoAnalysis?.warnings.length
+                        ? 'A proposta vai usar sua marca com ajustes para manter a leitura.'
+                        : extractedColor
+                            ? 'Sua marca ja pode aparecer nos modelos de proposta.'
+                            : 'A logo foi salva no seu perfil.',
             })
 
-            // Notify parent about new URL for color extraction
-            if (onUploadComplete) {
-                onUploadComplete(urlWithCacheBust)
-            }
-            if (extractedColor && onColorExtracted) {
-                onColorExtracted(extractedColor)
-            }
-            if (logoAnalysis && onLogoAnalyzed) {
-                onLogoAnalyzed(logoAnalysis)
-            }
+            onUploadComplete?.(urlWithCacheBust)
+            if (extractedColor) onColorExtracted?.(extractedColor)
+            if (logoAnalysis) onLogoAnalyzed?.(logoAnalysis)
+
             if (logoAnalysis) {
                 captureEvent('logo_analysis_completed', {
                     quality_score: logoAnalysis.qualityScore,
@@ -161,6 +196,8 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
                     recommended_model: logoAnalysis.recommendedModel,
                     visual_tone: logoAnalysis.visualTone,
                     has_transparency: logoAnalysis.hasTransparency,
+                    brand_kit_created: true,
+                    image_improved: preparedLogo.improved,
                 })
             }
 
@@ -174,6 +211,7 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
         } finally {
             setUploading(false)
             setExtractingColor(false)
+            event.target.value = ''
         }
     }
 
@@ -199,7 +237,7 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
                 )}
                 <div className="absolute inset-0 flex items-center justify-center bg-black/45 opacity-0 transition-opacity group-hover:opacity-100">
                     {(uploading || extractingColor) ? (
-                        <Loader2 className="h-6 w-6 text-white animate-spin" />
+                        <Loader2 className="h-6 w-6 animate-spin text-white" />
                     ) : (
                         <Camera className="h-6 w-6 text-white" />
                     )}
@@ -218,7 +256,7 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
                 type="button"
                 variant="outline"
                 size="sm"
-                className="text-xs border-primary/20 text-primary hover:bg-primary/10"
+                className="border-primary/20 text-xs text-primary hover:bg-primary/10"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading || extractingColor}
             >

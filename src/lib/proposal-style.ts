@@ -1,3 +1,5 @@
+import { parseBrandKit } from '@/lib/brand-kit'
+
 export const PROPOSAL_MODELS = [
     {
         id: 'modern',
@@ -125,6 +127,10 @@ export function parseProposalIdentitySettings(
         if (!value || typeof value !== 'object' || Array.isArray(value)) return fallback
 
         const record = value as Record<string, unknown>
+        const brandKit = parseBrandKit(record.brandKit)
+        const whatsappMessageTemplate = typeof record.whatsappMessageTemplate === 'string'
+            ? record.whatsappMessageTemplate.trim()
+            : ''
 
         return {
             visualTone: normalizeVisualTone(typeof record.visualTone === 'string' ? record.visualTone : undefined),
@@ -132,9 +138,7 @@ export function parseProposalIdentitySettings(
             quoteFont: normalizeProposalFont(
                 typeof record.quote_font_family === 'string' ? record.quote_font_family : fallbackFont,
             ),
-            whatsappMessageTemplate: typeof record.whatsappMessageTemplate === 'string'
-                ? record.whatsappMessageTemplate.trim()
-                : '',
+            whatsappMessageTemplate: whatsappMessageTemplate || brandKit?.whatsappMessageTemplate || '',
         }
     } catch {
         return fallback

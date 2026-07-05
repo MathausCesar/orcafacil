@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { cn } from '@/lib/utils'
 import { DEFAULT_QUOTE_APPROVAL_MESSAGE_TEMPLATE } from '@/lib/quote-share'
+import { getBrandKitFromQuoteSettings } from '@/lib/brand-kit'
 import {
     PROPOSAL_FONTS,
     ProposalFont,
@@ -27,6 +28,7 @@ export interface QuoteSettingsData {
     logoPosition?: 'header' | 'footer'
     logoAlignment?: 'left' | 'center' | 'right'
     whatsappMessageTemplate?: string
+    brandKit?: unknown
 }
 
 interface QuoteSettingsProps {
@@ -58,6 +60,8 @@ function UpgradeLockOverlay({ title, description }: { title: string; description
 
 export function QuoteSettings({ settings, plan, onChange }: QuoteSettingsProps) {
     const isFree = isFreePlan(plan)
+    const brandKit = getBrandKitFromQuoteSettings(settings)
+    const suggestedMessage = brandKit?.whatsappMessageTemplate || DEFAULT_QUOTE_APPROVAL_MESSAGE_TEMPLATE
     const parsedSettings: QuoteSettingsData = {
         ...settings,
         visualTone: normalizeVisualTone(settings?.visualTone),
@@ -155,7 +159,7 @@ export function QuoteSettings({ settings, plan, onChange }: QuoteSettingsProps) 
                         value={currentSettings.whatsappMessageTemplate || ''}
                         disabled={isFree}
                         onChange={(event) => updateSettings('whatsappMessageTemplate', event.target.value.slice(0, 700))}
-                        placeholder={DEFAULT_QUOTE_APPROVAL_MESSAGE_TEMPLATE}
+                        placeholder={suggestedMessage}
                         className="min-h-44 resize-y focus-visible:ring-primary"
                     />
                     <div className="rounded-xl border bg-muted/30 p-3 text-xs leading-5 text-muted-foreground">

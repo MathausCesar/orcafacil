@@ -6,6 +6,7 @@ import type { Database, Json } from "@/types/database.types"
 import {
     getDefaultProfessionalContext,
     getInitialCatalogForOnboarding,
+    getRecommendedProposalModelForOnboarding,
     normalizeCatalogItemName,
     type OnboardingPricingTier,
 } from "@/lib/onboarding-catalog"
@@ -160,6 +161,7 @@ export async function applyOnboardingKit(
         }
 
         const professionalContext = getDefaultProfessionalContext(category.slug, specialties)
+        const recommendedLayout = getRecommendedProposalModelForOnboarding(category.slug, specialties)
 
         // 2. Prepare a curated catalog for the selected trade.
         // This avoids broad category templates creating duplicated or incoherent items.
@@ -219,6 +221,8 @@ export async function applyOnboardingKit(
                 specialties,
                 pricingTier,
                 professionalContext,
+                recommendedLayout: recommendedLayout.model,
+                recommendedLayoutReason: recommendedLayout.reason,
                 completedAt: new Date().toISOString(),
             },
         }
@@ -242,6 +246,8 @@ export async function applyOnboardingKit(
             // Save theme color extracted from logo to personalize quote appearance
             if (businessProfile.themeColor) profileDataToUpsert.theme_color = businessProfile.themeColor;
         }
+
+        profileDataToUpsert.layout_style = recommendedLayout.model;
 
         const { error: upsertError } = await supabase
             .from("profiles")

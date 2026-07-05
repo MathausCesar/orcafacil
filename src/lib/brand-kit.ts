@@ -36,7 +36,7 @@ export type BrandKit = {
 }
 
 export const DEFAULT_BRAND_KIT_MESSAGE_TEMPLATE =
-    'Oi {cliente}, tudo bem? Aqui e {empresa}. Preparei sua proposta com escopo, prazo e valor total ({total}) em um link seguro. Voce pode conferir e aprovar por aqui: {link}{validade_linha}'
+    'Oi {cliente}, tudo bem? Aqui e {empresa}. Preparei sua proposta com escopo, prazo, validade e valor total ({total}) em um link seguro. Voce pode conferir e aprovar por aqui: {link}\n{validade_linha}'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return Boolean(value && typeof value === 'object' && !Array.isArray(value))

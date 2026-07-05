@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
 import {
     Select,
     SelectContent,
@@ -17,7 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import { Trash2, Save, ArrowLeft, FileText, Loader2, Settings2, Wallet, Clock, CheckCircle2, AlignLeft, LayoutTemplate, Check, Package, Wrench, Lock, Sparkles } from 'lucide-react'
+import { Trash2, Save, ArrowLeft, FileText, Loader2, Settings2, Wallet, Clock, CheckCircle2, AlignLeft, LayoutTemplate, Check, Package, Wrench, Lock, Sparkles, Gauge } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { ClientAutocomplete } from '@/components/clients/client-autocomplete'
@@ -26,6 +27,12 @@ import { FREE_PROPOSAL_MODEL, PROPOSAL_MODELS, isFreePlan } from '@/lib/proposal
 import { PROFESSIONAL_CONTEXTS, getProfessionalContext } from '@/lib/professional-context'
 import { usePostHog } from 'posthog-js/react'
 import { addExceptionStep, captureException } from '@/lib/analytics'
+import {
+    getLayoutRecommendationForContext,
+    getProposalModelName,
+    type LayoutRecommendation,
+} from '@/lib/profession-layout-recommendations'
+import { calculateProposalReadiness } from '@/lib/proposal-readiness'
 
 type NumericQuoteItemField = 'quantity' | 'unitPrice'
 
@@ -94,9 +101,10 @@ interface QuoteFormProps {
         accentColor: string | null
         hasLogoAnalysis: boolean
     }
+    layoutRecommendation?: LayoutRecommendation | null
 }
 
-export function QuoteForm({ initialData, quickMode = false, plan, brandPreview }: QuoteFormProps) {
+export function QuoteForm({ initialData, quickMode = false, plan, brandPreview, layoutRecommendation }: QuoteFormProps) {
     const isFree = isFreePlan(plan)
     const [items, setItems] = useState<QuoteItem[]>(initialData?.items || [])
     const [loading, setLoading] = useState(false)
@@ -125,6 +133,7 @@ export function QuoteForm({ initialData, quickMode = false, plan, brandPreview }
     const [layoutStyle, setLayoutStyle] = useState(isFree ? FREE_PROPOSAL_MODEL : initialData?.layoutStyle || FREE_PROPOSAL_MODEL)
     const [professionalContext, setProfessionalContext] = useState(initialData?.professionalContext || 'general')
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(!quickMode)
+    const [layoutManuallyChanged, setLayoutManuallyChanged] = useState(Boolean(initialData?.id))
 
     const router = useRouter()
     const posthog = usePostHog()
@@ -220,6 +229,10 @@ export function QuoteForm({ initialData, quickMode = false, plan, brandPreview }
         if (!notes.trim()) {
             setNotes(context.defaultNotes)
         }
+
+        if (!isFree && !layoutManuallyChanged && !initialData?.id) {
+            setLayoutStyle(getLayoutRecommendationForContext(context.id).model)
+        }
     }
 
     const handleSubmit = async (formData: FormData) => {
@@ -289,6 +302,10 @@ export function QuoteForm({ initialData, quickMode = false, plan, brandPreview }
             has_timeline: showTimeline,
             has_payment_options: showPaymentOptions,
             payment_method_count: paymentMethods.length,
+            proposal_readiness_score: readiness.score,
+            layout_recommendation_model: activeRecommendation.model,
+            layout_recommendation_source: activeRecommendation.source,
+            layout_matches_recommendation: (isFree ? FREE_PROPOSAL_MODEL : layoutStyle) === activeRecommendation.model,
         }
 
         addExceptionStep(initialData?.id ? 'quote_update_started' : 'quote_create_started', quoteAnalyticsPayload)
@@ -346,6 +363,28 @@ export function QuoteForm({ initialData, quickMode = false, plan, brandPreview }
     }
 
     const total = items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0)
+    const contextRecommendation = getLayoutRecommendationForContext(professionalContext)
+    const activeRecommendation = layoutRecommendation?.professionalContext === professionalContext
+        ? layoutRecommendation
+        : contextRecommendation
+    const activeLayout = isFree ? FREE_PROPOSAL_MODEL : layoutStyle
+    const readiness = calculateProposalReadiness({
+        clientName,
+        clientPhone,
+        items,
+        total,
+        expirationDate: date,
+        paymentTerms,
+        notes,
+        showDetailedItems,
+        showTimeline,
+        estimatedDays,
+        showPaymentOptions,
+        paymentMethods,
+        hasLogo: Boolean(brandPreview?.logoUrl),
+        hasLogoAnalysis: Boolean(brandPreview?.hasLogoAnalysis),
+        layoutMatchesRecommendation: activeLayout === activeRecommendation.model,
+    })
 
     return (
         <form action={handleSubmit} className="pb-40 lg:pb-0">
@@ -567,6 +606,51 @@ export function QuoteForm({ initialData, quickMode = false, plan, brandPreview }
                             </CardContent>
                         </Card>
 
+                        <Card className="border-0 shadow-sm ring-1 ring-border">
+                            <CardHeader className="pb-3 border-b border-border">
+                                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                                    <div className="p-2 bg-primary/10 text-primary rounded-lg">
+                                        <Gauge className="h-4 w-4" />
+                                    </div>
+                                    Pontuacao da proposta
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-5 space-y-4">
+                                <div>
+                                    <div className="flex items-end justify-between gap-3">
+                                        <div>
+                                            <p className="text-2xl font-black tracking-tight text-foreground">
+                                                {readiness.score}% pronta
+                                            </p>
+                                            <p className="text-xs leading-5 text-muted-foreground">
+                                                Sua proposta esta {readiness.label}.
+                                            </p>
+                                        </div>
+                                        <span className="rounded-full border bg-muted px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                                            Confianca
+                                        </span>
+                                    </div>
+                                    <Progress value={readiness.score} className="mt-3 h-2" />
+                                </div>
+
+                                {readiness.improvements.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {readiness.improvements.slice(0, 3).map((item) => (
+                                            <div key={item.id} className="flex gap-2 text-xs leading-5 text-muted-foreground">
+                                                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+                                                {item.label}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs leading-5 text-emerald-800">
+                                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                                        A proposta ja tem os pontos principais para passar seguranca ao cliente.
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
                         {/* Summary & Save */}
                         <Card className="order-last lg:order-first border-0 shadow-lg ring-1 ring-border bg-slate-900 dark:bg-card text-white dark:text-card-foreground overflow-hidden">
                             <CardContent className="p-6">
@@ -611,15 +695,28 @@ export function QuoteForm({ initialData, quickMode = false, plan, brandPreview }
                             <CardContent className="p-0">
                                 <div className="divide-y divide-border">
                                     {/* Layout Style Selector */}
-                                    <div className="p-4 space-y-3">
-                                        <div className="flex items-center gap-3 mb-3">
+                                     <div className="p-4 space-y-3">
+                                         <div className="flex items-center gap-3 mb-3">
                                             <div className="p-2 bg-primary/10 text-primary rounded-lg">
                                                 <LayoutTemplate className="h-4 w-4" />
                                             </div>
-                                            <Label className="font-medium">Modelo visual</Label>
+                                             <Label className="font-medium">Modelo visual</Label>
+                                         </div>
+                                        <div className="rounded-xl border border-primary/15 bg-primary/5 p-3">
+                                            <div className="flex items-start gap-3">
+                                                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                                                <div className="min-w-0">
+                                                    <p className="text-xs font-black text-foreground">
+                                                        {activeRecommendation.title}
+                                                    </p>
+                                                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                                                        Sugerido: {getProposalModelName(activeRecommendation.model)}. {activeRecommendation.evidence || activeRecommendation.summary}
+                                                    </p>
+                                                </div>
+                                            </div>
                                         </div>
-                                        {isFree && (
-                                            <div className="rounded-xl border bg-muted/40 p-3 text-xs leading-5 text-muted-foreground">
+                                         {isFree && (
+                                             <div className="rounded-xl border bg-muted/40 p-3 text-xs leading-5 text-muted-foreground">
                                                 <div className="flex items-start gap-2">
                                                     <Lock className="mt-0.5 h-4 w-4 shrink-0" />
                                                     <p>
@@ -636,21 +733,29 @@ export function QuoteForm({ initialData, quickMode = false, plan, brandPreview }
                                                 return (
                                                     <button
                                                         key={l.id}
-                                                        type="button"
-                                                        disabled={locked}
-                                                        onClick={() => {
-                                                            if (!locked) setLayoutStyle(l.id)
-                                                        }}
+                                                         type="button"
+                                                         disabled={locked}
+                                                         onClick={() => {
+                                                            if (!locked) {
+                                                                setLayoutManuallyChanged(true)
+                                                                setLayoutStyle(l.id)
+                                                            }
+                                                         }}
                                                         className={`relative p-3 rounded-xl border-2 text-center transition-all text-xs font-semibold ${selected
                                                             ? 'border-primary bg-primary/5 text-primary'
                                                             : 'border-border bg-card text-muted-foreground hover:border-primary/30'
                                                             } ${locked ? 'cursor-not-allowed opacity-60 hover:border-border' : ''}`}
                                                     >
-                                                        {selected && <Check className="absolute top-1.5 right-1.5 h-3 w-3 text-primary" />}
-                                                        {locked && <Lock className="absolute top-1.5 right-1.5 h-3 w-3 text-muted-foreground" />}
-                                                        <span>{l.name}</span>
-                                                        {locked && <span className="mt-1 block text-[10px] uppercase tracking-wide">Pro</span>}
-                                                    </button>
+                                                         {selected && <Check className="absolute top-1.5 right-1.5 h-3 w-3 text-primary" />}
+                                                         {locked && <Lock className="absolute top-1.5 right-1.5 h-3 w-3 text-muted-foreground" />}
+                                                         <span>{l.name}</span>
+                                                        {activeRecommendation.model === l.id && (
+                                                            <span className="mt-1 block text-[10px] uppercase tracking-wide text-primary">
+                                                                Recomendado
+                                                            </span>
+                                                        )}
+                                                         {locked && <span className="mt-1 block text-[10px] uppercase tracking-wide">Pro</span>}
+                                                     </button>
                                                 )
                                             })}
                                         </div>

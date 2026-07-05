@@ -20,6 +20,7 @@ import {
 import { MarketingFooter } from "@/components/marketing/marketing-footer"
 import { CampaignRegisterLink } from "@/components/marketing/campaign-register-link"
 import { LogoDemoPlayground } from "@/components/marketing/logo-demo-playground"
+import { BeforeAfterComparisonSection } from "@/components/marketing/before-after-comparison-section"
 
 const CAMPAIGN = "sniper_mecanicos"
 const BASE_URL = "https://www.zacly.com.br/c/mecanicos"
@@ -296,6 +297,12 @@ export default function MechanicLandingPage() {
                     </div>
                 </div>
             </section>
+
+            <BeforeAfterComparisonSection
+                campaign={CAMPAIGN}
+                content="before_after_mecanicos"
+                industryLabel="oficina mecanica"
+            />
 
             <section className="border-y border-white/10 bg-zinc-900 px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
                 <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">

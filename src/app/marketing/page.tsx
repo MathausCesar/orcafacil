@@ -4,6 +4,7 @@ import { PainAgitationSection } from "@/components/marketing/pain-agitation-sect
 import { ProfessionFitSection } from "@/components/marketing/profession-fit-section";
 import { FeatureShowcase } from "@/components/marketing/feature-showcase";
 import { LogoPersonalizationSection } from "@/components/marketing/logo-personalization-section";
+import { BeforeAfterComparisonSection } from "@/components/marketing/before-after-comparison-section";
 import { TrustSection } from "@/components/marketing/trust-section";
 import { PricingSection } from "@/components/marketing/pricing-section";
 import { FaqSection } from "@/components/marketing/faq-section";
@@ -159,6 +160,7 @@ export default function MarketingPage() {
                 <MarketingHeader />
                 <HeroSection />
                 <PainAgitationSection />
+                <BeforeAfterComparisonSection industryLabel="servico autonomo" />
                 <ProfessionFitSection />
                 <LogoPersonalizationSection />
                 <FeatureShowcase />

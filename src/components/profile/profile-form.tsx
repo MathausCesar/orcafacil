@@ -15,6 +15,7 @@ import { LayoutSelector } from '@/components/profile/layout-selector'
 import { QuoteSettings, QuoteSettingsData } from '@/components/profile/quote-settings'
 import { buildBrandKitFromLogoAnalysis, getBrandKitFromQuoteSettings, type BrandKit } from '@/lib/brand-kit'
 import { DEFAULT_PROPOSAL_ACCENT, FREE_PROPOSAL_MODEL, isFreePlan } from '@/lib/proposal-style'
+import { getLayoutRecommendationFromQuoteSettings } from '@/lib/profession-layout-recommendations'
 import { toast } from 'sonner'
 import type { LogoIdentityAnalysis } from '@/lib/color-extractor'
 
@@ -130,6 +131,7 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
     const [quoteSettings, setQuoteSettings] = useState<QuoteSettingsData | null>(getInitialSettings())
     const [logoAnalysis, setLogoAnalysis] = useState<LogoIdentityAnalysis | null>(getInitialLogoAnalysis())
     const [brandKit, setBrandKit] = useState<BrandKit | null>(getInitialBrandKit())
+    const onboardingLayoutRecommendation = getLayoutRecommendationFromQuoteSettings(initialProfile?.quote_settings)
     const showCompany = section === 'all' || section === 'company'
     const showProposal = section === 'all' || section === 'proposal'
     const saveLabel = section === 'proposal' ? 'Salvar proposta' : 'Salvar perfil'
@@ -453,7 +455,7 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
                                     if (!isFree) setThemeColor(value)
                                 }}
                                 plan={initialProfile?.plan}
-                                recommendedLayout={logoAnalysis?.recommendedModel}
+                                recommendedLayout={logoAnalysis?.recommendedModel || onboardingLayoutRecommendation?.model}
                             />
 
                             <div className="w-full h-px bg-border my-6"></div>

@@ -731,6 +731,7 @@ function drawApprovalSection(
     skin: PdfSkin,
     accent: string,
     fonts: ReturnType<typeof getPdfFonts>,
+    trustCopy: string,
 ) {
     const left = doc.page.margins.left
     const right = doc.page.width - doc.page.margins.right
@@ -750,7 +751,7 @@ function drawApprovalSection(
         width: textWidth - 52,
     })
     doc.fillColor('#475569').font(fonts.regular).fontSize(9.5).text(
-        'O prestador nao aprova a propria proposta. O cliente deve usar o link publico ou o QR code abaixo para aprovar, recusar ou pedir ajustes.',
+        pdfSafeText(trustCopy),
         left + 70,
         y + 42,
         { width: textWidth - 52, lineGap: 2 },
@@ -860,11 +861,13 @@ function drawFreePlanWatermark(doc: PDFKit.PDFDocument, fonts: ReturnType<typeof
 async function renderQuotePdf(quote: QuoteWithItems, profile: ProfileRow | null, approvalUrl: string) {
     const businessName = pdfSafeText(profile?.business_name, 'Zacly')
     const isFree = isFreePlan(profile?.plan)
-    const accent = isFree ? DEFAULT_PROPOSAL_ACCENT : normalizeColor(profile?.theme_color || profile?.primary_color)
     const identitySettings = applyProposalIdentityPlanLimits(
         parseIdentitySettings(profile?.quote_settings, profile?.quote_font_family),
         profile?.plan,
     )
+    const accent = isFree
+        ? DEFAULT_PROPOSAL_ACCENT
+        : normalizeColor(identitySettings.approvalAccentColor || profile?.theme_color || profile?.primary_color)
     const proposalModel = resolveProposalModelForPlan(profile?.plan, quote.layout_style || profile?.layout_style)
     const fonts = getPdfFonts(identitySettings.quoteFont)
     const skin = getPdfSkin(proposalModel, accent, identitySettings.visualTone)
@@ -896,7 +899,7 @@ async function renderQuotePdf(quote: QuoteWithItems, profile: ProfileRow | null,
     drawTimelineSection(doc, quote, skin, accent, fonts)
     drawSummary(doc, quote, skin, fonts)
     drawPaymentSection(doc, quote, profile, accent, fonts)
-    drawApprovalSection(doc, approvalUrl, approvalQr, skin, accent, fonts)
+    drawApprovalSection(doc, approvalUrl, approvalQr, skin, accent, fonts, identitySettings.approvalTrustCopy)
     drawNotesAndFooter(doc, quote, identitySettings.footerText, accent, fonts, isFree)
 
     const range = doc.bufferedPageRange()

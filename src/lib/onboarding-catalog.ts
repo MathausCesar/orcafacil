@@ -2,6 +2,8 @@ import {
     ProfessionalContextId,
     normalizeProfessionalContext,
 } from '@/lib/professional-context'
+import { normalizeProposalModel, type ProposalModelId } from '@/lib/proposal-style'
+import { getLayoutRecommendationForContext } from '@/lib/profession-layout-recommendations'
 
 export type OnboardingPricingTier = 'autonomous' | 'standard' | 'premium'
 
@@ -18,6 +20,8 @@ export type OnboardingQuoteSettings = {
     specialties: string[]
     pricingTier: OnboardingPricingTier
     professionalContext: ProfessionalContextId
+    recommendedLayout: ProposalModelId
+    recommendedLayoutReason: string
     completedAt: string
 }
 
@@ -37,7 +41,7 @@ export const ONBOARDING_SPECIALTIES_BY_CATEGORY: Record<string, OnboardingSpecia
     construction: [
         { label: 'Pedreiro / Alvenaria', value: 'pedreiro', professionalContext: 'construction' },
         { label: 'Pintura e Acabamento', value: 'pintor', professionalContext: 'painter' },
-        { label: 'Marceneiro / Moveis Planejados', value: 'marceneiro', professionalContext: 'construction' },
+        { label: 'Marceneiro / Moveis Planejados', value: 'marceneiro', professionalContext: 'woodworker' },
         { label: 'Encanador / Hidraulica', value: 'encanador', professionalContext: 'construction' },
         { label: 'Marido de Aluguel', value: 'marido_aluguel', professionalContext: 'construction' },
         { label: 'Gesso e Drywall', value: 'gesso', professionalContext: 'construction' },
@@ -727,6 +731,11 @@ export function getDefaultProfessionalContext(categorySlug: string | null | unde
     return fallbackByCategory[categorySlug || ''] || 'general'
 }
 
+export function getRecommendedProposalModelForOnboarding(categorySlug: string | null | undefined, specialties: string[]) {
+    const professionalContext = getDefaultProfessionalContext(categorySlug, specialties)
+    return getLayoutRecommendationForContext(professionalContext, 'onboarding')
+}
+
 export function parseOnboardingQuoteSettings(raw: unknown): Partial<OnboardingQuoteSettings> | null {
     if (!raw) return null
 
@@ -741,6 +750,9 @@ export function parseOnboardingQuoteSettings(raw: unknown): Partial<OnboardingQu
         return {
             ...onboarding,
             professionalContext: normalizeProfessionalContext(onboarding.professionalContext),
+            recommendedLayout: typeof onboarding.recommendedLayout === 'string'
+                ? normalizeProposalModel(onboarding.recommendedLayout)
+                : undefined,
         }
     } catch {
         return null

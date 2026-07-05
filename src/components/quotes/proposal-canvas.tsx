@@ -325,13 +325,16 @@ export function ProposalCanvas({
 }: ProposalCanvasProps) {
     const isFree = isFreePlan(profile?.plan)
     const businessName = profile?.business_name || 'Zacly'
-    const themeColor = isFree ? DEFAULT_PROPOSAL_ACCENT : normalizeColor(profile?.theme_color || profile?.primary_color)
     const identitySettings = applyProposalIdentityPlanLimits(parseIdentitySettings(profile?.quote_settings), profile?.plan)
+    const themeColor = isFree
+        ? DEFAULT_PROPOSAL_ACCENT
+        : normalizeColor(identitySettings.approvalAccentColor || profile?.theme_color || profile?.primary_color)
     const proposalModel = resolveProposalModelForPlan(profile?.plan, quote.layout_style || profile?.layout_style)
     const visualTone = normalizeVisualTone(identitySettings.visualTone)
     const proposalFont = normalizeProposalFont(identitySettings.quoteFont)
     const skin = proposalSkins[proposalModel]
     const footerText = identitySettings.footerText.trim()
+    const approvalTrustCopy = identitySettings.approvalTrustCopy || 'Proposta organizada com escopo, prazo, valor e aprovacao segura.'
     const isDocumentModel = proposalModel === 'classic' || proposalModel === 'minimalist'
     const isAgencyModel = proposalModel === 'agency'
     const status = quote.status || 'draft'
@@ -373,6 +376,11 @@ export function ProposalCanvas({
                                     <ArrowLeft className="h-5 w-5" />
                                 </Button>
                             </Link>
+                        )}
+                        {!isOwner && profile?.logo_url && (
+                            <div className="relative h-9 w-14 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white p-1.5">
+                                <Image src={profile.logo_url} alt={businessName} fill className="object-contain p-1" unoptimized />
+                            </div>
                         )}
                         <div className="min-w-0">
                             <p className="truncate text-sm font-bold text-slate-900">
@@ -660,7 +668,7 @@ export function ProposalCanvas({
                                     <div>
                                         <h3 className="text-xl font-black tracking-tight text-slate-950">Aprovação segura</h3>
                                         <p className="mt-1 text-sm leading-6 text-slate-500">
-                                            O prestador não aprova a própria proposta. A decisão fica no link público enviado ao cliente.
+                                            {approvalTrustCopy}
                                         </p>
                                     </div>
                                 </div>
@@ -672,6 +680,8 @@ export function ProposalCanvas({
                                         clientName={quote.client_name}
                                         themeColor={themeColor}
                                         totalFormatted={totalFormatted}
+                                        layoutStyle={proposalModel}
+                                        professionalContext={professionalContext.id}
                                     />
                                 ) : isOwner ? (
                                     <>

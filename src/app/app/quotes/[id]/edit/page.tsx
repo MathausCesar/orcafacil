@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { QuoteForm, type QuoteItem } from '@/components/quotes/quote-form'
 import { FREE_PROPOSAL_MODEL, isFreePlan } from '@/lib/proposal-style'
+import { getLayoutRecommendationForContext } from '@/lib/profession-layout-recommendations'
 
 interface PageProps {
     params: Promise<{ id: string }>
@@ -108,6 +109,7 @@ export default async function EditQuotePage(props: PageProps) {
             <QuoteForm
                 initialData={initialData}
                 plan={profile?.plan}
+                layoutRecommendation={getLayoutRecommendationForContext(quote.professional_context)}
                 brandPreview={{
                     businessName: profile?.business_name || null,
                     logoUrl: profile?.logo_url || null,

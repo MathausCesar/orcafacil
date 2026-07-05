@@ -4,9 +4,10 @@ import { useOnboarding } from "@/components/onboarding/onboarding-context";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { getSpecialtiesForCategory } from "@/lib/onboarding-catalog";
+import { getDefaultProfessionalContext, getSpecialtiesForCategory } from "@/lib/onboarding-catalog";
+import { getLayoutRecommendationForContext, getProposalModelName } from "@/lib/profession-layout-recommendations";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, LayoutTemplate } from "lucide-react";
 
 export function WizardStep2() {
     const { data, updateData, nextStep, prevStep } = useOnboarding();
@@ -14,6 +15,8 @@ export function WizardStep2() {
     if (!data.category) return null;
 
     const options = getSpecialtiesForCategory(data.category.slug);
+    const recommendedContext = getDefaultProfessionalContext(data.category.slug, data.specialties);
+    const recommendation = getLayoutRecommendationForContext(recommendedContext, "onboarding");
 
     const handleToggle = (value: string) => {
         const current = data.specialties;
@@ -63,6 +66,24 @@ export function WizardStep2() {
                     <p className="mt-1 text-sm text-muted-foreground">
                         Volte e escolha um ramo parecido ou siga pelo perfil geral.
                     </p>
+                </div>
+            )}
+
+            {data.specialties.length > 0 && (
+                <div className="rounded-xl border border-primary/15 bg-primary/5 p-4">
+                    <div className="flex items-start gap-3">
+                        <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                            <LayoutTemplate className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-sm font-bold text-foreground">
+                                Modelo recomendado: {getProposalModelName(recommendation.model)}
+                            </p>
+                            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                                {recommendation.title}. {recommendation.summary} Voce pode ajustar depois.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             )}
 

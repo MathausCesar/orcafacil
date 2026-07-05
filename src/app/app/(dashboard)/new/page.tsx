@@ -4,6 +4,12 @@ import { getActiveOrganizationId } from '@/lib/get-active-organization'
 import { FREE_PROPOSAL_MODEL, isFreePlan, normalizeProposalModel } from '@/lib/proposal-style'
 import { getProfessionalContext } from '@/lib/professional-context'
 import { parseOnboardingQuoteSettings } from '@/lib/onboarding-catalog'
+import {
+    getLayoutRecommendationForContext,
+    getLayoutRecommendationFromQuoteHistory,
+    getLayoutRecommendationFromQuoteSettings,
+    type QuoteLayoutHistoryRecord,
+} from '@/lib/profession-layout-recommendations'
 
 type NewQuotePageProps = {
     searchParams: Promise<{ clientName?: string; quick?: string }>
@@ -29,7 +35,7 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
     const { data: { user } } = await supabase.auth.getUser()
     const orgId = user ? await getActiveOrganizationId(supabase) : null
 
-    const [profileResult, quoteCountResult] = user
+    const [profileResult, quoteCountResult, quoteHistoryResult] = user
         ? await Promise.all([
             supabase
                 .from('profiles')
@@ -42,8 +48,16 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
                     .select('id', { count: 'exact', head: true })
                     .eq('organization_id', orgId)
                 : Promise.resolve({ count: 0 }),
+            orgId
+                ? supabase
+                    .from('quotes')
+                    .select('layout_style, professional_context, status')
+                    .eq('organization_id', orgId)
+                    .in('status', ['approved', 'rejected', 'changes_requested', 'in_progress', 'completed'])
+                    .limit(120)
+                : Promise.resolve({ data: [] as QuoteLayoutHistoryRecord[] }),
         ])
-        : [{ data: null }, { count: 0 }]
+        : [{ data: null }, { count: 0 }, { data: [] as QuoteLayoutHistoryRecord[] }]
 
     const profile = profileResult.data
     const isFree = isFreePlan(profile?.plan)
@@ -53,11 +67,22 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
         : null
     const professionalContext = getProfessionalContext(onboardingSettings?.professionalContext)
     const suggestedPaymentMethods = [...professionalContext.suggestedPaymentMethods]
+    const onboardingRecommendation = getLayoutRecommendationFromQuoteSettings(profile?.quote_settings)
+    const tradeRecommendation = getLayoutRecommendationForContext(professionalContext.id)
+    const historyRecommendation = getLayoutRecommendationFromQuoteHistory(
+        (quoteHistoryResult.data || []) as QuoteLayoutHistoryRecord[],
+        professionalContext.id,
+    )
+    const layoutRecommendation = historyRecommendation || onboardingRecommendation || tradeRecommendation
+    const suggestedLayout = normalizeProposalModel(
+        layoutRecommendation.model || onboardingSettings?.recommendedLayout || profile?.layout_style,
+    )
 
     return (
         <QuoteForm
             quickMode={quickMode}
             plan={profile?.plan}
+            layoutRecommendation={layoutRecommendation}
             brandPreview={{
                 businessName: profile?.business_name || null,
                 logoUrl: profile?.logo_url || null,
@@ -66,7 +91,7 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
             }}
             initialData={{
                 clientName: clientName || '',
-                layoutStyle: isFree ? FREE_PROPOSAL_MODEL : normalizeProposalModel(profile?.layout_style),
+                layoutStyle: isFree ? FREE_PROPOSAL_MODEL : suggestedLayout,
                 professionalContext: quickMode ? professionalContext.id : 'general',
                 showTimeline: quickMode,
                 estimatedDays: quickMode ? String(professionalContext.defaultEstimatedDays) : '',

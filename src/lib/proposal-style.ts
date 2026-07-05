@@ -67,6 +67,9 @@ export type ProposalIdentitySettings = {
     footerText: string
     quoteFont: ProposalFont
     whatsappMessageTemplate: string
+    approvalAccentColor: string | null
+    approvalTrustCopy: string
+    brandPalette: string[]
 }
 
 export const DEFAULT_PROPOSAL_IDENTITY_SETTINGS: ProposalIdentitySettings = {
@@ -74,6 +77,9 @@ export const DEFAULT_PROPOSAL_IDENTITY_SETTINGS: ProposalIdentitySettings = {
     footerText: '',
     quoteFont: 'Inter',
     whatsappMessageTemplate: '',
+    approvalAccentColor: null,
+    approvalTrustCopy: 'Proposta organizada com escopo, prazo, valor e aprovacao segura.',
+    brandPalette: [],
 }
 
 export const PROPOSAL_TONE_INTRO: Record<VisualToneId, string> = {
@@ -139,6 +145,9 @@ export function parseProposalIdentitySettings(
                 typeof record.quote_font_family === 'string' ? record.quote_font_family : fallbackFont,
             ),
             whatsappMessageTemplate: whatsappMessageTemplate || brandKit?.whatsappMessageTemplate || '',
+            approvalAccentColor: brandKit?.approvalPage.accentColor || brandKit?.accentColor || null,
+            approvalTrustCopy: brandKit?.approvalPage.trustCopy || DEFAULT_PROPOSAL_IDENTITY_SETTINGS.approvalTrustCopy,
+            brandPalette: brandKit?.palette || [],
         }
     } catch {
         return fallback

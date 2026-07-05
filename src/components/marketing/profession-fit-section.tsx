@@ -2,44 +2,58 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Hammer, PlugZap, Wrench, Paintbrush, Home, Snowflake, ShieldCheck } from "lucide-react";
+import { Hammer, PlugZap, Wrench, Paintbrush, Home, Snowflake, ShieldCheck, LayoutTemplate, type LucideIcon } from "lucide-react";
+import { getLayoutRecommendationForContext, getProposalModelName } from "@/lib/profession-layout-recommendations";
+import type { ProfessionalContextId } from "@/lib/professional-context";
 
-const professions = [
+const professions: Array<{
+    icon: LucideIcon
+    title: string
+    href: string
+    details: string
+    context: ProfessionalContextId
+}> = [
     {
         icon: Wrench,
         title: "Mecanicos",
         href: "/c/mecanicos",
         details: "Pecas, mao de obra, prazo, garantia e aprovacao antes de comecar.",
+        context: "mechanic",
     },
     {
         icon: Hammer,
         title: "Marceneiros",
         href: "/c/marceneiros",
         details: "Medidas, ferragens, etapas, entrada, entrega e condicoes em um PDF claro.",
+        context: "woodworker",
     },
     {
         icon: PlugZap,
         title: "Eletricistas",
         href: "/c/eletricistas",
         details: "Visita, materiais, execucao, urgencia e validade do orcamento bem explicados.",
+        context: "electrician",
     },
     {
         icon: Paintbrush,
         title: "Pintores",
         href: "/c/pintores",
         details: "Ambientes, metragem, tinta, numero de demaos, preparacao e prazo.",
+        context: "painter",
     },
     {
         icon: Snowflake,
         title: "Tecnicos e instaladores",
         href: "/c/assistencia-tecnica",
         details: "Diagnostico, deslocamento, instalacao, peca, garantia e proximos passos.",
+        context: "hvac",
     },
     {
         icon: Home,
         title: "Prestadores autonomos",
         href: "/c/prestadores-autonomos",
         details: "Servicos por etapa, materiais inclusos, pagamento combinado e aceite do cliente.",
+        context: "general",
     },
 ];
 
@@ -84,21 +98,34 @@ export function ProfessionFitSection() {
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2">
-                        {professions.map((profession, index) => (
-                            <Link key={profession.title} href={profession.href} className="block">
-                                <motion.div
-                                    initial={{ opacity: 0, y: 24 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true, margin: "-60px" }}
-                                    transition={{ duration: 0.45, delay: index * 0.05 }}
-                                    className="h-full rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:border-emerald-500/30 hover:bg-emerald-500/5"
-                                >
-                                    <profession.icon className="h-6 w-6 text-emerald-300 mb-5" />
-                                    <h3 className="text-lg font-black text-white">{profession.title}</h3>
-                                    <p className="mt-2 text-sm leading-relaxed text-zinc-400">{profession.details}</p>
-                                </motion.div>
-                            </Link>
-                        ))}
+                        {professions.map((profession, index) => {
+                            const recommendation = getLayoutRecommendationForContext(profession.context)
+
+                            return (
+                                <Link key={profession.title} href={profession.href} className="block">
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 24 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true, margin: "-60px" }}
+                                        transition={{ duration: 0.45, delay: index * 0.05 }}
+                                        className="h-full rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:border-emerald-500/30 hover:bg-emerald-500/5"
+                                    >
+                                        <profession.icon className="h-6 w-6 text-emerald-300 mb-5" />
+                                        <h3 className="text-lg font-black text-white">{profession.title}</h3>
+                                        <p className="mt-2 text-sm leading-relaxed text-zinc-400">{profession.details}</p>
+                                        <div className="mt-5 rounded-xl border border-emerald-400/15 bg-emerald-400/[0.07] p-3">
+                                            <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.16em] text-emerald-200">
+                                                <LayoutTemplate className="h-3.5 w-3.5" />
+                                                Modelo {recommendation.badge}
+                                            </div>
+                                            <p className="mt-2 text-xs leading-5 text-zinc-300">
+                                                Recomendado: {getProposalModelName(recommendation.model)}. {recommendation.summary}
+                                            </p>
+                                        </div>
+                                    </motion.div>
+                                </Link>
+                            )
+                        })}
                     </div>
                 </div>
             </div>

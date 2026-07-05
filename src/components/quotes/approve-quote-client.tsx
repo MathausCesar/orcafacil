@@ -23,12 +23,22 @@ interface ApproveQuoteClientProps {
     clientName: string
     themeColor: string
     totalFormatted: string
+    layoutStyle?: string
+    professionalContext?: string
 }
 
 type DecisionDialog = 'approve' | 'reject' | 'changes' | null
 type ClientDecision = 'approved' | 'rejected' | 'changes_requested'
 
-export function ApproveQuoteClient({ quoteId, publicToken, clientName, themeColor, totalFormatted }: ApproveQuoteClientProps) {
+export function ApproveQuoteClient({
+    quoteId,
+    publicToken,
+    clientName,
+    themeColor,
+    totalFormatted,
+    layoutStyle,
+    professionalContext,
+}: ApproveQuoteClientProps) {
     const [loading, setLoading] = useState(false)
     const [dialog, setDialog] = useState<DecisionDialog>(null)
     const [note, setNote] = useState('')
@@ -49,16 +59,16 @@ export function ApproveQuoteClient({ quoteId, publicToken, clientName, themeColo
                 ? 'changes_requested'
                 : 'rejected'
 
-        addExceptionStep('quote_client_decision_started', {
+        const analyticsPayload = {
             decision: status,
             quote_id: quoteId,
             has_note: Boolean(note.trim()),
-        })
-        posthog.capture('quote_client_decision_started', {
-            decision: status,
-            quote_id: quoteId,
-            has_note: Boolean(note.trim()),
-        })
+            layout_style: layoutStyle,
+            professional_context: professionalContext,
+        }
+
+        addExceptionStep('quote_client_decision_started', analyticsPayload)
+        posthog.capture('quote_client_decision_started', analyticsPayload)
 
         if (status !== 'approved' && note.trim().length < 5) {
             toast.error('Informe um motivo ou pedido de ajuste.')
@@ -70,9 +80,7 @@ export function ApproveQuoteClient({ quoteId, publicToken, clientName, themeColo
             await approveQuotePublic(quoteId, publicToken, status, note)
             setDone(status)
             posthog.capture('quote_client_decision_completed', {
-                decision: status,
-                quote_id: quoteId,
-                has_note: Boolean(note.trim()),
+                ...analyticsPayload,
             })
             toast.success(
                 status === 'approved'
@@ -84,14 +92,12 @@ export function ApproveQuoteClient({ quoteId, publicToken, clientName, themeColo
         } catch (error) {
             console.error(error)
             posthog.capture('quote_client_decision_failed', {
-                decision: status,
-                quote_id: quoteId,
+                ...analyticsPayload,
                 reason: 'action_error',
             })
             captureException(error, {
                 source: 'quote_client_decision',
-                decision: status,
-                quote_id: quoteId,
+                ...analyticsPayload,
             })
             toast.error('Erro ao processar', {
                 description: error instanceof Error ? error.message : 'Tente novamente ou entre em contato com o prestador.',

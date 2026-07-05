@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ArrowLeft, ArrowRight, Palette, Sparkles } from "lucide-react";
 import { LogoUpload } from "@/components/profile/logo-upload";
-import { extractColors } from "extract-colors";
+import type { LogoIdentityAnalysis } from "@/lib/color-extractor";
 import { toast } from "sonner";
 import { formatDocument, validateDocument } from "@/lib/utils/document";
 
@@ -27,20 +27,16 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
     const [email, setEmail] = useState(data.email || initialEmail);
     const [logoUrl, setLogoUrl] = useState(data.logoUrl || null);
     const [themeColor, setThemeColor] = useState<string | null>(data.themeColor || null);
+    const [logoAnalysis, setLogoAnalysis] = useState<LogoIdentityAnalysis | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleLogoUploaded = async (url: string) => {
+    const handleLogoUploaded = (url: string) => {
         setLogoUrl(url);
-        try {
-            const colors = await extractColors(url, { crossOrigin: "anonymous" });
-            if (colors && colors.length > 0) {
-                const filtered = colors.filter(c => c.lightness > 0.15 && c.lightness < 0.85);
-                const best = filtered.length > 0 ? filtered[0] : colors[0];
-                setThemeColor(best.hex);
-            }
-        } catch (error) {
-            console.error("Color extraction failed during onboarding:", error);
-        }
+    };
+
+    const handleLogoAnalyzed = (analysis: LogoIdentityAnalysis) => {
+        setLogoAnalysis(analysis);
+        setThemeColor(analysis.safeAccentColor);
     };
 
     const handleContinue = () => {
@@ -84,6 +80,7 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
                             userId={userId}
                             onUploadComplete={handleLogoUploaded}
                             onColorExtracted={setThemeColor}
+                            onLogoAnalyzed={handleLogoAnalyzed}
                         />
                         {themeColor && (
                             <div className="mt-3 flex items-center gap-2">
@@ -103,12 +100,23 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
                                 Layout com sua identidade
                             </div>
                             <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
-                                O Zacly analisa a logo, encontra uma cor de marca e usa isso como base visual da proposta.
+                                O Zacly analisa a logo, escolhe uma cor segura e prepara um visual limpo para a proposta.
                             </p>
                             <div className="mt-3 flex items-center gap-2 text-[11px] font-semibold text-muted-foreground">
                                 <Palette className="h-3.5 w-3.5" />
-                                Menos configuracao manual.
+                                {logoAnalysis ? `${logoAnalysis.styleLabel} recomendado.` : "Menos configuracao manual."}
                             </div>
+                            {logoAnalysis && (
+                                <div className="mt-3 flex flex-wrap gap-1.5">
+                                    {logoAnalysis.palette.slice(0, 3).map((color) => (
+                                        <span
+                                            key={color}
+                                            className="h-4 w-4 rounded-full border border-border"
+                                            style={{ backgroundColor: color }}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 

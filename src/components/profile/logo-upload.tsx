@@ -7,19 +7,41 @@ import { Camera, Loader2, Sparkles } from 'lucide-react'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { extractPrimaryColor } from '@/lib/color-extractor'
-import type { Database } from '@/types/database.types'
+import { analyzeLogoIdentity, type LogoIdentityAnalysis } from '@/lib/color-extractor'
+import { captureEvent } from '@/lib/analytics'
+import type { Database, Json } from '@/types/database.types'
 
 type ProfileUpdate = Database['public']['Tables']['profiles']['Update']
+type JsonObject = { [key: string]: Json | undefined }
 
 interface LogoUploadProps {
     currentLogoUrl: string | null
     userId: string
     onUploadComplete?: (url: string) => void
     onColorExtracted?: (color: string) => void
+    onLogoAnalyzed?: (analysis: LogoIdentityAnalysis) => void
 }
 
-export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorExtracted }: LogoUploadProps) {
+function parseJsonObject(value: unknown): JsonObject {
+    if (!value) return {}
+
+    try {
+        if (typeof value === 'string') {
+            const parsed = JSON.parse(value)
+            return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+                ? parsed as JsonObject
+                : {}
+        }
+
+        return typeof value === 'object' && !Array.isArray(value)
+            ? value as JsonObject
+            : {}
+    } catch {
+        return {}
+    }
+}
+
+export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorExtracted, onLogoAnalyzed }: LogoUploadProps) {
     const [uploading, setUploading] = useState(false)
     const [extractingColor, setExtractingColor] = useState(false)
     const [previewUrl, setPreviewUrl] = useState(currentLogoUrl)
@@ -42,6 +64,10 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
         }
 
         setUploading(true)
+        captureEvent('logo_upload_started', {
+            file_type: file.type,
+            file_size_kb: Math.round(file.size / 1024),
+        })
 
         try {
             const supabase = createClient()
@@ -76,10 +102,12 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
                 description: 'Vamos detectar a cor principal para usar na identidade da proposta.',
                 icon: <Sparkles className="h-4 w-4 text-amber-500" />,
             })
-            let extractedColor = null
+            let logoAnalysis: LogoIdentityAnalysis | null = null
+            let extractedColor: string | null = null
 
             try {
-                extractedColor = await extractPrimaryColor(urlWithCacheBust)
+                logoAnalysis = await analyzeLogoIdentity(urlWithCacheBust)
+                extractedColor = logoAnalysis.safeAccentColor
             } catch (colorError) {
                 console.warn('Could not extract color. Fallback to default.', colorError)
             }
@@ -87,6 +115,18 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
             const updatePayload: ProfileUpdate = { logo_url: urlWithCacheBust }
             if (extractedColor) {
                 updatePayload.primary_color = extractedColor
+            }
+            if (logoAnalysis) {
+                const { data: currentProfile } = await supabase
+                    .from('profiles')
+                    .select('quote_settings')
+                    .eq('id', userId)
+                    .maybeSingle()
+
+                updatePayload.quote_settings = {
+                    ...parseJsonObject(currentProfile?.quote_settings),
+                    logoAnalysis: logoAnalysis as unknown as Json,
+                }
             }
 
             const { error: updateError } = await supabase
@@ -97,8 +137,10 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
             if (updateError) throw updateError
 
             setPreviewUrl(urlWithCacheBust)
-            toast.success('Logo analisada e paleta atualizada!', {
-                description: extractedColor ? 'A cor da marca foi aplicada como base visual.' : 'A logo foi salva no seu perfil.',
+            toast.success('Logo analisada e visual preparado!', {
+                description: logoAnalysis?.warnings.length
+                    ? 'A proposta vai usar sua marca com ajustes para manter a leitura.'
+                    : extractedColor ? 'Sua marca ja pode aparecer nos modelos de proposta.' : 'A logo foi salva no seu perfil.',
             })
 
             // Notify parent about new URL for color extraction
@@ -108,10 +150,26 @@ export function LogoUpload({ currentLogoUrl, userId, onUploadComplete, onColorEx
             if (extractedColor && onColorExtracted) {
                 onColorExtracted(extractedColor)
             }
+            if (logoAnalysis && onLogoAnalyzed) {
+                onLogoAnalyzed(logoAnalysis)
+            }
+            if (logoAnalysis) {
+                captureEvent('logo_analysis_completed', {
+                    quality_score: logoAnalysis.qualityScore,
+                    confidence: logoAnalysis.confidence,
+                    warning_count: logoAnalysis.warnings.length,
+                    recommended_model: logoAnalysis.recommendedModel,
+                    visual_tone: logoAnalysis.visualTone,
+                    has_transparency: logoAnalysis.hasTransparency,
+                })
+            }
 
             router.refresh()
         } catch (error) {
             console.error('Upload error:', error)
+            captureEvent('logo_analysis_failed', {
+                reason: error instanceof Error ? error.message : 'unknown',
+            })
             toast.error('Erro ao enviar a logo.')
         } finally {
             setUploading(false)

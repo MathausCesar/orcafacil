@@ -7,6 +7,20 @@ interface PageProps {
     params: Promise<{ id: string }>
 }
 
+function hasLogoAnalysis(value: unknown) {
+    try {
+        const settings = typeof value === 'string' ? JSON.parse(value) : value
+        return Boolean(
+            settings
+            && typeof settings === 'object'
+            && !Array.isArray(settings)
+            && (settings as Record<string, unknown>).logoAnalysis
+        )
+    } catch {
+        return false
+    }
+}
+
 type QuoteItemRecord = {
     id: string
     service_id?: string | null
@@ -52,7 +66,7 @@ export default async function EditQuotePage(props: PageProps) {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('plan')
+        .select('business_name, logo_url, theme_color, primary_color, quote_settings, plan')
         .eq('id', user.id)
         .maybeSingle()
 
@@ -91,7 +105,16 @@ export default async function EditQuotePage(props: PageProps) {
 
     return (
         <div className="container max-w-4xl mx-auto py-8 px-4">
-            <QuoteForm initialData={initialData} plan={profile?.plan} />
+            <QuoteForm
+                initialData={initialData}
+                plan={profile?.plan}
+                brandPreview={{
+                    businessName: profile?.business_name || null,
+                    logoUrl: profile?.logo_url || null,
+                    accentColor: isFree ? profile?.primary_color || null : profile?.theme_color || profile?.primary_color || null,
+                    hasLogoAnalysis: hasLogoAnalysis(profile?.quote_settings),
+                }}
+            />
         </div>
     )
 }

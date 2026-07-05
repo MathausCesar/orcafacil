@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { createQuote, updateQuote } from '@/app/actions/quotes'
 import { ProductSearch } from '@/components/quotes/product-search'
 import { Button } from '@/components/ui/button'
@@ -16,7 +17,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import { Trash2, Save, ArrowLeft, FileText, Loader2, Settings2, Wallet, Clock, CheckCircle2, AlignLeft, LayoutTemplate, Check, Package, Wrench, Lock } from 'lucide-react'
+import { Trash2, Save, ArrowLeft, FileText, Loader2, Settings2, Wallet, Clock, CheckCircle2, AlignLeft, LayoutTemplate, Check, Package, Wrench, Lock, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { ClientAutocomplete } from '@/components/clients/client-autocomplete'
@@ -87,9 +88,15 @@ interface QuoteFormProps {
         professionalContext?: string
         items: QuoteItem[]
     }
+    brandPreview?: {
+        businessName: string | null
+        logoUrl: string | null
+        accentColor: string | null
+        hasLogoAnalysis: boolean
+    }
 }
 
-export function QuoteForm({ initialData, quickMode = false, plan }: QuoteFormProps) {
+export function QuoteForm({ initialData, quickMode = false, plan, brandPreview }: QuoteFormProps) {
     const isFree = isFreePlan(plan)
     const [items, setItems] = useState<QuoteItem[]>(initialData?.items || [])
     const [loading, setLoading] = useState(false)
@@ -650,6 +657,45 @@ export function QuoteForm({ initialData, quickMode = false, plan }: QuoteFormPro
                                         <p className="text-xs text-muted-foreground leading-snug">
                                             {isFree ? 'O modelo Profissional foi escolhido por manter a proposta clara e confiavel.' : 'Cada orçamento salva o modelo escolhido no momento da criação.'}
                                         </p>
+                                        {brandPreview && (
+                                            <div className="rounded-xl border border-primary/15 bg-primary/5 p-3">
+                                                <div className="flex items-start gap-3">
+                                                    <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-background">
+                                                        {brandPreview.logoUrl ? (
+                                                            <Image src={brandPreview.logoUrl} alt="Logo" fill className="object-contain p-1.5" unoptimized />
+                                                        ) : (
+                                                            <Sparkles className="h-5 w-5 text-primary" />
+                                                        )}
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <span
+                                                                className="h-2.5 w-2.5 rounded-full"
+                                                                style={{ backgroundColor: brandPreview.accentColor || '#0D9B5C' }}
+                                                            />
+                                                            <p className="truncate text-xs font-black text-foreground">
+                                                                {brandPreview.logoUrl ? 'PDF com sua marca' : 'PDF pronto para receber sua logo'}
+                                                            </p>
+                                                        </div>
+                                                        <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                                                            {brandPreview.logoUrl
+                                                                ? `${brandPreview.businessName || 'Sua empresa'} aparecera no cabecalho da proposta.`
+                                                                : 'Adicione a logo no perfil para o Zacly montar o visual automaticamente.'}
+                                                        </p>
+                                                        {!brandPreview.logoUrl && (
+                                                            <Link href="/profile" className="mt-2 inline-flex text-[11px] font-bold text-primary hover:underline">
+                                                                Adicionar logo
+                                                            </Link>
+                                                        )}
+                                                        {brandPreview.logoUrl && brandPreview.hasLogoAnalysis && (
+                                                            <p className="mt-2 text-[11px] font-semibold text-primary">
+                                                                Visual analisado automaticamente.
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="p-4 space-y-3">
                                         <div className="flex items-center gap-3">

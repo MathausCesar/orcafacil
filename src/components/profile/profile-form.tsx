@@ -9,11 +9,12 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Save, Loader2, Building2, Palette, Rocket, Sparkles, CheckCircle2 } from 'lucide-react'
 import { LogoUpload } from '@/components/profile/logo-upload'
+import { LogoIdentityPreview } from '@/components/profile/logo-identity-preview'
 import { LayoutSelector } from '@/components/profile/layout-selector'
 import { QuoteSettings, QuoteSettingsData } from '@/components/profile/quote-settings'
 import { DEFAULT_PROPOSAL_ACCENT, FREE_PROPOSAL_MODEL, isFreePlan } from '@/lib/proposal-style'
 import { toast } from 'sonner'
-import { extractColors } from 'extract-colors'
+import type { LogoIdentityAnalysis } from '@/lib/color-extractor'
 
 interface ProfileFormProps {
     initialProfile: {
@@ -105,7 +106,25 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
         return initialProfile.quote_settings as QuoteSettingsData
     }
 
+    const getInitialLogoAnalysis = () => {
+        const settings = getInitialSettings()
+        const analysis = settings?.logoAnalysis
+
+        if (
+            analysis
+            && typeof analysis === 'object'
+            && !Array.isArray(analysis)
+            && (analysis as Record<string, unknown>).version === 'logo-analysis-v1'
+            && typeof (analysis as Record<string, unknown>).safeAccentColor === 'string'
+        ) {
+            return analysis as LogoIdentityAnalysis
+        }
+
+        return null
+    }
+
     const [quoteSettings, setQuoteSettings] = useState<QuoteSettingsData | null>(getInitialSettings())
+    const [logoAnalysis, setLogoAnalysis] = useState<LogoIdentityAnalysis | null>(getInitialLogoAnalysis())
     const showCompany = section === 'all' || section === 'company'
     const showProposal = section === 'all' || section === 'proposal'
     const saveLabel = section === 'proposal' ? 'Salvar proposta' : 'Salvar perfil'
@@ -113,30 +132,19 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
         ? 'Mantenha um padrão visual profissional. Pequenas personalizações ajudam sua proposta a parecer única sem perder organização.'
         : 'Um perfil completo com logo, telefone e dados comerciais deixa seus orçamentos mais confiáveis para o cliente.'
 
-    const handleLogoChange = async (newUrl: string) => {
+    const handleLogoChange = (newUrl: string) => {
         setLogoUrl(newUrl)
+    }
 
-        try {
-            const colors = await extractColors(newUrl, { crossOrigin: 'anonymous' })
-            if (colors && colors.length > 0) {
-                // Prefer a vibrant, non-neutral color
-                const filtered = colors.filter(c => c.lightness > 0.15 && c.lightness < 0.85)
-                const best = filtered.length > 0 ? filtered[0] : colors[0]
-                const dominant = best.hex
+    const handleLogoAnalyzed = async (analysis: LogoIdentityAnalysis) => {
+        setLogoAnalysis(analysis)
+        setThemeColor(analysis.safeAccentColor)
 
-                if (!isFree) {
-                    setThemeColor(dominant)
-
-                    // Persist immediately - user shouldn't need to click Save for color to apply
-                    await updateThemeColor(dominant)
-
-                    toast.success('Cor da marca detectada!', {
-                        description: 'O tema do orcamento foi ajustado para combinar com sua logo.'
-                    })
-                }
+        if (!isFree) {
+            const result = await updateThemeColor(analysis.safeAccentColor)
+            if (result?.error) {
+                toast.error('Nao foi possivel salvar a cor detectada.')
             }
-        } catch (e) {
-            console.error('Color extraction failed', e)
         }
     }
 
@@ -200,6 +208,7 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
                                         currentLogoUrl={logoUrl}
                                         userId={userId}
                                         onUploadComplete={handleLogoChange}
+                                        onLogoAnalyzed={handleLogoAnalyzed}
                                     />
                                     <p className="text-[10px] text-center text-muted-foreground mt-2 max-w-[150px]">
                                         Dica: A cor do orçamento se adapta à sua logo.
@@ -213,9 +222,9 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
                                                 <Sparkles className="h-5 w-5" />
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-sm font-bold text-foreground">Analise automatica da logo</p>
+                                                <p className="text-sm font-bold text-foreground">Proposta com cara de empresa</p>
                                                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                                                    Envie sua logo e o Zacly identifica a cor principal para deixar a proposta com uma identidade visual mais coerente.
+                                                    Envie sua logo e o Zacly prepara cores, contraste e sugestao visual para seus PDFs.
                                                 </p>
                                                 <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-muted-foreground">
                                                     <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1">
@@ -224,7 +233,7 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
                                                     </span>
                                                     <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-700">
                                                         <CheckCircle2 className="h-3.5 w-3.5" />
-                                                        {logoUrl ? 'Logo pronta para propostas' : 'Envie a logo para ativar'}
+                                                        {logoUrl ? 'Visual pronto para propostas' : 'Envie a logo para ativar'}
                                                     </span>
                                                 </div>
                                                 {isFree && (
@@ -235,6 +244,14 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
                                             </div>
                                         </div>
                                     </div>
+
+                                    <LogoIdentityPreview
+                                        analysis={logoAnalysis}
+                                        businessName={businessName}
+                                        logoUrl={logoUrl}
+                                        fallbackColor={themeColor}
+                                        isFree={isFree}
+                                    />
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
@@ -420,6 +437,7 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
                                     if (!isFree) setThemeColor(value)
                                 }}
                                 plan={initialProfile?.plan}
+                                recommendedLayout={logoAnalysis?.recommendedModel}
                             />
 
                             <div className="w-full h-px bg-border my-6"></div>
@@ -447,7 +465,7 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-border relative">
                                         {logoUrl ? (
-                                            <Image src={logoUrl} alt="Logo" fill className="object-cover" />
+                                            <Image src={logoUrl} alt="Logo" fill className="object-contain p-2" />
                                         ) : (
                                             <Building2 className="h-6 w-6 text-muted-foreground" />
                                         )}

@@ -13,6 +13,7 @@ interface LayoutSelectorProps {
     onLayoutChange: (layout: string) => void
     onColorChange: (color: string) => void
     plan?: string | null
+    recommendedLayout?: string | null
 }
 
 const defaultColors = [
@@ -107,7 +108,7 @@ function ModelPreview({ id, color }: { id: string; color: string }) {
     )
 }
 
-export function LayoutSelector({ currentLayout, currentColor, onLayoutChange, onColorChange, plan }: LayoutSelectorProps) {
+export function LayoutSelector({ currentLayout, currentColor, onLayoutChange, onColorChange, plan, recommendedLayout }: LayoutSelectorProps) {
     const isFree = isFreePlan(plan)
     const previewColor = isFree ? DEFAULT_PROPOSAL_ACCENT : currentColor
 
@@ -199,6 +200,7 @@ export function LayoutSelector({ currentLayout, currentColor, onLayoutChange, on
                     {PROPOSAL_MODELS.map((model) => {
                         const locked = isFree && model.id !== FREE_PROPOSAL_MODEL
                         const selected = (isFree ? FREE_PROPOSAL_MODEL : currentLayout) === model.id
+                        const recommended = !isFree && recommendedLayout === model.id
 
                         return (
                             <button
@@ -228,8 +230,13 @@ export function LayoutSelector({ currentLayout, currentColor, onLayoutChange, on
                                         Pro
                                     </div>
                                 )}
+                                {recommended && !selected && (
+                                    <div className="absolute right-3 top-3 rounded-full border border-primary/20 bg-primary/10 px-2 py-1 text-[10px] font-bold uppercase text-primary">
+                                        Recomendado
+                                    </div>
+                                )}
 
-                                <div className="mb-3 pr-14">
+                                <div className="mb-3 pr-24">
                                     <div className="text-sm font-bold text-foreground">{model.name}</div>
                                     <div className="mt-1 text-xs leading-5 text-muted-foreground">{model.description}</div>
                                 </div>

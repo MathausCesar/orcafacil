@@ -182,6 +182,6 @@ export const config = {
          * - api routes (handled separately)
          * - static assets (images, fonts, etc.)
          */
-        '/((?!_next|api|favicon.ico|robots.txt|sitemap.xml|manifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot)$).*)',
+        '/((?!xly|_next|api|favicon.ico|robots.txt|sitemap.xml|manifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot)$).*)',
     ],
 }

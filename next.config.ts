@@ -5,9 +5,26 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
+  skipTrailingSlashRedirect: true,
   serverExternalPackages: ['pdfkit'],
   experimental: {
     optimizePackageImports: ['lucide-react', 'date-fns', 'framer-motion', 'react-hook-form', 'posthog-js'],
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/xly/static/:path*',
+        destination: 'https://us-assets.i.posthog.com/static/:path*',
+      },
+      {
+        source: '/xly/array/:path*',
+        destination: 'https://us-assets.i.posthog.com/array/:path*',
+      },
+      {
+        source: '/xly/:path*',
+        destination: 'https://us.i.posthog.com/:path*',
+      },
+    ];
   },
 
   images: {

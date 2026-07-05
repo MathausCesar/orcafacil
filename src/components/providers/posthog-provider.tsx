@@ -13,7 +13,8 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_POSTHOG_KEY && !posthogInitialized) {
             posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
-                api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
+                api_host: process.env.NEXT_PUBLIC_POSTHOG_PROXY_HOST || '/xly',
+                ui_host: process.env.NEXT_PUBLIC_POSTHOG_UI_HOST || 'https://us.posthog.com',
                 defaults: '2026-05-30',
                 person_profiles: 'identified_only',
                 capture_pageview: false,

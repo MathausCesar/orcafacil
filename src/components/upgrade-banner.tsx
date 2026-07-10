@@ -9,14 +9,14 @@ interface UpgradeBannerProps {
 
 export function UpgradeBanner({ quotesUsed = 0, quotesLimit = PRICING.freeQuotesPerMonth }: UpgradeBannerProps) {
     const remaining = quotesLimit - quotesUsed
-    const isNearLimit = remaining <= 2
+    const isNearLimit = remaining <= 1
     const isAtLimit = remaining <= 0
 
-    let message = `Você já usou ${quotesUsed} de ${quotesLimit} orçamentos gratuitos. Desbloqueie tudo por menos de R$ 1,00/dia.`
+    let message = `Plano gratis: ${quotesUsed} de ${quotesLimit} proposta simples usada neste mes. O Pro libera propostas sem marca Zacly, com sua logo, cores e modelos visuais.`
     if (isAtLimit) {
-        message = `🚫 Limite atingido! Você já criou ${quotesLimit} orçamentos. Faça upgrade para continuar vendendo sem parar.`
+        message = `Voce ja usou sua proposta simples gratis deste mes. Use seu deguste Pro na proxima proposta ou assine para criar sem limites.`
     } else if (isNearLimit) {
-        message = `⚡ Restam apenas ${remaining} orçamento${remaining !== 1 ? 's' : ''} grátis. Não perca vendas — remova a marca d'água e crie ilimitados.`
+        message = `Resta ${remaining} proposta simples gratis. Assine para remover a marca Zacly e criar propostas profissionais ilimitadas.`
     }
 
     return (
@@ -35,7 +35,7 @@ export function UpgradeBanner({ quotesUsed = 0, quotesLimit = PRICING.freeQuotes
                 <div className="text-left space-y-1">
                     <h3 className="text-base font-bold text-white flex items-center gap-2">
                         <Sparkles className="h-4 w-4 text-yellow-300 shrink-0" />
-                        {isAtLimit ? 'Limite atingido — Faça Upgrade' : 'Venda sem limites com a Zacly Pro'}
+                        {isAtLimit ? 'Limite gratis atingido' : 'Venda sem limites com a Zacly Pro'}
                     </h3>
                     <p className="text-white/80 text-sm max-w-lg">
                         {message}

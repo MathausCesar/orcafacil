@@ -37,6 +37,8 @@ export type ProposalModelId = typeof PROPOSAL_MODELS[number]['id']
 
 export const FREE_PROPOSAL_MODEL: ProposalModelId = 'professional'
 export const DEFAULT_PROPOSAL_ACCENT = '#0D9B5C'
+const ACTIVE_SUBSCRIPTION_STATUSES = ['active', 'trialing'] as const
+const PAID_PLAN_IDS = ['pro', 'pro_monthly', 'pro_yearly'] as const
 
 export const VISUAL_TONES = [
     {
@@ -88,8 +90,28 @@ export const PROPOSAL_TONE_INTRO: Record<VisualToneId, string> = {
     creative: 'Uma proposta clara, visual e personalizada para apresentar o servico com mais presenca e confianca.',
 }
 
-export function isFreePlan(plan: string | null | undefined): boolean {
-    return !plan || plan === 'free'
+export function isActivePaidPlan(
+    plan: string | null | undefined,
+    subscriptionStatus?: string | null,
+): boolean {
+    if (!plan || !PAID_PLAN_IDS.includes(plan as typeof PAID_PLAN_IDS[number])) return false
+
+    if (subscriptionStatus === undefined) {
+        return plan !== 'free'
+    }
+
+    return ACTIVE_SUBSCRIPTION_STATUSES.includes(subscriptionStatus as typeof ACTIVE_SUBSCRIPTION_STATUSES[number])
+}
+
+export function getEntitledPlan(
+    plan: string | null | undefined,
+    subscriptionStatus?: string | null,
+): string {
+    return isActivePaidPlan(plan, subscriptionStatus) ? String(plan) : 'free'
+}
+
+export function isFreePlan(plan: string | null | undefined, subscriptionStatus?: string | null): boolean {
+    return !isActivePaidPlan(plan, subscriptionStatus)
 }
 
 export function normalizeProposalModel(value: string | null | undefined): ProposalModelId {

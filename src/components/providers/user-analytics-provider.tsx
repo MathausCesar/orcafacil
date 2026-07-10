@@ -14,6 +14,7 @@ import {
     getStoredAttribution,
     isPaidAttribution,
 } from '@/lib/analytics'
+import { getEntitledPlan } from '@/lib/proposal-style'
 
 type ProfileRow = Pick<
     Database['public']['Tables']['profiles']['Row'],
@@ -78,14 +79,16 @@ async function identifyUser(supabase: ProfileClient, user: User) {
     const attribution = getStoredAttribution()
     const onboarding = getOnboardingInfo(profile?.quote_settings || null)
     const authProvider = getAuthProvider(user)
-    const plan = profile?.plan || 'free'
     const subscriptionStatus = profile?.subscription_status || 'none'
+    const billingPlan = profile?.plan || 'free'
+    const plan = getEntitledPlan(billingPlan, subscriptionStatus)
     const paidTraffic = isPaidAttribution(attribution)
 
     const currentProperties = compact({
         email: profile?.email || user.email,
         business_name: profile?.business_name,
         plan,
+        billing_plan: billingPlan,
         subscription_status: subscriptionStatus,
         onboarded: Boolean(profile?.onboarded_at),
         auth_provider: authProvider,

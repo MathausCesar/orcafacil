@@ -49,7 +49,11 @@ export function PricingSection() {
                         <ul className="space-y-4 mb-8 flex-1">
                             <li className="flex items-start gap-3">
                                 <Check className="h-5 w-5 text-emerald-500 shrink-0" />
-                                <span className="text-zinc-300 text-sm">Até {PRICING.freeQuotesPerMonth} orçamentos por mês</span>
+                                <span className="text-zinc-300 text-sm">1 proposta simples por mes</span>
+                            </li>
+                            <li className="flex items-start gap-3">
+                                <Check className="h-5 w-5 text-emerald-500 shrink-0" />
+                                <span className="text-zinc-300 text-sm">1 deguste Pro para comparar o visual premium</span>
                             </li>
                             <li className="flex items-start gap-3">
                                 <Check className="h-5 w-5 text-emerald-500 shrink-0" />
@@ -61,7 +65,7 @@ export function PricingSection() {
                             </li>
                             <li className="flex items-start gap-3 opacity-55">
                                 <X className="h-5 w-5 text-zinc-500 shrink-0" />
-                                <span className="text-zinc-500 text-sm">Pode manter marca Zacly no PDF</span>
+                                <span className="text-zinc-500 text-sm">Proposta simples mantem marca Zacly</span>
                             </li>
                         </ul>
                         <Link

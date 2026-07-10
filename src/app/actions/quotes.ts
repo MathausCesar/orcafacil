@@ -5,7 +5,9 @@ import { createNotification } from './notifications'
 import { getAuthContext } from '@/lib/get-auth-context'
 import { PRICING } from '@/lib/pricing-copy'
 import { normalizeProfessionalContext } from '@/lib/professional-context'
-import { FREE_PROPOSAL_MODEL, isFreePlan, normalizeProposalModel } from '@/lib/proposal-style'
+import { FREE_PROPOSAL_MODEL, getEntitledPlan, isFreePlan, normalizeProposalModel } from '@/lib/proposal-style'
+
+type QuoteExperienceMode = 'free_simple' | 'pro_sample' | 'pro'
 
 type QuoteFormItem = {
     serviceId?: string | null
@@ -54,6 +56,11 @@ type PaymentStatus = 'unpaid' | 'partial' | 'paid'
 
 function normalizePaymentStatus(value: string): PaymentStatus {
     return ['unpaid', 'partial', 'paid'].includes(value) ? value as PaymentStatus : 'unpaid'
+}
+
+function normalizeExperienceMode(value: FormDataEntryValue | null, isFree: boolean): QuoteExperienceMode {
+    if (!isFree) return 'pro'
+    return value === 'pro_sample' ? 'pro_sample' : 'free_simple'
 }
 
 function parseQuoteItems(itemsJson: string): QuoteFormItem[] {
@@ -114,24 +121,46 @@ export async function createQuote(formData: FormData) {
     // --- FREEMIUM CHECK ---
     const { data: profile } = await supabase
         .from('profiles')
-        .select('plan')
+        .select('plan, subscription_status')
         .eq('id', user.id)
         .single()
 
-    const userPlan = profile?.plan || 'free'
+    const userPlan = getEntitledPlan(profile?.plan, profile?.subscription_status)
+    const isFree = isFreePlan(userPlan)
+    const requestedExperienceMode = normalizeExperienceMode(formData.get('experience_mode'), isFree)
 
-    if (userPlan === 'free') {
+    if (isFree) {
         const now = new Date();
         const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-        const { count, error: countError } = await supabase
-            .from('quotes')
-            .select('*', { count: 'exact', head: true })
-            .eq('organization_id', orgId)
-            .gte('created_at', firstDayOfMonth.toISOString())
+        const [freeQuoteCountResult, proSampleCountResult] = await Promise.all([
+            supabase
+                .from('quotes')
+                .select('*', { count: 'exact', head: true })
+                .eq('organization_id', orgId)
+                .eq('experience_mode', 'free_simple')
+                .gte('created_at', firstDayOfMonth.toISOString()),
+            supabase
+                .from('quotes')
+                .select('*', { count: 'exact', head: true })
+                .eq('organization_id', orgId)
+                .eq('experience_mode', 'pro_sample'),
+        ])
 
-        if (!countError && count !== null && count >= PRICING.freeQuotesPerMonth) {
-            return { error: 'LIMIT_REACHED', message: `Você atingiu o limite de ${PRICING.freeQuotesPerMonth} orçamentos grátis neste mês.` }
+        if (
+            requestedExperienceMode === 'pro_sample'
+            && !proSampleCountResult.error
+            && (proSampleCountResult.count || 0) >= PRICING.proSampleQuotes
+        ) {
+            return { error: 'LIMIT_REACHED', message: 'Seu deguste Pro ja foi usado. Assine o Pro para criar propostas profissionais sem limite.' }
+        }
+
+        if (
+            requestedExperienceMode === 'free_simple'
+            && !freeQuoteCountResult.error
+            && (freeQuoteCountResult.count || 0) >= PRICING.freeQuotesPerMonth
+        ) {
+            return { error: 'LIMIT_REACHED', message: 'Voce ja criou sua proposta simples gratis deste mes. Use o deguste Pro ou assine para criar sem limite.' }
         }
     }
     // ----------------------
@@ -155,7 +184,8 @@ export async function createQuote(formData: FormData) {
     const paymentMethodsStr = formData.get('payment_methods') as string
     const paymentMethods = paymentMethodsStr ? JSON.parse(paymentMethodsStr) : []
     const requestedLayoutStyle = formData.get('layout_style') as string || null
-    const layoutStyle = isFreePlan(userPlan) ? FREE_PROPOSAL_MODEL : normalizeProposalModel(requestedLayoutStyle)
+    const hasProPresentation = !isFree || requestedExperienceMode === 'pro_sample'
+    const layoutStyle = hasProPresentation ? normalizeProposalModel(requestedLayoutStyle) : FREE_PROPOSAL_MODEL
     const professionalContext = normalizeProfessionalContext(formData.get('professional_context') as string | null)
     const afterCreate = formData.get('after_create') as string | null
 
@@ -187,7 +217,8 @@ export async function createQuote(formData: FormData) {
             payment_methods: paymentMethods,
             installment_count: installmentCount,
             layout_style: layoutStyle,
-            professional_context: professionalContext
+            professional_context: professionalContext,
+            experience_mode: requestedExperienceMode
         })
         .select()
         .single()
@@ -227,6 +258,7 @@ export async function createQuote(formData: FormData) {
         total,
         status: quote.status,
         plan: userPlan,
+        experienceMode: requestedExperienceMode,
         redirect: afterCreate === 'pipeline' ? '/quotes?view=pipeline' : `/quotes/${quote.id}`
     }
 }
@@ -241,7 +273,7 @@ export async function updateQuote(id: string, formData: FormData) {
     // Check current status — block locked quotes
     const { data: currentQuote } = await supabase
         .from('quotes')
-        .select('status, organization_id')
+        .select('status, organization_id, experience_mode')
         .eq('id', id)
         .single()
 
@@ -258,11 +290,12 @@ export async function updateQuote(id: string, formData: FormData) {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('plan')
+        .select('plan, subscription_status')
         .eq('id', user.id)
         .maybeSingle()
 
-    const userPlan = profile?.plan || 'free'
+    const userPlan = getEntitledPlan(profile?.plan, profile?.subscription_status)
+    const isFree = isFreePlan(userPlan)
 
     const clientName = formData.get('clientName') as string
     const clientPhone = formData.get('clientPhone') as string
@@ -283,7 +316,8 @@ export async function updateQuote(id: string, formData: FormData) {
     const paymentMethodsStr = formData.get('payment_methods') as string
     const paymentMethods = paymentMethodsStr ? JSON.parse(paymentMethodsStr) : []
     const requestedLayoutStyle = formData.get('layout_style') as string || null
-    const layoutStyle = isFreePlan(userPlan) ? FREE_PROPOSAL_MODEL : normalizeProposalModel(requestedLayoutStyle)
+    const hasProPresentation = !isFree || currentQuote.experience_mode === 'pro_sample'
+    const layoutStyle = hasProPresentation ? normalizeProposalModel(requestedLayoutStyle) : FREE_PROPOSAL_MODEL
     const professionalContext = normalizeProfessionalContext(formData.get('professional_context') as string | null)
 
     const items = parseQuoteItems(itemsJson)

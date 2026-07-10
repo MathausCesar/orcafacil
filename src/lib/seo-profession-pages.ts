@@ -158,7 +158,7 @@ export const SEO_PROFESSION_PAGES: SeoProfessionPage[] = [
         faq: [
             {
                 question: 'O plano gratis precisa de cartao?',
-                answer: 'Nao. O plano gratis permite comecar sem cartao, com limite mensal e marca Zacly nas propostas.',
+                answer: 'Nao. O plano gratis permite comecar sem cartao, com 1 proposta simples por mes e 1 deguste Pro para comparar o visual profissional.',
             },
             {
                 question: 'Preciso entender de sistema para usar?',

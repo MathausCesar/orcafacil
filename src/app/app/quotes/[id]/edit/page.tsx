@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { QuoteForm, type QuoteItem } from '@/components/quotes/quote-form'
-import { FREE_PROPOSAL_MODEL, isFreePlan } from '@/lib/proposal-style'
+import { FREE_PROPOSAL_MODEL, getEntitledPlan, isFreePlan } from '@/lib/proposal-style'
 import { getLayoutRecommendationForContext } from '@/lib/profession-layout-recommendations'
 
 interface PageProps {
@@ -67,11 +67,17 @@ export default async function EditQuotePage(props: PageProps) {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('business_name, logo_url, theme_color, primary_color, quote_settings, plan')
+        .select('business_name, logo_url, theme_color, primary_color, quote_settings, plan, subscription_status')
         .eq('id', user.id)
         .maybeSingle()
 
-    const isFree = isFreePlan(profile?.plan)
+    const accessPlan = getEntitledPlan(profile?.plan, profile?.subscription_status)
+    const isFree = isFreePlan(accessPlan)
+    const experienceMode: 'free_simple' | 'pro_sample' | 'pro' = quote.experience_mode === 'pro_sample'
+        ? 'pro_sample'
+        : isFree
+            ? 'free_simple'
+            : 'pro'
 
     // Transform data for QuoteForm
     const initialData = {
@@ -90,7 +96,8 @@ export default async function EditQuotePage(props: PageProps) {
         cashDiscountType: quote.cash_discount_type || 'percent',
         paymentMethods: quote.payment_methods || [],
         installmentCount: quote.installment_count || '',
-        layoutStyle: isFree ? FREE_PROPOSAL_MODEL : quote.layout_style || FREE_PROPOSAL_MODEL,
+        experienceMode,
+        layoutStyle: experienceMode === 'free_simple' ? FREE_PROPOSAL_MODEL : quote.layout_style || FREE_PROPOSAL_MODEL,
         professionalContext: quote.professional_context || 'general',
         items: (quote.quote_items as QuoteItemRecord[]).map((item): QuoteItem => ({
             id: item.id, // Or generate random if needed, but ID is fine
@@ -108,12 +115,12 @@ export default async function EditQuotePage(props: PageProps) {
         <div className="container max-w-4xl mx-auto py-8 px-4">
             <QuoteForm
                 initialData={initialData}
-                plan={profile?.plan}
+                plan={accessPlan}
                 layoutRecommendation={getLayoutRecommendationForContext(quote.professional_context)}
                 brandPreview={{
                     businessName: profile?.business_name || null,
                     logoUrl: profile?.logo_url || null,
-                    accentColor: isFree ? profile?.primary_color || null : profile?.theme_color || profile?.primary_color || null,
+                    accentColor: profile?.theme_color || profile?.primary_color || null,
                     hasLogoAnalysis: hasLogoAnalysis(profile?.quote_settings),
                 }}
             />

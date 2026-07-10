@@ -13,6 +13,7 @@ import { getActiveOrganizationId } from '@/lib/get-active-organization'
 import { CancelSubscriptionButton } from '@/components/profile/cancel-subscription-button'
 import { ProfileSettingsTabs } from '@/components/profile/profile-settings-tabs'
 import { CheckoutReturnTracker } from '@/components/profile/checkout-return-tracker'
+import { getEntitledPlan, isFreePlan } from '@/lib/proposal-style'
 
 interface TeamMember {
     user_id: string
@@ -86,8 +87,9 @@ export default async function ProfilePage() {
         `)
         .eq('organization_id', orgId || '')
 
-    const isPaidPlan = Boolean(profile?.plan && profile.plan !== 'free')
-    const planLabel = getPlanLabel(profile?.plan)
+    const accessPlan = getEntitledPlan(profile?.plan, profile?.subscription_status)
+    const isPaidPlan = !isFreePlan(accessPlan)
+    const planLabel = getPlanLabel(accessPlan)
     const billingDate = formatBillingDate(profile?.current_period_end)
     const cancelAtPeriodEnd = Boolean(profile?.cancel_at_period_end)
     const statusLabel = getStatusLabel(profile?.subscription_status, cancelAtPeriodEnd)

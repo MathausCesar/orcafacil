@@ -1,8 +1,9 @@
 import { QuoteForm, type QuoteItem } from '@/components/quotes/quote-form'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveOrganizationId } from '@/lib/get-active-organization'
-import { FREE_PROPOSAL_MODEL, isFreePlan, normalizeProposalModel } from '@/lib/proposal-style'
+import { getEntitledPlan, isFreePlan, normalizeProposalModel } from '@/lib/proposal-style'
 import { getProfessionalContext } from '@/lib/professional-context'
+import { PRICING } from '@/lib/pricing-copy'
 import { getInitialCatalogForOnboarding, parseOnboardingQuoteSettings } from '@/lib/onboarding-catalog'
 import {
     buildStarterQuoteItemsFromCatalog,
@@ -47,11 +48,11 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
     const { data: { user } } = await supabase.auth.getUser()
     const orgId = user ? await getActiveOrganizationId(supabase) : null
 
-    const [profileResult, quoteCountResult, quoteHistoryResult] = user
+    const [profileResult, quoteCountResult, quoteHistoryResult, proSampleCountResult] = user
         ? await Promise.all([
             supabase
                 .from('profiles')
-                .select('business_name, logo_url, layout_style, theme_color, primary_color, quote_settings, plan')
+                .select('business_name, logo_url, layout_style, theme_color, primary_color, quote_settings, plan, subscription_status')
                 .eq('id', user.id)
                 .maybeSingle(),
             orgId
@@ -68,11 +69,20 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
                     .in('status', ['approved', 'rejected', 'changes_requested', 'in_progress', 'completed'])
                     .limit(120)
                 : Promise.resolve({ data: [] as QuoteLayoutHistoryRecord[] }),
+            orgId
+                ? supabase
+                    .from('quotes')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('organization_id', orgId)
+                    .eq('experience_mode', 'pro_sample')
+                : Promise.resolve({ count: 0 }),
         ])
-        : [{ data: null }, { count: 0 }, { data: [] as QuoteLayoutHistoryRecord[] }]
+        : [{ data: null }, { count: 0 }, { data: [] as QuoteLayoutHistoryRecord[] }, { count: 0 }]
 
     const profile = profileResult.data
-    const isFree = isFreePlan(profile?.plan)
+    const accessPlan = getEntitledPlan(profile?.plan, profile?.subscription_status)
+    const isFree = isFreePlan(accessPlan)
+    const proSampleAvailable = isFree && (proSampleCountResult.count ?? 0) < PRICING.proSampleQuotes
     const quickMode = quick === '1' || (quoteCountResult.count ?? 0) === 0
     const onboardingSettings = quickMode
         ? parseOnboardingQuoteSettings(profile?.quote_settings)
@@ -127,17 +137,19 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
         <QuoteForm
             quickMode={quickMode}
             starterMode={starterMode && starterQuoteItems.length > 0}
-            plan={profile?.plan}
+            plan={accessPlan}
+            proSampleAvailable={proSampleAvailable}
             layoutRecommendation={layoutRecommendation}
             brandPreview={{
                 businessName: profile?.business_name || null,
                 logoUrl: profile?.logo_url || null,
-                accentColor: isFree ? profile?.primary_color || null : profile?.theme_color || profile?.primary_color || null,
+                accentColor: profile?.theme_color || profile?.primary_color || null,
                 hasLogoAnalysis: hasLogoAnalysis(profile?.quote_settings),
             }}
             initialData={{
                 clientName: clientName || (starterMode ? getStarterClientName(professionalContext.id) : ''),
-                layoutStyle: isFree ? FREE_PROPOSAL_MODEL : suggestedLayout,
+                experienceMode: isFree ? 'free_simple' : 'pro',
+                layoutStyle: suggestedLayout,
                 professionalContext: quickMode ? professionalContext.id : 'general',
                 showTimeline: quickMode,
                 estimatedDays: quickMode ? String(professionalContext.defaultEstimatedDays) : '',

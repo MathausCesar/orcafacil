@@ -408,6 +408,7 @@ export type Database = {
                     created_at: string | null
                     discount: number | null
                     estimated_days: number | null
+                    experience_mode: string
                     expiration_date: string | null
                     id: string
                     installment_count: number | null
@@ -443,6 +444,7 @@ export type Database = {
                     created_at?: string | null
                     discount?: number | null
                     estimated_days?: number | null
+                    experience_mode?: string
                     expiration_date?: string | null
                     id?: string
                     installment_count?: number | null
@@ -478,6 +480,7 @@ export type Database = {
                     created_at?: string | null
                     discount?: number | null
                     estimated_days?: number | null
+                    experience_mode?: string
                     expiration_date?: string | null
                     id?: string
                     installment_count?: number | null

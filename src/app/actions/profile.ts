@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getAuthContext } from '@/lib/get-auth-context'
-import { FREE_PROPOSAL_MODEL, isFreePlan } from '@/lib/proposal-style'
+import { FREE_PROPOSAL_MODEL, getEntitledPlan, isFreePlan } from '@/lib/proposal-style'
 import type { Json } from '@/types/database.types'
 
 type ProfileUpdateData = {
@@ -83,11 +83,11 @@ export async function updateProfile(formData: FormData) {
     if (hasProposalFields) {
         const { data: currentProfile } = await supabase
             .from('profiles')
-            .select('plan, quote_settings')
+            .select('plan, subscription_status, quote_settings')
             .eq('id', user.id)
             .maybeSingle()
 
-        if (isFreePlan(currentProfile?.plan)) {
+        if (isFreePlan(getEntitledPlan(currentProfile?.plan, currentProfile?.subscription_status))) {
             updateData.layout_style = FREE_PROPOSAL_MODEL
             updateData.quote_settings = {
                 ...parseJsonObject(currentProfile?.quote_settings),
@@ -133,11 +133,11 @@ export async function updateThemeColor(color: string) {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('plan')
+        .select('plan, subscription_status')
         .eq('id', user.id)
         .maybeSingle()
 
-    if (isFreePlan(profile?.plan)) {
+    if (isFreePlan(getEntitledPlan(profile?.plan, profile?.subscription_status))) {
         return { success: true, locked: true }
     }
 

@@ -10,6 +10,7 @@ import {
     DEFAULT_PROPOSAL_ACCENT,
     PROPOSAL_TONE_INTRO,
     applyProposalIdentityPlanLimits,
+    getEntitledPlan,
     isFreePlan,
     parseProposalIdentitySettings,
     resolveProposalModelForPlan,
@@ -40,6 +41,7 @@ type ProfileRow = Pick<
     | 'quote_font_family'
     | 'quote_settings'
     | 'plan'
+    | 'subscription_status'
 >
 
 type QuoteWithItems = QuoteRow & {
@@ -860,15 +862,19 @@ function drawFreePlanWatermark(doc: PDFKit.PDFDocument, fonts: ReturnType<typeof
 
 async function renderQuotePdf(quote: QuoteWithItems, profile: ProfileRow | null, approvalUrl: string) {
     const businessName = pdfSafeText(profile?.business_name, 'Zacly')
-    const isFree = isFreePlan(profile?.plan)
+    const accountPlan = getEntitledPlan(profile?.plan, profile?.subscription_status)
+    const accountIsFree = isFreePlan(accountPlan)
+    const hasProPresentation = !accountIsFree || quote.experience_mode === 'pro_sample'
+    const presentationPlan = hasProPresentation ? (accountPlan === 'free' ? 'pro_monthly' : accountPlan) : 'free'
+    const isFree = !hasProPresentation
     const identitySettings = applyProposalIdentityPlanLimits(
         parseIdentitySettings(profile?.quote_settings, profile?.quote_font_family),
-        profile?.plan,
+        presentationPlan,
     )
     const accent = isFree
         ? DEFAULT_PROPOSAL_ACCENT
         : normalizeColor(identitySettings.approvalAccentColor || profile?.theme_color || profile?.primary_color)
-    const proposalModel = resolveProposalModelForPlan(profile?.plan, quote.layout_style || profile?.layout_style)
+    const proposalModel = resolveProposalModelForPlan(presentationPlan, quote.layout_style || profile?.layout_style)
     const fonts = getPdfFonts(identitySettings.quoteFont)
     const skin = getPdfSkin(proposalModel, accent, identitySettings.visualTone)
     const logo = await fetchLogoImage(profile?.logo_url)
@@ -964,7 +970,7 @@ export async function GET(
 
     const { data: profile } = await admin
         .from('profiles')
-        .select('business_name, phone, email, cnpj, address, address_number, city, state, payment_info, logo_url, theme_color, primary_color, layout_style, quote_font_family, quote_settings, plan')
+        .select('business_name, phone, email, cnpj, address, address_number, city, state, payment_info, logo_url, theme_color, primary_color, layout_style, quote_font_family, quote_settings, plan, subscription_status')
         .eq('id', typedQuote.user_id)
         .maybeSingle()
 

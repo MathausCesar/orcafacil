@@ -27,6 +27,7 @@ import {
     ProposalModelId,
     VisualToneId,
     applyProposalIdentityPlanLimits,
+    getEntitledPlan,
     normalizeProposalFont,
     normalizeVisualTone,
     parseProposalIdentitySettings,
@@ -53,6 +54,7 @@ export type ProposalQuote = {
     created_at: string | null
     expiration_date: string | null
     estimated_days: number | null
+    experience_mode?: string | null
     installment_count: number | null
     layout_style?: string | null
     notes: string | null
@@ -88,6 +90,7 @@ export type ProposalProfile = {
     layout_style?: string | null
     phone: string | null
     plan: string | null
+    subscription_status?: string | null
     theme_color: string | null
     primary_color: string | null
     quote_settings?: unknown
@@ -324,13 +327,18 @@ export function ProposalCanvas({
     whatsappMessage,
     totalFormatted,
 }: ProposalCanvasProps) {
-    const isFree = isFreePlan(profile?.plan)
+    const accountPlan = getEntitledPlan(profile?.plan, profile?.subscription_status)
+    const accountIsFree = isFreePlan(accountPlan)
+    const isProSample = quote.experience_mode === 'pro_sample'
+    const hasProPresentation = !accountIsFree || isProSample
+    const presentationPlan = hasProPresentation ? (accountPlan === 'free' ? 'pro_monthly' : accountPlan) : 'free'
+    const isFree = !hasProPresentation
     const businessName = profile?.business_name || 'Zacly'
-    const identitySettings = applyProposalIdentityPlanLimits(parseIdentitySettings(profile?.quote_settings), profile?.plan)
+    const identitySettings = applyProposalIdentityPlanLimits(parseIdentitySettings(profile?.quote_settings), presentationPlan)
     const themeColor = isFree
         ? DEFAULT_PROPOSAL_ACCENT
         : normalizeColor(identitySettings.approvalAccentColor || profile?.theme_color || profile?.primary_color)
-    const proposalModel = resolveProposalModelForPlan(profile?.plan, quote.layout_style || profile?.layout_style)
+    const proposalModel = resolveProposalModelForPlan(presentationPlan, quote.layout_style || profile?.layout_style)
     const visualTone = normalizeVisualTone(identitySettings.visualTone)
     const proposalFont = normalizeProposalFont(identitySettings.quoteFont)
     const skin = proposalSkins[proposalModel]
@@ -415,7 +423,7 @@ export function ProposalCanvas({
             </header>
 
             <main className="mx-auto w-full max-w-6xl overflow-x-hidden px-3 py-6 sm:px-6 lg:py-10 print:max-w-none print:px-0 print:py-0">
-                {isOwner && isFree && (
+                {isOwner && accountIsFree && (
                     <FreePlanUpgradeNudge
                         quoteId={quote.id}
                         status={status}

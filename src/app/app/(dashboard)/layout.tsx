@@ -8,6 +8,8 @@ import { UpgradeBanner } from '@/components/upgrade-banner'
 import { PwaInstallPrompt } from '@/components/pwa-install-prompt'
 import { getActiveOrganizationId } from '@/lib/get-active-organization'
 import { OrganizationProvider } from '@/contexts/organization-context'
+import { getEntitledPlan, isFreePlan } from '@/lib/proposal-style'
+import { PRICING } from '@/lib/pricing-copy'
 
 export const metadata: Metadata = {
     robots: {
@@ -34,7 +36,7 @@ export default async function DashboardLayout({
     const [profileResult, quotesCountResult] = await Promise.all([
         supabase
             .from('profiles')
-            .select('plan, onboarded_at')
+            .select('plan, subscription_status, onboarded_at')
             .eq('id', user.id)
             .single(),
         orgId
@@ -42,6 +44,7 @@ export default async function DashboardLayout({
                 .from('quotes')
                 .select('id', { count: 'exact', head: true })
                 .eq('organization_id', orgId)
+                .eq('experience_mode', 'free_simple')
                 .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
             : Promise.resolve({ count: 0 })
     ])
@@ -53,7 +56,7 @@ export default async function DashboardLayout({
         redirect('/onboarding')
     }
 
-    const isFree = !profile?.plan || profile.plan === 'free'
+    const isFree = isFreePlan(getEntitledPlan(profile?.plan, profile?.subscription_status))
     const quotesUsed = (isFree && orgId) ? (quotesCountResult.count || 0) : 0
 
     return (
@@ -69,7 +72,7 @@ export default async function DashboardLayout({
                 {/* Main Content Area */}
                 <main className="min-w-0 flex-1 transition-all duration-300 lg:pl-64">
                     <div className="container mx-auto w-full min-w-0 max-w-2xl p-3 pb-24 sm:p-4 md:p-8 lg:max-w-7xl lg:pb-8">
-                        {isFree && <UpgradeBanner quotesUsed={quotesUsed} quotesLimit={5} />}
+                        {isFree && <UpgradeBanner quotesUsed={quotesUsed} quotesLimit={PRICING.freeQuotesPerMonth} />}
                         {children}
                     </div>
                 </main>

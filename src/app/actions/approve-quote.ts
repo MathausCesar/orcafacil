@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { isFreePlan } from '@/lib/proposal-style'
+import { getEntitledPlan, isFreePlan } from '@/lib/proposal-style'
 import { captureServerActivationStage, captureServerEvent } from '@/lib/server-analytics'
 
 const CLIENT_DECISIONS = ['approved', 'rejected', 'changes_requested'] as const
@@ -38,7 +38,7 @@ export async function approveQuotePublic(
     const admin = getSupabaseAdmin()
     const { data: quote, error: quoteError } = await admin
         .from('quotes')
-        .select('id, status, client_name, user_id, organization_id, total, layout_style, professional_context')
+        .select('id, status, client_name, user_id, organization_id, total, layout_style, professional_context, experience_mode')
         .eq('id', quoteId)
         .eq('public_token', publicToken)
         .single()
@@ -66,9 +66,12 @@ export async function approveQuotePublic(
 
     const { data: ownerProfile } = await admin
         .from('profiles')
-        .select('plan, logo_url')
+        .select('plan, subscription_status, logo_url')
         .eq('id', quote.user_id)
         .maybeSingle()
+    const ownerPlan = getEntitledPlan(ownerProfile?.plan, ownerProfile?.subscription_status)
+    const ownerIsFree = isFreePlan(ownerPlan)
+    const hasProPresentation = !ownerIsFree || quote.experience_mode === 'pro_sample'
 
     const { data: updatedQuote, error } = await admin
         .from('quotes')
@@ -120,8 +123,10 @@ export async function approveQuotePublic(
         decision: status,
         quote_id: quoteId,
         previous_status: quote.status || 'unknown',
-        plan: ownerProfile?.plan || 'free',
-        is_free: isFreePlan(ownerProfile?.plan),
+        plan: ownerPlan,
+        is_free: ownerIsFree,
+        proposal_experience_mode: quote.experience_mode || 'free_simple',
+        has_pro_presentation: hasProPresentation,
         has_logo: Boolean(ownerProfile?.logo_url),
         layout_style: quote.layout_style || 'professional',
         professional_context: quote.professional_context || 'general',
@@ -131,7 +136,7 @@ export async function approveQuotePublic(
 
     await captureServerEvent('quote_client_decision_completed_for_owner', quote.user_id, decisionPayload)
 
-    if (status === 'approved' && isFreePlan(ownerProfile?.plan)) {
+    if (status === 'approved' && ownerIsFree) {
         await captureServerActivationStage(quote.user_id, 'client_approved_free', decisionPayload)
     }
 

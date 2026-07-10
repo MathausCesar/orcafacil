@@ -1,7 +1,8 @@
 export const PRICING = {
     monthly: 49.90,
     yearly: 358.80,
-    freeQuotesPerMonth: 5,
+    freeQuotesPerMonth: 1,
+    proSampleQuotes: 1,
 } as const
 
 export const YEARLY_MONTHLY_EQUIV = PRICING.yearly / 12
@@ -10,8 +11,8 @@ export const YEARLY_DISCOUNT_PCT = Math.round((YEARLY_SAVINGS / (PRICING.monthly
 
 export const MARKETING_COPY = {
     corePromise: 'Crie um orçamento profissional em até 1 minuto, envie pelo WhatsApp e acompanhe se o cliente abriu, aprovou ou ficou parado.',
-    signupHint: `Sem cartão. Até ${PRICING.freeQuotesPerMonth} orçamentos grátis por mês.`,
-    freePlan: `Plano gratuito com até ${PRICING.freeQuotesPerMonth} orçamentos por mês.`,
+    signupHint: `Sem cartão. 1 proposta simples grátis e 1 deguste Pro para sentir a diferença.`,
+    freePlan: `Plano gratuito com 1 proposta simples por mês e 1 proposta deguste Pro.`,
     proPlan: `Plano Pro a partir de ${formatCurrencyBR(YEARLY_MONTHLY_EQUIV)} por mês no plano anual.`,
 } as const
 

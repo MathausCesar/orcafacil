@@ -4,7 +4,7 @@ import { getAppBaseUrl } from '@/lib/app-url'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { ProposalCanvas, type ProposalProfile, type ProposalQuote } from '@/components/quotes/proposal-canvas'
-import { isFreePlan, parseProposalIdentitySettings } from '@/lib/proposal-style'
+import { getEntitledPlan, isFreePlan, parseProposalIdentitySettings } from '@/lib/proposal-style'
 import { buildQuoteApprovalMessage, buildWhatsAppLink } from '@/lib/quote-share'
 import { captureServerActivationStage, captureServerEvent } from '@/lib/server-analytics'
 
@@ -91,15 +91,17 @@ export default async function QuotePage({
     const approvalUrl = `${getAppBaseUrl()}/quotes/${quote.id}?token=${quote.public_token}`
     const pdfUrl = `/api/quotes/${quote.id}/pdf${canClientRespond ? `?token=${quote.public_token}` : ''}`
     const identitySettings = parseProposalIdentitySettings(profile?.quote_settings, profile?.quote_font_family)
-    const isFree = isFreePlan(profile?.plan)
+    const accountPlan = getEntitledPlan(profile?.plan, profile?.subscription_status)
+    const accountIsFree = isFreePlan(accountPlan)
+    const hasProPresentation = !accountIsFree || quote.experience_mode === 'pro_sample'
     const whatsappMessage = buildQuoteApprovalMessage({
         clientName: quote.client_name,
         businessName,
         totalFormatted,
         validUntil: quote.expiration_date,
         approvalUrl,
-        template: isFree ? '' : identitySettings.whatsappMessageTemplate,
-        includeZaclyMarketing: isFree,
+        template: hasProPresentation ? identitySettings.whatsappMessageTemplate : '',
+        includeZaclyMarketing: !hasProPresentation,
     })
     const whatsappLink = buildWhatsAppLink(quote.client_phone, whatsappMessage)
 
@@ -107,8 +109,10 @@ export default async function QuotePage({
         const publicOpenPayload = {
             quote_id: quote.id,
             quote_status: quote.status || 'unknown',
-            plan: profile?.plan || 'free',
-            is_free: isFree,
+            plan: accountPlan,
+            is_free: accountIsFree,
+            proposal_experience_mode: quote.experience_mode || 'free_simple',
+            has_pro_presentation: hasProPresentation,
             has_logo: Boolean(profile?.logo_url),
             layout_style: quote.layout_style || profile?.layout_style || 'professional',
             professional_context: quote.professional_context || 'general',
@@ -118,7 +122,7 @@ export default async function QuotePage({
 
         await captureServerEvent('quote_public_opened', quote.user_id, publicOpenPayload)
 
-        if (isFree) {
+        if (accountIsFree) {
             await captureServerActivationStage(quote.user_id, 'client_opened_free', publicOpenPayload)
         }
     }

@@ -134,7 +134,7 @@ export const SEO_COMMERCIAL_PAGES: SeoCommercialPage[] = [
         faq: [
             {
                 question: 'O Zacly e um app de orcamento gratis?',
-                answer: 'Sim. O plano gratis permite comecar sem cartao, com limite mensal e marca Zacly nas propostas.',
+                answer: 'Sim. O plano gratis permite comecar sem cartao, com 1 proposta simples por mes e 1 deguste Pro para comparar o visual profissional.',
             },
             {
                 question: 'Preciso instalar aplicativo?',
@@ -202,7 +202,7 @@ export const SEO_COMMERCIAL_PAGES: SeoCommercialPage[] = [
         faq: [
             {
                 question: 'O PDF do plano gratis tem marca Zacly?',
-                answer: 'Sim. O plano gratis pode manter marca Zacly. O plano Pro remove a marca e libera mais personalizacao.',
+                answer: 'Sim. A proposta simples gratis pode manter marca Zacly. O deguste Pro mostra uma proposta premium, e o plano Pro remove a marca e libera mais personalizacao.',
             },
             {
                 question: 'Posso baixar o PDF pelo celular?',

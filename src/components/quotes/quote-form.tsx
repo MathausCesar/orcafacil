@@ -75,9 +75,11 @@ export interface QuoteItem {
 interface QuoteFormProps {
     quickMode?: boolean
     starterMode?: boolean
+    proSampleAvailable?: boolean
     plan?: string | null
     initialData?: {
         id?: string
+        experienceMode?: 'free_simple' | 'pro_sample' | 'pro'
         clientName: string
         clientPhone?: string
         expirationDate?: string
@@ -105,7 +107,7 @@ interface QuoteFormProps {
     layoutRecommendation?: LayoutRecommendation | null
 }
 
-export function QuoteForm({ initialData, quickMode = false, starterMode = false, plan, brandPreview, layoutRecommendation }: QuoteFormProps) {
+export function QuoteForm({ initialData, quickMode = false, starterMode = false, proSampleAvailable = false, plan, brandPreview, layoutRecommendation }: QuoteFormProps) {
     const isFree = isFreePlan(plan)
     const [items, setItems] = useState<QuoteItem[]>(initialData?.items || [])
     const [loading, setLoading] = useState(false)
@@ -131,8 +133,11 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
     )
     const [paymentMethods, setPaymentMethods] = useState<string[]>(initialData?.paymentMethods || [])
     const [installmentCount, setInstallmentCount] = useState(initialData?.installmentCount || '')
-    const [layoutStyle, setLayoutStyle] = useState(isFree ? FREE_PROPOSAL_MODEL : initialData?.layoutStyle || FREE_PROPOSAL_MODEL)
+    const [layoutStyle, setLayoutStyle] = useState(initialData?.layoutStyle || FREE_PROPOSAL_MODEL)
     const [professionalContext, setProfessionalContext] = useState(initialData?.professionalContext || 'general')
+    const [experienceMode, setExperienceMode] = useState<'free_simple' | 'pro_sample' | 'pro'>(
+        initialData?.experienceMode || (isFree ? 'free_simple' : 'pro')
+    )
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(!quickMode)
     const [layoutManuallyChanged, setLayoutManuallyChanged] = useState(Boolean(initialData?.id))
     const starterTrackedRef = useRef(false)
@@ -140,6 +145,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
 
     const router = useRouter()
     const posthog = usePostHog()
+    const hasProPresentation = !isFree || experienceMode === 'pro_sample'
 
     useEffect(() => {
         if (!date) {
@@ -150,10 +156,10 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
     }, [date])
 
     useEffect(() => {
-        if (isFree && layoutStyle !== FREE_PROPOSAL_MODEL) {
+        if (isFree && experienceMode !== 'pro_sample' && layoutStyle !== FREE_PROPOSAL_MODEL) {
             setLayoutStyle(FREE_PROPOSAL_MODEL)
         }
-    }, [isFree, layoutStyle])
+    }, [experienceMode, isFree, layoutStyle])
 
     useEffect(() => {
         if (!starterMode || items.length === 0 || starterTrackedRef.current) return
@@ -257,7 +263,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
             setNotes(context.defaultNotes)
         }
 
-        if (!isFree && !layoutManuallyChanged && !initialData?.id) {
+        if (hasProPresentation && !layoutManuallyChanged && !initialData?.id) {
             setLayoutStyle(getLayoutRecommendationForContext(context.id).model)
         }
     }
@@ -310,7 +316,8 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                 formData.set('installment_count', installmentCount)
             }
         }
-        formData.set('layout_style', isFree ? FREE_PROPOSAL_MODEL : layoutStyle)
+        formData.set('experience_mode', experienceMode)
+        formData.set('layout_style', hasProPresentation ? layoutStyle : FREE_PROPOSAL_MODEL)
         formData.set('professional_context', professionalContext)
 
         const productItemCount = items.filter((item) => item.itemType === 'product').length
@@ -321,9 +328,9 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
             product_item_count: productItemCount,
             total_band: getQuoteTotalBand(total),
             has_client_phone: Boolean(clientPhone),
-            layout_style: isFree ? FREE_PROPOSAL_MODEL : layoutStyle,
+            layout_style: hasProPresentation ? layoutStyle : FREE_PROPOSAL_MODEL,
             professional_context: professionalContext,
-            plan_type: isFree ? 'free' : 'paid',
+            plan_type: isFree ? experienceMode : 'paid',
             quick_mode: quickMode,
             has_detailed_items: showDetailedItems,
             has_timeline: showTimeline,
@@ -332,7 +339,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
             proposal_readiness_score: readiness.score,
             layout_recommendation_model: activeRecommendation.model,
             layout_recommendation_source: activeRecommendation.source,
-            layout_matches_recommendation: (isFree ? FREE_PROPOSAL_MODEL : layoutStyle) === activeRecommendation.model,
+            layout_matches_recommendation: (hasProPresentation ? layoutStyle : FREE_PROPOSAL_MODEL) === activeRecommendation.model,
         }
 
         addExceptionStep(initialData?.id ? 'quote_update_started' : 'quote_create_started', quoteAnalyticsPayload)
@@ -416,7 +423,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
     const activeRecommendation = layoutRecommendation?.professionalContext === professionalContext
         ? layoutRecommendation
         : contextRecommendation
-    const activeLayout = isFree ? FREE_PROPOSAL_MODEL : layoutStyle
+    const activeLayout = hasProPresentation ? layoutStyle : FREE_PROPOSAL_MODEL
     const hasStarterItems = starterMode && items.length > 0
     const readiness = calculateProposalReadiness({
         clientName,
@@ -468,6 +475,68 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                             : 'Comece com cliente, itens e observações. Layout, pagamento e cronograma continuam disponíveis nos ajustes da proposta.'}
                     </p>
                 </div>
+            )}
+
+            {isFree && !initialData?.id && (
+                <Card className="mb-6 border-0 shadow-sm ring-1 ring-border">
+                    <CardHeader className="pb-3 border-b border-border">
+                        <CardTitle className="text-base font-semibold flex items-center gap-2">
+                            <Sparkles className="h-4 w-4 text-primary" />
+                            Escolha como testar o Zacly
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid gap-3 pt-4 sm:grid-cols-2">
+                        <button
+                            type="button"
+                            onClick={() => setExperienceMode('free_simple')}
+                            className={`rounded-2xl border p-4 text-left transition-all ${experienceMode === 'free_simple'
+                                ? 'border-primary bg-primary/5 text-foreground ring-1 ring-primary/20'
+                                : 'border-border bg-card text-muted-foreground hover:border-primary/30'
+                                }`}
+                        >
+                            <span className="flex items-start justify-between gap-3">
+                                <span>
+                                    <span className="block text-sm font-black text-foreground">Proposta simples gratis</span>
+                                    <span className="mt-1 block text-xs leading-5">
+                                        Modelo Profissional, marca Zacly e personalizacao limitada.
+                                    </span>
+                                </span>
+                                {experienceMode === 'free_simple' && <Check className="h-4 w-4 text-primary" />}
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            disabled={!proSampleAvailable}
+                            onClick={() => {
+                                if (!proSampleAvailable) return
+                                setExperienceMode('pro_sample')
+                                setShowAdvancedSettings(true)
+                                if (!layoutManuallyChanged) {
+                                    setLayoutStyle(activeRecommendation.model)
+                                }
+                            }}
+                            className={`rounded-2xl border p-4 text-left transition-all ${experienceMode === 'pro_sample'
+                                ? 'border-primary bg-primary/5 text-foreground ring-1 ring-primary/20'
+                                : 'border-border bg-card text-muted-foreground hover:border-primary/30'
+                                } ${!proSampleAvailable ? 'cursor-not-allowed opacity-60' : ''}`}
+                        >
+                            <span className="flex items-start justify-between gap-3">
+                                <span>
+                                    <span className="block text-sm font-black text-foreground">Deguste Pro</span>
+                                    <span className="mt-1 block text-xs leading-5">
+                                        Uma proposta com logo, cores, modelos visuais e sem marca Zacly.
+                                    </span>
+                                    {!proSampleAvailable && (
+                                        <span className="mt-2 inline-flex rounded-full bg-muted px-2 py-1 text-[10px] font-bold uppercase tracking-wide">
+                                            Ja usado
+                                        </span>
+                                    )}
+                                </span>
+                                {experienceMode === 'pro_sample' ? <Check className="h-4 w-4 text-primary" /> : <Lock className="h-4 w-4" />}
+                            </span>
+                        </button>
+                    </CardContent>
+                </Card>
             )}
 
             <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-3 lg:gap-8">
@@ -740,7 +809,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                                 <span className="flex min-w-0 flex-col items-start">
                                     <span className="font-semibold text-foreground">Mostrar ajustes da proposta</span>
                                     <span className="text-xs font-normal text-muted-foreground">
-                                        {isFree ? 'Revise pagamento, cronograma e detalhes extras.' : 'Escolha layout, pagamento, cronograma e detalhes extras.'}
+                                        {!hasProPresentation ? 'Revise pagamento, cronograma e detalhes extras.' : 'Escolha layout, pagamento, cronograma e detalhes extras.'}
                                     </span>
                                 </span>
                             </Button>
@@ -774,20 +843,20 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                                                 </div>
                                             </div>
                                         </div>
-                                         {isFree && (
+                                         {!hasProPresentation && (
                                              <div className="rounded-xl border bg-muted/40 p-3 text-xs leading-5 text-muted-foreground">
                                                 <div className="flex items-start gap-2">
                                                     <Lock className="mt-0.5 h-4 w-4 shrink-0" />
                                                     <p>
-                                                        No plano gratis, cada proposta usa o modelo Profissional. Os outros modelos entram no Pro.
+                                                        A proposta simples gratis usa o modelo Profissional. Use o deguste Pro para testar os outros modelos uma vez.
                                                     </p>
                                                 </div>
                                             </div>
                                         )}
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                                             {PROPOSAL_MODELS.map((l) => {
-                                                const locked = isFree && l.id !== FREE_PROPOSAL_MODEL
-                                                const selected = (isFree ? FREE_PROPOSAL_MODEL : layoutStyle) === l.id
+                                                const locked = !hasProPresentation && l.id !== FREE_PROPOSAL_MODEL
+                                                const selected = activeLayout === l.id
 
                                                 return (
                                                     <button
@@ -819,7 +888,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                                             })}
                                         </div>
                                         <p className="text-xs text-muted-foreground leading-snug">
-                                            {isFree ? 'O modelo Profissional foi escolhido por manter a proposta clara e confiavel.' : 'Cada orçamento salva o modelo escolhido no momento da criação.'}
+                                            {!hasProPresentation ? 'O modelo Profissional foi escolhido por manter a proposta clara e confiavel.' : 'Cada orcamento salva o modelo escolhido no momento da criacao.'}
                                         </p>
                                         {brandPreview && (
                                             <div className="rounded-xl border border-primary/15 bg-primary/5 p-3">

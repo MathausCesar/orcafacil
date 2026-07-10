@@ -14,7 +14,7 @@ import { BrandKitSummary } from '@/components/profile/brand-kit-summary'
 import { LayoutSelector } from '@/components/profile/layout-selector'
 import { QuoteSettings, QuoteSettingsData } from '@/components/profile/quote-settings'
 import { buildBrandKitFromLogoAnalysis, getBrandKitFromQuoteSettings, type BrandKit } from '@/lib/brand-kit'
-import { DEFAULT_PROPOSAL_ACCENT, FREE_PROPOSAL_MODEL, isFreePlan } from '@/lib/proposal-style'
+import { DEFAULT_PROPOSAL_ACCENT, FREE_PROPOSAL_MODEL, getEntitledPlan, isFreePlan } from '@/lib/proposal-style'
 import { getLayoutRecommendationFromQuoteSettings } from '@/lib/profession-layout-recommendations'
 import { toast } from 'sonner'
 import type { LogoIdentityAnalysis } from '@/lib/color-extractor'
@@ -35,6 +35,7 @@ interface ProfileFormProps {
         neighborhood?: string | null
         phone?: string | null
         plan?: string | null
+        subscription_status?: string | null
         quote_settings?: unknown
         state?: string | null
         theme_color?: string | null
@@ -45,7 +46,8 @@ interface ProfileFormProps {
 
 export function ProfileForm({ initialProfile, userId, section = 'all' }: ProfileFormProps) {
     const [loading, setLoading] = useState(false)
-    const isFree = isFreePlan(initialProfile?.plan)
+    const accessPlan = getEntitledPlan(initialProfile?.plan, initialProfile?.subscription_status)
+    const isFree = isFreePlan(accessPlan)
     const [themeColor, setThemeColor] = useState(
         isFree
             ? initialProfile?.primary_color || DEFAULT_PROPOSAL_ACCENT
@@ -454,7 +456,7 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
                                 onColorChange={(value) => {
                                     if (!isFree) setThemeColor(value)
                                 }}
-                                plan={initialProfile?.plan}
+                                plan={accessPlan}
                                 recommendedLayout={logoAnalysis?.recommendedModel || onboardingLayoutRecommendation?.model}
                             />
 
@@ -462,7 +464,7 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
 
                             <QuoteSettings
                                 settings={quoteSettings}
-                                plan={initialProfile?.plan}
+                                plan={accessPlan}
                                 onChange={setQuoteSettings}
                             />
 

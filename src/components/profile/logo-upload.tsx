@@ -10,7 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 import { analyzeLogoIdentity, type LogoIdentityAnalysis } from '@/lib/color-extractor'
 import { buildBrandKitFromLogoAnalysis } from '@/lib/brand-kit'
 import { prepareLogoFile } from '@/lib/logo-image-prep'
-import { isFreePlan } from '@/lib/proposal-style'
+import { getEntitledPlan, isFreePlan } from '@/lib/proposal-style'
 import { captureEvent } from '@/lib/analytics'
 import type { Database, Json } from '@/types/database.types'
 
@@ -148,7 +148,7 @@ export function LogoUpload({
             if (logoAnalysis) {
                 const { data: currentProfile } = await supabase
                     .from('profiles')
-                    .select('plan, quote_settings')
+                    .select('plan, subscription_status, quote_settings')
                     .eq('id', userId)
                     .maybeSingle()
 
@@ -160,7 +160,7 @@ export function LogoUpload({
                     brandKit: brandKit as unknown as Json,
                 }
 
-                if (!isFreePlan(currentProfile?.plan)) {
+                if (!isFreePlan(getEntitledPlan(currentProfile?.plan, currentProfile?.subscription_status))) {
                     updatePayload.theme_color = logoAnalysis.safeAccentColor
                     updatePayload.layout_style = logoAnalysis.recommendedModel
                 }

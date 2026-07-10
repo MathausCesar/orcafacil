@@ -14,7 +14,7 @@ import { Share2, Mail, Copy, Download, Check, MessageCircle } from 'lucide-react
 import { toast } from 'sonner'
 import { updateQuoteStatus } from '@/app/actions/quotes'
 import { usePostHog } from 'posthog-js/react'
-import { captureConversion, captureException } from '@/lib/analytics'
+import { captureActivationStage, captureConversion, captureException } from '@/lib/analytics'
 
 interface QuoteShareModalProps {
     quoteId: string
@@ -71,6 +71,12 @@ export function QuoteShareModal({
                 next_status: 'sent',
                 source: 'share_modal',
                 opened_whatsapp: false,
+            })
+            captureActivationStage('quote_sent_no_subscription', {
+                quote_id: quoteId,
+                previous_status: quoteStatus || 'unknown',
+                source: 'share_modal',
+                has_whatsapp_link: Boolean(whatsappLink),
             })
         } catch (error) {
             captureException(error, {

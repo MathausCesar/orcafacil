@@ -11,6 +11,7 @@ import { LogoUpload } from "@/components/profile/logo-upload";
 import type { LogoIdentityAnalysis } from "@/lib/color-extractor";
 import { toast } from "sonner";
 import { formatDocument, validateDocument } from "@/lib/utils/document";
+import { captureEvent } from "@/lib/analytics";
 
 interface WizardStep4Props {
     userId: string;
@@ -50,6 +51,13 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
             return;
         }
 
+        if (!logoUrl) {
+            captureEvent("logo_prompt_skipped", {
+                source: "onboarding_profile_step",
+                document_type: documentType,
+            });
+        }
+
         setIsSubmitting(true);
         updateData({
             businessName: businessName.trim(),
@@ -74,7 +82,7 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
             <div className="w-full space-y-8 rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
                 <div className="flex flex-col items-start gap-8 md:flex-row">
                     <div className="flex w-full flex-col items-center md:w-1/3">
-                        <Label className="mb-4 text-center">Sua logo</Label>
+                        <Label className="mb-4 text-center">Sua logo recomendada</Label>
                         <LogoUpload
                             currentLogoUrl={logoUrl}
                             userId={userId}
@@ -92,15 +100,15 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
                             </div>
                         )}
                         <p className="mt-1 max-w-[120px] text-center text-[10px] text-muted-foreground">
-                            Ela sera usada no topo das suas propostas.
+                            Ela ajuda o Zacly a montar cores e layout da proposta automaticamente.
                         </p>
                         <div className="mt-4 w-full rounded-xl border border-primary/15 bg-primary/5 p-3 text-left">
                             <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                                 <Sparkles className="h-4 w-4 text-primary" />
-                                Layout com sua identidade
+                                Diferencial visual do Zacly
                             </div>
                             <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
-                                O Zacly analisa a logo, escolhe uma cor segura e prepara um visual limpo para a proposta.
+                                O Zacly analisa sua logo, escolhe uma cor segura e prepara uma proposta com cara de marca profissional.
                             </p>
                             <div className="mt-3 flex items-center gap-2 text-[11px] font-semibold text-muted-foreground">
                                 <Palette className="h-3.5 w-3.5" />

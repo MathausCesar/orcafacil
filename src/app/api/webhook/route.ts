@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import { captureServerEvent } from "@/lib/server-analytics";
+import { captureServerActivationStage, captureServerEvent } from "@/lib/server-analytics";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database.types";
 import type Stripe from "stripe";
@@ -218,7 +218,7 @@ export async function POST(req: Request) {
                 if (userId) {
                     await updateProfileOrThrow(supabaseAdmin, { id: userId }, updatePayload);
 
-                    await captureServerEvent("subscription_started", userId, {
+                    const subscriptionPayload = {
                         plan: updatePayload.plan,
                         billing_interval: getPlanInterval(updatePayload.plan as Plan | null | undefined),
                         subscription_status: updatePayload.subscription_status,
@@ -229,7 +229,10 @@ export async function POST(req: Request) {
                         value: getMoneyValue(session.amount_total) ?? getSubscriptionValue(subscriptionForAnalytics),
                         currency: session.currency?.toUpperCase() || "BRL",
                         transaction_id: session.id,
-                    });
+                    };
+
+                    await captureServerEvent("subscription_started", userId, subscriptionPayload);
+                    await captureServerActivationStage(userId, "subscribed", subscriptionPayload);
                 }
                 break;
             }

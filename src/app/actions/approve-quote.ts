@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { isFreePlan } from '@/lib/proposal-style'
+import { captureServerActivationStage, captureServerEvent } from '@/lib/server-analytics'
 
 const CLIENT_DECISIONS = ['approved', 'rejected', 'changes_requested'] as const
 type ClientDecision = typeof CLIENT_DECISIONS[number]
@@ -36,7 +38,7 @@ export async function approveQuotePublic(
     const admin = getSupabaseAdmin()
     const { data: quote, error: quoteError } = await admin
         .from('quotes')
-        .select('id, status, client_name, user_id, organization_id')
+        .select('id, status, client_name, user_id, organization_id, total, layout_style, professional_context')
         .eq('id', quoteId)
         .eq('public_token', publicToken)
         .single()
@@ -61,6 +63,12 @@ export async function approveQuotePublic(
     if (!['pending', 'sent'].includes(quote.status || '')) {
         throw new Error('Este orcamento ja foi processado.')
     }
+
+    const { data: ownerProfile } = await admin
+        .from('profiles')
+        .select('plan, logo_url')
+        .eq('id', quote.user_id)
+        .maybeSingle()
 
     const { data: updatedQuote, error } = await admin
         .from('quotes')
@@ -107,6 +115,25 @@ export async function approveQuotePublic(
             link: `/quotes/${quoteId}`,
             type: status === 'approved' ? 'success' : 'alert',
         })
+
+    const decisionPayload = {
+        decision: status,
+        quote_id: quoteId,
+        previous_status: quote.status || 'unknown',
+        plan: ownerProfile?.plan || 'free',
+        is_free: isFreePlan(ownerProfile?.plan),
+        has_logo: Boolean(ownerProfile?.logo_url),
+        layout_style: quote.layout_style || 'professional',
+        professional_context: quote.professional_context || 'general',
+        total_band: (quote.total || 0) < 500 ? 'under_500' : (quote.total || 0) < 1500 ? '500_1499' : (quote.total || 0) < 5000 ? '1500_4999' : '5000_plus',
+        source: 'public_quote_decision',
+    }
+
+    await captureServerEvent('quote_client_decision_completed_for_owner', quote.user_id, decisionPayload)
+
+    if (status === 'approved' && isFreePlan(ownerProfile?.plan)) {
+        await captureServerActivationStage(quote.user_id, 'client_approved_free', decisionPayload)
+    }
 
     revalidatePath(`/quotes/${quoteId}`)
     revalidatePath(`/app/quotes/${quoteId}`)

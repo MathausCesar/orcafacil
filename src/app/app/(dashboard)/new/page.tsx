@@ -1,9 +1,15 @@
-import { QuoteForm } from '@/components/quotes/quote-form'
+import { QuoteForm, type QuoteItem } from '@/components/quotes/quote-form'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveOrganizationId } from '@/lib/get-active-organization'
 import { FREE_PROPOSAL_MODEL, isFreePlan, normalizeProposalModel } from '@/lib/proposal-style'
 import { getProfessionalContext } from '@/lib/professional-context'
-import { parseOnboardingQuoteSettings } from '@/lib/onboarding-catalog'
+import { getInitialCatalogForOnboarding, parseOnboardingQuoteSettings } from '@/lib/onboarding-catalog'
+import {
+    buildStarterQuoteItemsFromCatalog,
+    catalogSeedToStarterItems,
+    getStarterClientName,
+    type StarterCatalogItem,
+} from '@/lib/starter-quote'
 import {
     getLayoutRecommendationForContext,
     getLayoutRecommendationFromQuoteHistory,
@@ -12,7 +18,13 @@ import {
 } from '@/lib/profession-layout-recommendations'
 
 type NewQuotePageProps = {
-    searchParams: Promise<{ clientName?: string; quick?: string }>
+    searchParams: Promise<{
+        clientName?: string
+        quick?: string
+        starter?: string
+        demo?: string
+        guided?: string
+    }>
 }
 
 function hasLogoAnalysis(value: unknown) {
@@ -30,7 +42,7 @@ function hasLogoAnalysis(value: unknown) {
 }
 
 export default async function NewQuotePage({ searchParams }: NewQuotePageProps) {
-    const { clientName, quick } = await searchParams
+    const { clientName, quick, starter, demo, guided } = await searchParams
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     const orgId = user ? await getActiveOrganizationId(supabase) : null
@@ -77,10 +89,44 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
     const suggestedLayout = normalizeProposalModel(
         layoutRecommendation.model || onboardingSettings?.recommendedLayout || profile?.layout_style,
     )
+    const starterMode = quickMode && (starter === '1' || demo === '1' || guided === 'proposal_test')
+    let starterQuoteItems: QuoteItem[] = []
+
+    if (starterMode && orgId) {
+        const { data: catalogRows } = await supabase
+            .from('services')
+            .select('id, description, details, default_price, cost_price, type, unit')
+            .eq('organization_id', orgId)
+            .limit(80)
+
+        const persistedCatalog: StarterCatalogItem[] = (catalogRows || []).map((item) => ({
+            id: item.id,
+            description: item.description,
+            details: item.details,
+            default_price: Number(item.default_price) || 0,
+            cost_price: Number(item.cost_price) || 0,
+            type: item.type,
+            unit: item.unit,
+            persisted: true,
+        }))
+
+        const fallbackCatalog = catalogSeedToStarterItems(
+            getInitialCatalogForOnboarding(
+                onboardingSettings?.categorySlug,
+                onboardingSettings?.specialties || [],
+            ),
+        )
+
+        starterQuoteItems = buildStarterQuoteItemsFromCatalog(
+            persistedCatalog.length > 0 ? persistedCatalog : fallbackCatalog,
+            professionalContext.id,
+        )
+    }
 
     return (
         <QuoteForm
             quickMode={quickMode}
+            starterMode={starterMode && starterQuoteItems.length > 0}
             plan={profile?.plan}
             layoutRecommendation={layoutRecommendation}
             brandPreview={{
@@ -90,7 +136,7 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
                 hasLogoAnalysis: hasLogoAnalysis(profile?.quote_settings),
             }}
             initialData={{
-                clientName: clientName || '',
+                clientName: clientName || (starterMode ? getStarterClientName(professionalContext.id) : ''),
                 layoutStyle: isFree ? FREE_PROPOSAL_MODEL : suggestedLayout,
                 professionalContext: quickMode ? professionalContext.id : 'general',
                 showTimeline: quickMode,
@@ -99,7 +145,7 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
                 paymentMethods: quickMode ? suggestedPaymentMethods : [],
                 installmentCount: quickMode && suggestedPaymentMethods.includes('installment') ? '3' : '',
                 notes: quickMode ? professionalContext.defaultNotes : '',
-                items: []
+                items: starterQuoteItems
             }}
         />
     )

@@ -6,6 +6,7 @@ import type { Metadata } from 'next'
 import { ProposalCanvas, type ProposalProfile, type ProposalQuote } from '@/components/quotes/proposal-canvas'
 import { isFreePlan, parseProposalIdentitySettings } from '@/lib/proposal-style'
 import { buildQuoteApprovalMessage, buildWhatsAppLink } from '@/lib/quote-share'
+import { captureServerActivationStage, captureServerEvent } from '@/lib/server-analytics'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params
@@ -101,6 +102,26 @@ export default async function QuotePage({
         includeZaclyMarketing: isFree,
     })
     const whatsappLink = buildWhatsAppLink(quote.client_phone, whatsappMessage)
+
+    if (canClientRespond) {
+        const publicOpenPayload = {
+            quote_id: quote.id,
+            quote_status: quote.status || 'unknown',
+            plan: profile?.plan || 'free',
+            is_free: isFree,
+            has_logo: Boolean(profile?.logo_url),
+            layout_style: quote.layout_style || profile?.layout_style || 'professional',
+            professional_context: quote.professional_context || 'general',
+            total_band: total < 500 ? 'under_500' : total < 1500 ? '500_1499' : total < 5000 ? '1500_4999' : '5000_plus',
+            source: 'public_quote_page',
+        }
+
+        await captureServerEvent('quote_public_opened', quote.user_id, publicOpenPayload)
+
+        if (isFree) {
+            await captureServerActivationStage(quote.user_id, 'client_opened_free', publicOpenPayload)
+        }
+    }
 
     return (
         <ProposalCanvas

@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, Home, Loader2, RotateCcw, UserPlus } from "lucide-react";
+import { ArrowRight, CheckCircle2, FileText, Home, Loader2, Palette, RotateCcw } from "lucide-react";
 import { useOnboarding } from "@/components/onboarding/onboarding-context";
 import { applyOnboardingKit } from "@/app/actions/onboarding";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
-import { captureConversion } from "@/lib/analytics";
+import { captureActivationStage, captureConversion, captureEvent } from "@/lib/analytics";
 
 export function LoadingSuccess() {
     const { data, prevStep } = useOnboarding();
@@ -73,6 +73,20 @@ export function LoadingSuccess() {
                     has_logo: Boolean(data.logoUrl),
                     has_theme_color: Boolean(data.themeColor),
                 });
+                captureActivationStage("onboarded_no_quote", {
+                    category_id: data.category?.id,
+                    category_name: data.category?.name,
+                    specialty_count: data.specialties.length,
+                    pricing_tier: data.pricingTier,
+                    has_logo: Boolean(data.logoUrl),
+                    source: "onboarding_success",
+                });
+                if (!data.logoUrl) {
+                    captureEvent("logo_prompt_viewed", {
+                        source: "onboarding_success",
+                        category_id: data.category?.id,
+                    });
+                }
                 setProgress(100);
                 setStatus("Catalogo inicial criado.");
                 setComplete(true);
@@ -116,7 +130,7 @@ export function LoadingSuccess() {
                 </h2>
                 <p className="text-muted-foreground">
                     {complete
-                        ? "Criamos seu catalogo inicial. Agora siga a trilha: cliente, proposta e pipeline."
+                        ? "Criamos seu catalogo inicial. Agora gere uma proposta teste em 2 minutos com itens sugeridos para seu oficio."
                         : error || status}
                 </p>
             </div>
@@ -125,10 +139,19 @@ export function LoadingSuccess() {
 
             {complete && (
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <Link href="/clients?first=1" className="sm:col-span-2">
+                    <Link
+                        href="/new?quick=1&starter=1&source=onboarding_success"
+                        className="sm:col-span-2"
+                        onClick={() => captureEvent("activation_cta_clicked", {
+                            source: "onboarding_success",
+                            cta: "create_test_quote",
+                            category_id: data.category?.id,
+                            has_logo: Boolean(data.logoUrl),
+                        })}
+                    >
                         <Button className="h-12 w-full font-semibold">
-                            <UserPlus className="mr-2 h-4 w-4" />
-                            Cadastrar primeiro cliente
+                            <FileText className="mr-2 h-4 w-4" />
+                            Criar proposta teste em 2 minutos
                             <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                     </Link>
@@ -138,9 +161,16 @@ export function LoadingSuccess() {
                             Ir ao painel
                         </Button>
                     </Link>
-                    <Link href="/profile">
+                    <Link
+                        href="/profile?focus=logo"
+                        onClick={() => captureEvent("logo_prompt_clicked", {
+                            source: "onboarding_success",
+                            category_id: data.category?.id,
+                        })}
+                    >
                         <Button variant="ghost" className="h-11 w-full">
-                            Ajustar catalogo
+                            <Palette className="mr-2 h-4 w-4" />
+                            Enviar logo
                         </Button>
                     </Link>
                 </div>

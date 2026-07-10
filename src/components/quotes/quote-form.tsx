@@ -26,7 +26,7 @@ import { useRouter } from 'next/navigation'
 import { FREE_PROPOSAL_MODEL, PROPOSAL_MODELS, isFreePlan } from '@/lib/proposal-style'
 import { PROFESSIONAL_CONTEXTS, getProfessionalContext } from '@/lib/professional-context'
 import { usePostHog } from 'posthog-js/react'
-import { addExceptionStep, captureConversion, captureException } from '@/lib/analytics'
+import { addExceptionStep, captureActivationStage, captureConversion, captureEvent, captureException } from '@/lib/analytics'
 import {
     getLayoutRecommendationForContext,
     getProposalModelName,
@@ -74,6 +74,7 @@ export interface QuoteItem {
 
 interface QuoteFormProps {
     quickMode?: boolean
+    starterMode?: boolean
     plan?: string | null
     initialData?: {
         id?: string
@@ -104,7 +105,7 @@ interface QuoteFormProps {
     layoutRecommendation?: LayoutRecommendation | null
 }
 
-export function QuoteForm({ initialData, quickMode = false, plan, brandPreview, layoutRecommendation }: QuoteFormProps) {
+export function QuoteForm({ initialData, quickMode = false, starterMode = false, plan, brandPreview, layoutRecommendation }: QuoteFormProps) {
     const isFree = isFreePlan(plan)
     const [items, setItems] = useState<QuoteItem[]>(initialData?.items || [])
     const [loading, setLoading] = useState(false)
@@ -134,6 +135,8 @@ export function QuoteForm({ initialData, quickMode = false, plan, brandPreview, 
     const [professionalContext, setProfessionalContext] = useState(initialData?.professionalContext || 'general')
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(!quickMode)
     const [layoutManuallyChanged, setLayoutManuallyChanged] = useState(Boolean(initialData?.id))
+    const starterTrackedRef = useRef(false)
+    const logoPromptTrackedRef = useRef(false)
 
     const router = useRouter()
     const posthog = usePostHog()
@@ -151,6 +154,30 @@ export function QuoteForm({ initialData, quickMode = false, plan, brandPreview, 
             setLayoutStyle(FREE_PROPOSAL_MODEL)
         }
     }, [isFree, layoutStyle])
+
+    useEffect(() => {
+        if (!starterMode || items.length === 0 || starterTrackedRef.current) return
+
+        starterTrackedRef.current = true
+        captureEvent('test_quote_prefilled', {
+            professional_context: professionalContext,
+            item_count: items.length,
+            product_item_count: items.filter((item) => item.itemType === 'product').length,
+            catalog_source: 'onboarding',
+            quick_mode: quickMode,
+        })
+    }, [items, professionalContext, quickMode, starterMode])
+
+    useEffect(() => {
+        if (!quickMode || !brandPreview || brandPreview.logoUrl || logoPromptTrackedRef.current) return
+
+        logoPromptTrackedRef.current = true
+        captureEvent('logo_prompt_viewed', {
+            source: 'quote_form',
+            professional_context: professionalContext,
+            plan_type: isFree ? 'free' : 'paid',
+        })
+    }, [brandPreview, isFree, professionalContext, quickMode])
 
     const handleAddItem = (product: {
         serviceId?: string | null
@@ -357,6 +384,10 @@ export function QuoteForm({ initialData, quickMode = false, plan, brandPreview, 
                     posthog.capture('quote_updated', successPayload)
                 } else {
                     captureConversion('quote_created', successPayload)
+                    captureActivationStage('quote_created_not_sent', {
+                        ...successPayload,
+                        starter_mode: starterMode,
+                    })
                 }
                 toast.success(initialData?.id ? 'Orçamento atualizado!' : 'Orçamento criado!')
                 if (result.redirect) {
@@ -386,6 +417,7 @@ export function QuoteForm({ initialData, quickMode = false, plan, brandPreview, 
         ? layoutRecommendation
         : contextRecommendation
     const activeLayout = isFree ? FREE_PROPOSAL_MODEL : layoutStyle
+    const hasStarterItems = starterMode && items.length > 0
     const readiness = calculateProposalReadiness({
         clientName,
         clientPhone,
@@ -415,17 +447,25 @@ export function QuoteForm({ initialData, quickMode = false, plan, brandPreview, 
                 </Link>
                 <div className="min-w-0">
                     <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-                        {initialData?.id ? 'Editar Orçamento' : 'Novo Orçamento'}
+                        {initialData?.id ? 'Editar Orçamento' : hasStarterItems ? 'Proposta teste em 2 minutos' : 'Novo Orçamento'}
                     </h1>
-                    <p className="text-sm leading-5 text-muted-foreground">Comece pelo cliente e pelos itens. O visual fica como ajuste opcional.</p>
+                    <p className="text-sm leading-5 text-muted-foreground">
+                        {hasStarterItems
+                            ? 'Revise os itens sugeridos, ajuste valores e salve quando estiver pronto.'
+                            : 'Comece pelo cliente e pelos itens. O visual fica como ajuste opcional.'}
+                    </p>
                 </div>
             </div>
 
             {quickMode && (
                 <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-                    <p className="font-semibold">Modo rápido para o primeiro orçamento</p>
+                    <p className="font-semibold">
+                        {hasStarterItems ? 'Proposta teste ja preenchida' : 'Modo rápido para o primeiro orçamento'}
+                    </p>
                     <p className="mt-1 text-emerald-800/80">
-                        Comece com cliente, itens e observações. Layout, pagamento e cronograma continuam disponíveis nos ajustes da proposta.
+                        {hasStarterItems
+                            ? 'Preparamos itens comuns para seu oficio. Troque cliente, quantidades e valores antes de enviar para alguem real.'
+                            : 'Comece com cliente, itens e observações. Layout, pagamento e cronograma continuam disponíveis nos ajustes da proposta.'}
                     </p>
                 </div>
             )}
@@ -447,6 +487,7 @@ export function QuoteForm({ initialData, quickMode = false, plan, brandPreview, 
                         <CardContent className="pt-6">
                             <ClientAutocomplete
                                 defaultValue={clientName}
+                                defaultPhone={clientPhone}
                                 onSelect={(client) => {
                                     setClientName(client.name)
                                     setClientPhone(client.phone || '')
@@ -803,10 +844,17 @@ export function QuoteForm({ initialData, quickMode = false, plan, brandPreview, 
                                                         <p className="mt-1 text-xs leading-5 text-muted-foreground">
                                                             {brandPreview.logoUrl
                                                                 ? `${brandPreview.businessName || 'Sua empresa'} aparecera no cabecalho da proposta.`
-                                                                : 'Adicione a logo no perfil para o Zacly montar o visual automaticamente.'}
+                                                                : 'Envie a logo para o Zacly analisar cores e montar um visual mais confiavel automaticamente.'}
                                                         </p>
                                                         {!brandPreview.logoUrl && (
-                                                            <Link href="/profile" className="mt-2 inline-flex text-[11px] font-bold text-primary hover:underline">
+                                                            <Link
+                                                                href="/profile?focus=logo"
+                                                                className="mt-2 inline-flex text-[11px] font-bold text-primary hover:underline"
+                                                                onClick={() => captureEvent('logo_prompt_clicked', {
+                                                                    source: 'quote_form',
+                                                                    professional_context: professionalContext,
+                                                                })}
+                                                            >
                                                                 Adicionar logo
                                                             </Link>
                                                         )}

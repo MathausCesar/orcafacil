@@ -1,4 +1,12 @@
 type ServerAnalyticsProperties = Record<string, unknown>
+export type ServerActivationStage =
+    | 'account_created_not_onboarded'
+    | 'onboarded_no_quote'
+    | 'quote_created_not_sent'
+    | 'quote_sent_no_subscription'
+    | 'client_opened_free'
+    | 'client_approved_free'
+    | 'subscribed'
 
 const SENSITIVE_PROPERTY_PATTERN = /(password|secret|token|authorization|email|phone|cpf|cnpj|document|session_id)/i
 
@@ -59,4 +67,21 @@ export async function captureServerEvent(
             error: error instanceof Error ? error.message : String(error),
         })
     }
+}
+
+export async function captureServerActivationStage(
+    distinctId: string,
+    stage: ServerActivationStage,
+    properties: ServerAnalyticsProperties = {}
+) {
+    await captureServerEvent('activation_stage_updated', distinctId, {
+        ...properties,
+        stage,
+        activation_stage: stage,
+        activation_stage_updated_at: new Date().toISOString(),
+        $set: {
+            activation_stage: stage,
+            activation_stage_updated_at: new Date().toISOString(),
+        },
+    })
 }

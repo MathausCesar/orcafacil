@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { Database, Json } from '@/types/database.types'
 import {
     captureEvent,
+    captureActivationStage,
     captureConversion,
     captureException,
     getCurrentAnalyticsUrl,
@@ -147,6 +148,20 @@ async function identifyUser(supabase: ProfileClient, user: User) {
             utm_campaign: attribution.utm_campaign,
             account_age_hours: Math.round(accountAgeHours * 10) / 10,
             transaction_id: user.id,
+        })
+    }
+
+    const accountCreatedStageKey = `zacly_activation_stage_account_created_not_onboarded_${user.id}`
+    if (!profile?.onboarded_at && !window.localStorage.getItem(accountCreatedStageKey)) {
+        window.localStorage.setItem(accountCreatedStageKey, '1')
+        captureActivationStage('account_created_not_onboarded', {
+            auth_provider: authProvider,
+            plan,
+            subscription_status: subscriptionStatus,
+            paid_traffic: paidTraffic,
+            utm_campaign: attribution.utm_campaign,
+            has_google_click_id: Boolean(attribution.gclid),
+            account_age_hours: accountAgeHours !== null ? Math.round(accountAgeHours * 10) / 10 : undefined,
         })
     }
 

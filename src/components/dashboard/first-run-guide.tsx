@@ -15,22 +15,22 @@ export function FirstRunGuide({ clientCount, quoteCount, activePipelineCount }: 
 
     const steps = [
         {
-            title: 'Cadastre seu primeiro cliente',
-            description: 'Salve nome, telefone e dados basicos para nao refazer tudo a cada proposta.',
+            title: 'Crie uma proposta teste',
+            description: 'Abra uma proposta quase pronta, com itens sugeridos para seu oficio, e ajuste em poucos minutos.',
+            href: '/new?quick=1&starter=1&source=first_run',
+            icon: FileText,
+            done: hasQuote,
+            active: !hasQuote,
+            action: hasQuote ? 'Proposta criada' : 'Criar proposta teste',
+        },
+        {
+            title: 'Salve clientes recorrentes',
+            description: 'Cadastre nome e telefone dos clientes que voltam para nao digitar tudo de novo.',
             href: '/clients?first=1',
             icon: UserPlus,
             done: hasClient,
-            active: !hasClient,
+            active: hasQuote && !hasClient,
             action: hasClient ? 'Cliente cadastrado' : 'Cadastrar cliente',
-        },
-        {
-            title: 'Crie uma proposta para esse cliente',
-            description: 'Use seu catalogo inicial para montar uma proposta simples e profissional.',
-            href: '/new?quick=1',
-            icon: FileText,
-            done: hasQuote,
-            active: hasClient && !hasQuote,
-            action: hasQuote ? 'Proposta criada' : 'Criar proposta',
         },
         {
             title: 'Acompanhe no pipeline',
@@ -38,7 +38,7 @@ export function FirstRunGuide({ clientCount, quoteCount, activePipelineCount }: 
             href: '/quotes?view=pipeline',
             icon: KanbanSquare,
             done: hasActivePipeline,
-            active: hasQuote,
+            active: hasQuote && !hasActivePipeline,
             action: hasActivePipeline ? 'Pipeline ativo' : 'Abrir pipeline',
         },
     ]
@@ -56,7 +56,7 @@ export function FirstRunGuide({ clientCount, quoteCount, activePipelineCount }: 
                     <p className="text-xs font-bold uppercase tracking-wider text-primary">Primeiros passos</p>
                     <h2 className="text-xl font-bold text-foreground">Trilha guiada para comecar vendendo</h2>
                     <p className="max-w-2xl text-sm text-muted-foreground">
-                        Siga um caminho curto: cliente, proposta e acompanhamento. Isso evita que o primeiro acesso vire tentativa e erro.
+                        Siga um caminho curto: proposta teste, clientes recorrentes e acompanhamento. O primeiro valor aparece antes da configuracao completa.
                     </p>
                 </div>
                 <div className="rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-bold text-muted-foreground">
@@ -65,10 +65,10 @@ export function FirstRunGuide({ clientCount, quoteCount, activePipelineCount }: 
             </div>
 
             <div className="mt-5 grid gap-3 lg:grid-cols-3">
-                {steps.map((step, index) => {
+                {steps.map((step) => {
                     const Icon = step.icon
                     const StatusIcon = step.done ? CheckCircle2 : Circle
-                    const disabled = index > 0 && !steps[index - 1].done
+                    const disabled = step.href.includes('pipeline') && !hasQuote
 
                     return (
                         <div
@@ -122,7 +122,7 @@ export function FirstRunGuide({ clientCount, quoteCount, activePipelineCount }: 
             </div>
 
             <div className="mt-4 rounded-xl bg-muted/40 px-4 py-3 text-xs leading-5 text-muted-foreground">
-                Dica: depois de aprovada pelo cliente, a proposta pode seguir para execucao e concluido pelo pipeline.
+                Dica: a primeira proposta pode ser um teste. Troque cliente, quantidades e valores antes de enviar para alguem real.
             </div>
 
             <div className="mt-3 flex flex-col gap-3 rounded-xl border border-primary/15 bg-primary/5 px-4 py-3 text-xs leading-5 text-muted-foreground sm:flex-row sm:items-center sm:justify-between">

@@ -16,6 +16,15 @@ export const ATTRIBUTION_KEYS = [
 export const ATTRIBUTION_STORAGE_KEY = 'zacly_attribution'
 
 type AnalyticsProperties = Record<string, unknown>
+export type ActivationStage =
+    | 'account_created_not_onboarded'
+    | 'onboarded_no_quote'
+    | 'quote_created_not_sent'
+    | 'quote_sent_no_subscription'
+    | 'client_opened_free'
+    | 'client_approved_free'
+    | 'subscribed'
+
 type GtagFunction = (
     command: 'event',
     eventName: string,
@@ -127,6 +136,19 @@ function sanitizeProperties(properties: AnalyticsProperties = {}) {
 
 export function captureEvent(eventName: string, properties: AnalyticsProperties = {}) {
     posthog.capture(eventName, sanitizeProperties(properties))
+}
+
+export function captureActivationStage(stage: ActivationStage, properties: AnalyticsProperties = {}) {
+    captureEvent('activation_stage_updated', {
+        ...properties,
+        stage,
+        activation_stage: stage,
+        activation_stage_updated_at: new Date().toISOString(),
+        $set: {
+            activation_stage: stage,
+            activation_stage_updated_at: new Date().toISOString(),
+        },
+    })
 }
 
 export function trackGoogleAdsConversion(

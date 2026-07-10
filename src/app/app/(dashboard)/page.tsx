@@ -89,7 +89,7 @@ export default async function Dashboard() {
             <h2 className="text-3xl font-bold tracking-tight">Criar Novo Orçamento</h2>
             <p className="text-teal-100 font-medium">Gere propostas profissionais em segundos.</p>
           </div>
-          <Link href="/new?quick=1" prefetch={true}>
+          <Link href="/new?quick=1&starter=1&source=dashboard_hero" prefetch={true}>
             <Button size="lg" className="h-14 px-8 text-lg rounded-xl bg-background text-primary hover:bg-muted shadow-lg border-2 border-transparent transition-all hover:scale-105 active:scale-95 font-semibold">
               <Plus className="mr-2 h-6 w-6" /> Começar Agora
             </Button>

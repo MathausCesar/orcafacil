@@ -13,6 +13,7 @@ import { QuoteNextSteps } from '@/components/quotes/quote-next-steps'
 import { QuotePaymentActions } from '@/components/quotes/quote-payment-actions'
 import { QuoteReminderNotice } from '@/components/quotes/quote-reminder-notice'
 import { ApproveQuoteClient } from '@/components/quotes/approve-quote-client'
+import { FreePlanUpgradeNudge } from '@/components/quotes/free-plan-upgrade-nudge'
 import { PaymentOptions } from '@/components/quotes/payment-options'
 import { QRCodeGenerator } from '@/components/quotes/qr-code-generator'
 import { TimelineSection } from '@/components/quotes/timeline-section'
@@ -414,6 +415,15 @@ export function ProposalCanvas({
             </header>
 
             <main className="mx-auto w-full max-w-6xl overflow-x-hidden px-3 py-6 sm:px-6 lg:py-10 print:max-w-none print:px-0 print:py-0">
+                {isOwner && isFree && (
+                    <FreePlanUpgradeNudge
+                        quoteId={quote.id}
+                        status={status}
+                        hasLogo={Boolean(profile?.logo_url)}
+                        layoutStyle={proposalModel}
+                        professionalContext={professionalContext.id}
+                    />
+                )}
                 <article
                     data-proposal-model={proposalModel}
                     className={cn('relative w-full max-w-full overflow-hidden border print:rounded-none print:border-0 print:shadow-none', skin.articleClass)}

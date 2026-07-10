@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { captureServerEvent } from "@/lib/server-analytics";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database.types";
 import type Stripe from "stripe";
@@ -28,6 +29,19 @@ function getPlanFromPriceId(priceId: string | null | undefined): Plan | null {
 function getStringId(value: string | { id: string } | null | undefined) {
     if (!value) return null;
     return typeof value === "string" ? value : value.id;
+}
+
+function getMoneyValue(amountInCents: number | null | undefined) {
+    return typeof amountInCents === "number" ? amountInCents / 100 : undefined;
+}
+
+function getPlanInterval(plan: Plan | null | undefined) {
+    return plan === "pro_yearly" ? "year" : "month";
+}
+
+function getSubscriptionValue(subscription: Stripe.Subscription | null) {
+    const amount = subscription?.items.data[0]?.price?.unit_amount;
+    return getMoneyValue(amount);
 }
 
 function getPeriodEnd(subscription: Stripe.Subscription) {
@@ -178,6 +192,7 @@ export async function POST(req: Request) {
                 // Lê o plan_type que definimos no metadata durante o checkout
                 const planType = session.metadata?.plan_type as Plan | undefined;
                 const subscriptionId = getStringId(session.subscription);
+                let subscriptionForAnalytics: Stripe.Subscription | null = null;
 
                 let updatePayload: ProfileUpdate = {
                     stripe_customer_id: customerId,
@@ -189,6 +204,7 @@ export async function POST(req: Request) {
                 // Para assinaturas (anual), confirmar pelo price_id como fallback
                 if (subscriptionId) {
                     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+                    subscriptionForAnalytics = subscription;
                     const subscriptionUpdate = getSubscriptionUpdate(subscription);
                     const pricePlan = getPlanFromPriceId(subscriptionUpdate.stripe_price_id);
 
@@ -201,6 +217,19 @@ export async function POST(req: Request) {
 
                 if (userId) {
                     await updateProfileOrThrow(supabaseAdmin, { id: userId }, updatePayload);
+
+                    await captureServerEvent("subscription_started", userId, {
+                        plan: updatePayload.plan,
+                        billing_interval: getPlanInterval(updatePayload.plan as Plan | null | undefined),
+                        subscription_status: updatePayload.subscription_status,
+                        source: "stripe_webhook",
+                        stripe_event_id: event.id,
+                        stripe_checkout_id: session.id,
+                        stripe_subscription_id: subscriptionId,
+                        value: getMoneyValue(session.amount_total) ?? getSubscriptionValue(subscriptionForAnalytics),
+                        currency: session.currency?.toUpperCase() || "BRL",
+                        transaction_id: session.id,
+                    });
                 }
                 break;
             }

@@ -1,6 +1,6 @@
 import Script from "next/script";
 
-const GOOGLE_ADS_ID = "AW-18295542064";
+const GOOGLE_ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || "AW-18295542064";
 
 export function GoogleAdsTag() {
   return (

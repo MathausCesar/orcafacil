@@ -26,7 +26,7 @@ import { useRouter } from 'next/navigation'
 import { FREE_PROPOSAL_MODEL, PROPOSAL_MODELS, isFreePlan } from '@/lib/proposal-style'
 import { PROFESSIONAL_CONTEXTS, getProfessionalContext } from '@/lib/professional-context'
 import { usePostHog } from 'posthog-js/react'
-import { addExceptionStep, captureException } from '@/lib/analytics'
+import { addExceptionStep, captureConversion, captureException } from '@/lib/analytics'
 import {
     getLayoutRecommendationForContext,
     getProposalModelName,
@@ -339,7 +339,25 @@ export function QuoteForm({ initialData, quickMode = false, plan, brandPreview, 
                 })
                 toast.error(result.error)
             } else if (result?.success) {
-                posthog.capture(initialData?.id ? 'quote_updated' : 'quote_created', quoteAnalyticsPayload)
+                const quoteId = 'quoteId' in result && typeof result.quoteId === 'string'
+                    ? result.quoteId
+                    : initialData?.id
+                const trackedTotal = 'total' in result && typeof result.total === 'number'
+                    ? result.total
+                    : total
+                const successPayload = {
+                    ...quoteAnalyticsPayload,
+                    quote_id: quoteId,
+                    value: trackedTotal,
+                    currency: 'BRL',
+                    transaction_id: quoteId ? `quote_${quoteId}` : undefined,
+                }
+
+                if (initialData?.id) {
+                    posthog.capture('quote_updated', successPayload)
+                } else {
+                    captureConversion('quote_created', successPayload)
+                }
                 toast.success(initialData?.id ? 'Orçamento atualizado!' : 'Orçamento criado!')
                 if (result.redirect) {
                     router.push(result.redirect)

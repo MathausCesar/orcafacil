@@ -16,6 +16,30 @@ export const ATTRIBUTION_KEYS = [
 export const ATTRIBUTION_STORAGE_KEY = 'zacly_attribution'
 
 type AnalyticsProperties = Record<string, unknown>
+type GtagFunction = (
+    command: 'event',
+    eventName: string,
+    properties?: Record<string, unknown>
+) => void
+
+declare global {
+    interface Window {
+        gtag?: GtagFunction
+    }
+}
+
+const GOOGLE_ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || 'AW-18295542064'
+
+const GOOGLE_ADS_CONVERSION_LABELS = {
+    signup_completed: process.env.NEXT_PUBLIC_GOOGLE_ADS_SIGNUP_LABEL,
+    onboarding_completed: process.env.NEXT_PUBLIC_GOOGLE_ADS_ONBOARDING_LABEL,
+    quote_created: process.env.NEXT_PUBLIC_GOOGLE_ADS_QUOTE_CREATED_LABEL,
+    quote_share_clicked: process.env.NEXT_PUBLIC_GOOGLE_ADS_QUOTE_SHARE_LABEL,
+    checkout_started: process.env.NEXT_PUBLIC_GOOGLE_ADS_CHECKOUT_STARTED_LABEL,
+    subscription_started: process.env.NEXT_PUBLIC_GOOGLE_ADS_SUBSCRIPTION_LABEL,
+} as const
+
+type GoogleAdsConversionName = keyof typeof GOOGLE_ADS_CONVERSION_LABELS
 
 const SENSITIVE_QUERY_KEYS = [
     'token',
@@ -103,6 +127,32 @@ function sanitizeProperties(properties: AnalyticsProperties = {}) {
 
 export function captureEvent(eventName: string, properties: AnalyticsProperties = {}) {
     posthog.capture(eventName, sanitizeProperties(properties))
+}
+
+export function trackGoogleAdsConversion(
+    eventName: GoogleAdsConversionName,
+    properties: AnalyticsProperties = {}
+) {
+    if (typeof window === 'undefined' || typeof window.gtag !== 'function') return
+
+    const label = GOOGLE_ADS_CONVERSION_LABELS[eventName]
+    if (!label) return
+
+    const sanitized = sanitizeProperties(properties)
+    window.gtag('event', 'conversion', {
+        send_to: `${GOOGLE_ADS_ID}/${label}`,
+        value: typeof sanitized.value === 'number' ? sanitized.value : undefined,
+        currency: typeof sanitized.currency === 'string' ? sanitized.currency : 'BRL',
+        transaction_id: typeof sanitized.transaction_id === 'string' ? sanitized.transaction_id : undefined,
+    })
+}
+
+export function captureConversion(
+    eventName: GoogleAdsConversionName,
+    properties: AnalyticsProperties = {}
+) {
+    captureEvent(eventName, properties)
+    trackGoogleAdsConversion(eventName, properties)
 }
 
 export function addExceptionStep(stepName: string, properties: AnalyticsProperties = {}) {

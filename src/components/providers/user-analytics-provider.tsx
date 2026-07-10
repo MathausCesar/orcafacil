@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { Database, Json } from '@/types/database.types'
 import {
     captureEvent,
+    captureConversion,
     captureException,
     getCurrentAnalyticsUrl,
     getStoredAttribution,
@@ -126,6 +127,27 @@ async function identifyUser(supabase: ProfileClient, user: User) {
         } catch {
             // Session replay can be controlled by PostHog settings; analytics should continue either way.
         }
+    }
+
+    const createdAt = user.created_at ? new Date(user.created_at).getTime() : 0
+    const accountAgeHours = createdAt ? (Date.now() - createdAt) / (1000 * 60 * 60) : null
+    const signupStorageKey = `zacly_signup_completed_${user.id}`
+
+    if (
+        accountAgeHours !== null &&
+        accountAgeHours >= 0 &&
+        accountAgeHours <= 168 &&
+        !window.localStorage.getItem(signupStorageKey)
+    ) {
+        window.localStorage.setItem(signupStorageKey, '1')
+        captureConversion('signup_completed', {
+            auth_provider: authProvider,
+            paid_traffic: paidTraffic,
+            has_google_click_id: Boolean(attribution.gclid),
+            utm_campaign: attribution.utm_campaign,
+            account_age_hours: Math.round(accountAgeHours * 10) / 10,
+            transaction_id: user.id,
+        })
     }
 
     const sessionKey = `zacly_identified_session_${user.id}`

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { CheckCircle, Clock, Loader2, PlayCircle, ShieldCheck, Trophy, Send, FileText, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { usePostHog } from 'posthog-js/react'
-import { addExceptionStep, captureException } from '@/lib/analytics'
+import { addExceptionStep, captureConversion, captureException } from '@/lib/analytics'
 
 interface QuoteActionsProps {
     quoteId: string
@@ -61,12 +61,15 @@ export function QuoteStatusActions({ quoteId, currentStatus, isOwner, whatsappLi
             })
 
             if (status === 'sent' && whatsappLink) {
-                posthog.capture('quote_share_clicked', {
+                captureConversion('quote_share_clicked', {
+                    quote_id: quoteId,
                     method: 'whatsapp',
                     previous_status: currentStatus,
                     marked_as_sent: true,
                     source: 'mark_as_sent_action',
                     has_whatsapp_link: true,
+                    currency: 'BRL',
+                    transaction_id: `quote_share_${quoteId}`,
                 })
             }
 

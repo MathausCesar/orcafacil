@@ -26,12 +26,38 @@ const PLAN_CONFIG: Record<CheckoutPlan, {
 
 const BILLABLE_STATUSES = new Set(["active", "trialing", "past_due", "unpaid"]);
 
-function getPlanConfig(plan: FormDataEntryValue | null) {
+function getPlanConfig(plan: unknown) {
     if (plan === "monthly" || plan === "yearly") {
         return PLAN_CONFIG[plan];
     }
 
     return null;
+}
+
+async function getPlanFromRequest(req: NextRequest) {
+    const contentType = req.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+        try {
+            const body: unknown = await req.json();
+
+            if (body && typeof body === "object" && "plan" in body) {
+                const plan = (body as { plan?: unknown }).plan;
+                return typeof plan === "string" ? plan : null;
+            }
+        } catch {
+            return null;
+        }
+
+        return null;
+    }
+
+    try {
+        const formData = await req.formData();
+        return formData.get("plan");
+    } catch {
+        return null;
+    }
 }
 
 function isBillableStatus(status: string | null | undefined) {
@@ -74,8 +100,8 @@ function getDuplicateSubscriptionMessage(currentPriceId: string | null, requeste
 
 export async function POST(req: NextRequest) {
     try {
-        const formData = await req.formData();
-        const planConfig = getPlanConfig(formData.get("plan"));
+        const requestedPlan = await getPlanFromRequest(req);
+        const planConfig = getPlanConfig(requestedPlan);
 
         if (!planConfig) {
             return NextResponse.json({ error: "Plano não selecionado" }, { status: 400 });
@@ -92,19 +118,29 @@ export async function POST(req: NextRequest) {
         }
 
         // Buscar dados do usuário
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
             .from("profiles")
             .select("stripe_customer_id, stripe_subscription_id, stripe_price_id, subscription_status, cancel_at_period_end, email, business_name")
             .eq("id", user.id)
             .single();
+
+        if (profileError) {
+            console.error("Checkout profile lookup failed:", profileError);
+            return NextResponse.json(
+                { error: "Nao foi possivel validar sua assinatura agora. Tente novamente em instantes." },
+                { status: 500 }
+            );
+        }
 
         const priceId = process.env[planConfig.envKey] || "";
 
         // Define o Price ID baseando-se nas Variáveis de Ambiente
         if (!priceId) {
             console.error(`Price ID not configured for ${planConfig.internalPlan}.`);
-            // Para testes sem chave configurada, apenas retornamos um aviso simulado:
-            return new NextResponse(`Erro: O Preço do Stripe não está configurado nas Variáveis de Ambiente. (STRIPE_PRICE_MONTHLY ou STRIPE_PRICE_YEARLY)`, { status: 500 });
+            return NextResponse.json(
+                { error: "Checkout temporariamente indisponivel. Tente novamente em instantes." },
+                { status: 500 }
+            );
         }
 
         // Detecta a URL base pela origem da requisição para garantir domínio correto
@@ -153,16 +189,18 @@ export async function POST(req: NextRequest) {
             ],
             mode: checkoutMode,
             success_url: `${baseUrl}/profile?billing=success&session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${baseUrl}/pricing?canceled=true`,
+            cancel_url: `${baseUrl}/pricing?canceled=true&plan=${requestedPlan}`,
             client_reference_id: user.id,
             metadata: {
                 userId: user.id,
                 plan_type: planConfig.internalPlan,
+                billing_interval: planConfig.interval,
             },
             subscription_data: {
                 metadata: {
                     userId: user.id,
                     plan_type: planConfig.internalPlan,
+                    billing_interval: planConfig.interval,
                 },
             },
         };

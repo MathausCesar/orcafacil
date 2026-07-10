@@ -223,6 +223,10 @@ export async function createQuote(formData: FormData) {
 
     return {
         success: true,
+        quoteId: quote.id,
+        total,
+        status: quote.status,
+        plan: userPlan,
         redirect: afterCreate === 'pipeline' ? '/quotes?view=pipeline' : `/quotes/${quote.id}`
     }
 }
@@ -347,7 +351,7 @@ export async function updateQuote(id: string, formData: FormData) {
 
     revalidatePath(`/quotes/${id}`)
     revalidatePath('/')
-    return { success: true, redirect: `/quotes/${id}` }
+    return { success: true, quoteId: id, total, redirect: `/quotes/${id}` }
 }
 
 export async function deleteQuote(id: string) {

@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { CheckCircle2, Zap, Loader2, TrendingDown } from "lucide-react"
 import { toast } from "sonner"
 import { usePostHog } from "posthog-js/react"
-import { addExceptionStep, captureException } from "@/lib/analytics"
+import { addExceptionStep, captureConversion, captureException } from "@/lib/analytics"
 import {
     PRICING,
     YEARLY_DISCOUNT_PCT,
@@ -21,7 +21,7 @@ const YEARLY_MONTHLY_EQUIV = formatNumberBR(YEARLY_MONTHLY_EQUIV_VALUE)
 const SAVINGS = formatNumberBR(YEARLY_SAVINGS)
 const DISCOUNT_PCT = YEARLY_DISCOUNT_PCT
 
-async function redirectToCheckout(plan: "monthly" | "yearly") {
+async function createCheckoutUrl(plan: "monthly" | "yearly"): Promise<{ url: string; checkoutStarted: boolean }> {
     const formData = new FormData()
     formData.append("plan", plan)
 
@@ -34,8 +34,7 @@ async function redirectToCheckout(plan: "monthly" | "yearly") {
         if (response.headers.get("content-type")?.includes("application/json")) {
             const data = await response.json()
             if (response.status === 401 && data.redirect) {
-                window.location.href = data.redirect
-                return
+                return { url: data.redirect as string, checkoutStarted: false }
             }
             throw new Error(data.error || "Erro ao iniciar checkout.")
         }
@@ -47,8 +46,7 @@ async function redirectToCheckout(plan: "monthly" | "yearly") {
     const data = await response.json()
 
     if (data.url) {
-        window.location.href = data.url
-        return
+        return { url: data.url as string, checkoutStarted: true }
     }
 
     throw new Error(data.error || "URL de checkout não retornada.")
@@ -77,19 +75,27 @@ export default function PricingPage() {
 
     const handleCheckout = async (plan: "monthly" | "yearly") => {
         setLoading(plan)
-        posthog.capture("checkout_started", {
+        const checkoutPayload = {
             plan,
             billing_interval: plan === "yearly" ? "year" : "month",
             source: "pricing_page",
             requested_plan: searchParams.get("plan") || "none",
-        })
+            value: plan === "yearly" ? YEARLY_PRICE : MONTHLY_PRICE,
+            currency: "BRL",
+        }
+
         addExceptionStep("checkout_started", {
-            plan,
-            billing_interval: plan === "yearly" ? "year" : "month",
-            source: "pricing_page",
+            ...checkoutPayload,
         })
         try {
-            await redirectToCheckout(plan)
+            const checkoutResult = await createCheckoutUrl(plan)
+            if (checkoutResult.checkoutStarted) {
+                captureConversion("checkout_started", {
+                    ...checkoutPayload,
+                    transaction_id: `checkout_${plan}_${Date.now()}`,
+                })
+            }
+            window.location.href = checkoutResult.url
         } catch (err: unknown) {
             captureException(err, {
                 source: "pricing_checkout",

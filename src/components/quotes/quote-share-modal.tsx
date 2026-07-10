@@ -14,7 +14,7 @@ import { Share2, Mail, Copy, Download, Check, MessageCircle } from 'lucide-react
 import { toast } from 'sonner'
 import { updateQuoteStatus } from '@/app/actions/quotes'
 import { usePostHog } from 'posthog-js/react'
-import { captureException } from '@/lib/analytics'
+import { captureConversion, captureException } from '@/lib/analytics'
 
 interface QuoteShareModalProps {
     quoteId: string
@@ -48,12 +48,15 @@ export function QuoteShareModal({
     const shouldMarkAsSent = ['draft', 'pending'].includes(quoteStatus || '')
 
     const trackShare = (method: ShareMethod) => {
-        posthog.capture('quote_share_clicked', {
+        captureConversion('quote_share_clicked', {
+            quote_id: quoteId,
             method,
             previous_status: quoteStatus || 'unknown',
             marked_as_sent: shouldMarkAsSent,
             source: 'share_modal',
             has_whatsapp_link: Boolean(whatsappLink),
+            currency: 'BRL',
+            transaction_id: `quote_share_${quoteId}`,
         })
     }
 

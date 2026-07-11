@@ -142,6 +142,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
     const [layoutManuallyChanged, setLayoutManuallyChanged] = useState(Boolean(initialData?.id))
     const starterTrackedRef = useRef(false)
     const logoPromptTrackedRef = useRef(false)
+    const formViewTrackedRef = useRef(false)
 
     const router = useRouter()
     const posthog = usePostHog()
@@ -185,6 +186,19 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
         })
     }, [brandPreview, isFree, professionalContext, quickMode])
 
+    useEffect(() => {
+        if (formViewTrackedRef.current) return
+        formViewTrackedRef.current = true
+        captureEvent('quote_form_viewed', {
+            quick_mode: quickMode,
+            starter_mode: starterMode,
+            plan_type: isFree ? 'free' : 'paid',
+            professional_context: professionalContext,
+            has_logo: Boolean(brandPreview?.logoUrl),
+            has_prefilled_items: Boolean(initialData?.items?.length),
+        })
+    }, [brandPreview?.logoUrl, initialData?.items?.length, isFree, professionalContext, quickMode, starterMode])
+
     const handleAddItem = (product: {
         serviceId?: string | null
         itemType?: 'service' | 'product'
@@ -205,6 +219,11 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
             unitCost: product.unitCost || 0
         }
         setItems([...items, newItem])
+        captureEvent('quote_item_added', {
+            item_type: newItem.itemType,
+            professional_context: professionalContext,
+            quick_mode: quickMode,
+        })
     }
 
     const handleRemoveItem = (id: string) => {
@@ -272,12 +291,23 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
         if (isSubmitting.current) return;
 
         if (items.length === 0) {
+            captureEvent('quote_validation_failed', { reason: 'missing_item', quick_mode: quickMode })
             toast.error('Adicione pelo menos um item.')
             return
         }
 
         if (!clientName) {
+            captureEvent('quote_validation_failed', { reason: 'missing_client_name', quick_mode: quickMode })
             toast.error('Informe o nome do cliente.')
+            return
+        }
+
+        if (experienceMode === 'pro_sample' && (!brandPreview?.logoUrl || !clientPhone.trim())) {
+            captureEvent('quote_validation_failed', {
+                reason: !brandPreview?.logoUrl ? 'pro_sample_missing_logo' : 'pro_sample_missing_client_phone',
+                quick_mode: quickMode,
+            })
+            toast.error('Para usar o Deguste Pro, envie sua logo e informe o WhatsApp do cliente.')
             return
         }
 
@@ -366,6 +396,11 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                 posthog.capture('quote_limit_reached', quoteAnalyticsPayload)
                 router.push('/pricing')
                 return
+            } else if (result?.error === 'PRO_SAMPLE_REQUIREMENTS') {
+                posthog.capture('pro_sample_requirements_missing', quoteAnalyticsPayload)
+                toast.error('message' in result && typeof result.message === 'string'
+                    ? result.message
+                    : 'Complete os dados da proposta para usar o Deguste Pro.')
             } else if (result?.error) {
                 posthog.capture(initialData?.id ? 'quote_update_failed' : 'quote_create_failed', {
                     ...quoteAnalyticsPayload,
@@ -425,6 +460,13 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
         : contextRecommendation
     const activeLayout = hasProPresentation ? layoutStyle : FREE_PROPOSAL_MODEL
     const hasStarterItems = starterMode && items.length > 0
+    const canUseProSample = Boolean(
+        proSampleAvailable
+        && brandPreview?.logoUrl
+        && clientName.trim()
+        && clientPhone.trim()
+        && items.length > 0
+    )
     const readiness = calculateProposalReadiness({
         clientName,
         clientPhone,
@@ -506,9 +548,17 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                         </button>
                         <button
                             type="button"
-                            disabled={!proSampleAvailable}
+                            disabled={!canUseProSample}
                             onClick={() => {
-                                if (!proSampleAvailable) return
+                                if (!canUseProSample) {
+                                    captureEvent('pro_sample_blocked', {
+                                        has_logo: Boolean(brandPreview?.logoUrl),
+                                        has_client_name: Boolean(clientName.trim()),
+                                        has_client_phone: Boolean(clientPhone.trim()),
+                                        item_count: items.length,
+                                    })
+                                    return
+                                }
                                 setExperienceMode('pro_sample')
                                 setShowAdvancedSettings(true)
                                 if (!layoutManuallyChanged) {
@@ -518,7 +568,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                             className={`rounded-2xl border p-4 text-left transition-all ${experienceMode === 'pro_sample'
                                 ? 'border-primary bg-primary/5 text-foreground ring-1 ring-primary/20'
                                 : 'border-border bg-card text-muted-foreground hover:border-primary/30'
-                                } ${!proSampleAvailable ? 'cursor-not-allowed opacity-60' : ''}`}
+                                } ${!canUseProSample ? 'cursor-not-allowed opacity-60' : ''}`}
                         >
                             <span className="flex items-start justify-between gap-3">
                                 <span>
@@ -526,9 +576,9 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                                     <span className="mt-1 block text-xs leading-5">
                                         Uma proposta com logo, cores, modelos visuais e sem marca Zacly.
                                     </span>
-                                    {!proSampleAvailable && (
+                                    {!canUseProSample && (
                                         <span className="mt-2 inline-flex rounded-full bg-muted px-2 py-1 text-[10px] font-bold uppercase tracking-wide">
-                                            Ja usado
+                                            {!proSampleAvailable ? 'Ja usado' : 'Complete cliente, WhatsApp, item e logo'}
                                         </span>
                                     )}
                                 </span>
@@ -560,6 +610,11 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                                 onSelect={(client) => {
                                     setClientName(client.name)
                                     setClientPhone(client.phone || '')
+                                    captureEvent('quote_client_selected', {
+                                        source: 'autocomplete',
+                                        has_phone: Boolean(client.phone),
+                                        quick_mode: quickMode,
+                                    })
                                 }}
                             />
                             <input type="hidden" name="clientPhone" value={clientPhone} />

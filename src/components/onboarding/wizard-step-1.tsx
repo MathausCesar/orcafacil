@@ -7,6 +7,8 @@ import { useOnboarding } from "@/components/onboarding/onboarding-context";
 import { getOnboardingCategories, OnboardingCategory } from "@/app/actions/onboarding";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { LucideIcon } from "lucide-react";
+import { getSpecialtiesForCategory } from "@/lib/onboarding-catalog";
+import { captureEvent } from "@/lib/analytics";
 
 const ICONS: Record<string, LucideIcon> = {
     car: Car,
@@ -20,7 +22,7 @@ const ICONS: Record<string, LucideIcon> = {
 };
 
 export function WizardStep1() {
-    const { data, updateData, nextStep } = useOnboarding();
+    const { data, updateData, goToStep } = useOnboarding();
     const [categories, setCategories] = useState<OnboardingCategory[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -39,9 +41,20 @@ export function WizardStep1() {
     }, []);
 
     const handleSelect = (category: OnboardingCategory) => {
-        updateData({ category });
-        // Slight delay for visual feedback
-        setTimeout(() => nextStep(), 300);
+        const suggestedSpecialty = getSpecialtiesForCategory(category.slug)[0]?.value;
+        updateData({
+            category,
+            specialties: suggestedSpecialty ? [suggestedSpecialty] : [],
+            pricingTier: "standard",
+        });
+        captureEvent("onboarding_trade_selected", {
+            category_id: category.id,
+            category_slug: category.slug,
+            category_name: category.name,
+            used_default_specialty: Boolean(suggestedSpecialty),
+            used_default_pricing_tier: true,
+        });
+        setTimeout(() => goToStep(4), 250);
     };
 
     return (

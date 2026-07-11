@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useOnboarding } from "@/components/onboarding/onboarding-context";
 import { WizardStep1 } from "@/components/onboarding/wizard-step-1";
 import { WizardStep2 } from "@/components/onboarding/wizard-step-2";
@@ -7,6 +8,7 @@ import { WizardStep3 } from "@/components/onboarding/wizard-step-3";
 import { WizardStep4 } from "@/components/onboarding/wizard-step-4";
 import { LoadingSuccess } from "@/components/onboarding/loading-success";
 import { AnimatePresence, motion } from "framer-motion";
+import { captureEvent } from "@/lib/analytics";
 
 interface WizardContentClientProps {
     userId: string;
@@ -15,6 +17,15 @@ interface WizardContentClientProps {
 
 export function WizardContentClient({ userId, initialEmail }: WizardContentClientProps) {
     const { step } = useOnboarding();
+    const visualStep = step >= 4 ? 2 : 1;
+
+    useEffect(() => {
+        captureEvent(step === 1 ? "onboarding_started" : "onboarding_step_viewed", {
+            step,
+            visual_step: visualStep,
+            source: "onboarding_wizard",
+        });
+    }, [step, visualStep]);
 
     return (
         <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
@@ -22,10 +33,10 @@ export function WizardContentClient({ userId, initialEmail }: WizardContentClien
                 {/* Progress Dots */}
                 {step < 5 && (
                     <div className="flex justify-center space-x-2 mb-12">
-                        {[1, 2, 3, 4].map((s) => (
+                        {[1, 2].map((s) => (
                             <div
                                 key={s}
-                                className={`h-2 rounded-full transition-all duration-300 ${s === step ? "w-8 bg-primary" : s < step ? "w-2 bg-primary/50" : "w-2 bg-muted"
+                                className={`h-2 rounded-full transition-all duration-300 ${s === visualStep ? "w-8 bg-primary" : s < visualStep ? "w-2 bg-primary/50" : "w-2 bg-muted"
                                     }`}
                             />
                         ))}

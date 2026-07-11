@@ -7,6 +7,7 @@ import { ProposalCanvas, type ProposalProfile, type ProposalQuote } from '@/comp
 import { getEntitledPlan, isFreePlan, parseProposalIdentitySettings } from '@/lib/proposal-style'
 import { buildQuoteApprovalMessage, buildWhatsAppLink } from '@/lib/quote-share'
 import { captureServerActivationStage, captureServerEvent } from '@/lib/server-analytics'
+import { PublicQuoteOpenTracker } from '@/components/quotes/public-quote-open-tracker'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params
@@ -128,16 +129,19 @@ export default async function QuotePage({
     }
 
     return (
-        <ProposalCanvas
-            quote={quote as ProposalQuote}
-            profile={profile as ProposalProfile | null}
-            isOwner={isOwner}
-            canClientRespond={canClientRespond}
-            approvalUrl={approvalUrl}
-            pdfUrl={pdfUrl}
-            whatsappLink={whatsappLink}
-            whatsappMessage={whatsappMessage}
-            totalFormatted={totalFormatted}
-        />
+        <>
+            {canClientRespond && token && <PublicQuoteOpenTracker quoteId={quote.id} token={token} />}
+            <ProposalCanvas
+                quote={quote as ProposalQuote}
+                profile={profile as ProposalProfile | null}
+                isOwner={isOwner}
+                canClientRespond={canClientRespond}
+                approvalUrl={approvalUrl}
+                pdfUrl={pdfUrl}
+                whatsappLink={whatsappLink}
+                whatsappMessage={whatsappMessage}
+                totalFormatted={totalFormatted}
+            />
+        </>
     )
 }

@@ -130,7 +130,7 @@ export function LoadingSuccess() {
                 </h2>
                 <p className="text-muted-foreground">
                     {complete
-                        ? "Criamos seu catalogo inicial. Agora gere uma proposta teste em 2 minutos com itens sugeridos para seu oficio."
+                        ? "Sua base esta pronta. Agora transforme a proposta sugerida em um orcamento real para um cliente."
                         : error || status}
                 </p>
             </div>
@@ -151,7 +151,7 @@ export function LoadingSuccess() {
                     >
                         <Button className="h-12 w-full font-semibold">
                             <FileText className="mr-2 h-4 w-4" />
-                            Criar proposta teste em 2 minutos
+                            Criar proposta para um cliente
                             <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                     </Link>

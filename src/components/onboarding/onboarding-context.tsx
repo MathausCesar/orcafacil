@@ -8,6 +8,7 @@ type OnboardingContextType = {
     updateData: (updates: Partial<OnboardingData>) => void;
     nextStep: () => void;
     prevStep: () => void;
+    goToStep: (step: number) => void;
     step: number;
 };
 
@@ -23,9 +24,10 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
     const nextStep = () => setStep((prev) => prev + 1);
     const prevStep = () => setStep((prev) => Math.max(1, prev - 1));
+    const goToStep = (nextStep: number) => setStep(Math.min(5, Math.max(1, nextStep)));
 
     return (
-        <OnboardingContext.Provider value={{ data, updateData, nextStep, prevStep, step }}>
+        <OnboardingContext.Provider value={{ data, updateData, nextStep, prevStep, goToStep, step }}>
             {children}
         </OnboardingContext.Provider>
     );

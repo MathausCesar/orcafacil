@@ -9,7 +9,7 @@ import { PwaInstallPrompt } from '@/components/pwa-install-prompt'
 import { getActiveOrganizationId } from '@/lib/get-active-organization'
 import { OrganizationProvider } from '@/contexts/organization-context'
 import { getEntitledPlan, isFreePlan } from '@/lib/proposal-style'
-import { PRICING } from '@/lib/pricing-copy'
+import { getFreeQuoteAllowance } from '@/lib/pricing-copy'
 
 export const metadata: Metadata = {
     robots: {
@@ -32,24 +32,11 @@ export default async function DashboardLayout({
 
     const orgId = await getActiveOrganizationId(supabase)
 
-    // Single parallel fetch: profile + quotes count (instead of 3 sequential calls)
-    const [profileResult, quotesCountResult] = await Promise.all([
-        supabase
-            .from('profiles')
-            .select('plan, subscription_status, onboarded_at')
-            .eq('id', user.id)
-            .single(),
-        orgId
-            ? supabase
-                .from('quotes')
-                .select('id', { count: 'exact', head: true })
-                .eq('organization_id', orgId)
-                .eq('experience_mode', 'free_simple')
-                .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
-            : Promise.resolve({ count: 0 })
-    ])
-
-    const profile = profileResult.data
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan, subscription_status, onboarded_at')
+        .eq('id', user.id)
+        .single()
 
     // Onboarding check (no separate function call needed)
     if (!profile?.onboarded_at) {
@@ -57,6 +44,15 @@ export default async function DashboardLayout({
     }
 
     const isFree = isFreePlan(getEntitledPlan(profile?.plan, profile?.subscription_status))
+    const freeAllowance = getFreeQuoteAllowance(profile?.onboarded_at)
+    const quotesCountResult = isFree && orgId
+        ? await supabase
+            .from('quotes')
+            .select('id', { count: 'exact', head: true })
+            .eq('organization_id', orgId)
+            .eq('experience_mode', 'free_simple')
+            .gte('created_at', freeAllowance.periodStart.toISOString())
+        : { count: 0 }
     const quotesUsed = (isFree && orgId) ? (quotesCountResult.count || 0) : 0
 
     return (
@@ -72,7 +68,14 @@ export default async function DashboardLayout({
                 {/* Main Content Area */}
                 <main className="min-w-0 flex-1 transition-all duration-300 lg:pl-64">
                     <div className="container mx-auto w-full min-w-0 max-w-2xl p-3 pb-24 sm:p-4 md:p-8 lg:max-w-7xl lg:pb-8">
-                        {isFree && <UpgradeBanner quotesUsed={quotesUsed} quotesLimit={PRICING.freeQuotesPerMonth} />}
+                        {isFree && (
+                            <UpgradeBanner
+                                quotesUsed={quotesUsed}
+                                quotesLimit={freeAllowance.limit}
+                                period={freeAllowance.period}
+                                remainingDays={freeAllowance.remainingDays}
+                            />
+                        )}
                         {children}
                     </div>
                 </main>

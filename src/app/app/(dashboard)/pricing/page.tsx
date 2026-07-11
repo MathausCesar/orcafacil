@@ -20,6 +20,7 @@ const YEARLY_PRICE = PRICING.yearly
 const YEARLY_MONTHLY_EQUIV = formatNumberBR(YEARLY_MONTHLY_EQUIV_VALUE)
 const SAVINGS = formatNumberBR(YEARLY_SAVINGS)
 const DISCOUNT_PCT = YEARLY_DISCOUNT_PCT
+const SUPPORT_WHATSAPP_URL = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_URL
 
 async function createCheckoutUrl(plan: "monthly" | "yearly"): Promise<{ url: string; checkoutStarted: boolean }> {
     const formData = new FormData()
@@ -65,6 +66,10 @@ export default function PricingPage() {
     const posthog = usePostHog()
 
     useEffect(() => {
+        posthog.capture("pricing_viewed", {
+            source: searchParams.get("source") || "direct",
+        })
+
         if (searchParams.get("canceled") === "true") {
             posthog.capture("checkout_returned_canceled", {
                 source: "pricing_page",
@@ -244,12 +249,12 @@ export default function PricingPage() {
                 <span className="font-semibold text-foreground">Stripe</span>.{" "}
                 Dúvidas?{" "}
                 <a
-                    href="https://wa.me/55"
+                    href={SUPPORT_WHATSAPP_URL || "mailto:contato@zacly.com.br"}
                     target="_blank"
                     rel="noreferrer"
                     className="underline hover:text-foreground transition-colors"
                 >
-                    Fale conosco no WhatsApp
+                    {SUPPORT_WHATSAPP_URL ? 'Fale conosco no WhatsApp' : 'Fale conosco por email'}
                 </a>
             </p>
         </div>

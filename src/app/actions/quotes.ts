@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createNotification } from './notifications'
 import { getAuthContext } from '@/lib/get-auth-context'
-import { PRICING } from '@/lib/pricing-copy'
+import { PRICING, getFreeQuoteAllowance } from '@/lib/pricing-copy'
 import { normalizeProfessionalContext } from '@/lib/professional-context'
 import { FREE_PROPOSAL_MODEL, getEntitledPlan, isFreePlan, normalizeProposalModel } from '@/lib/proposal-style'
 
@@ -121,7 +121,7 @@ export async function createQuote(formData: FormData) {
     // --- FREEMIUM CHECK ---
     const { data: profile } = await supabase
         .from('profiles')
-        .select('plan, subscription_status')
+        .select('plan, subscription_status, onboarded_at, logo_url')
         .eq('id', user.id)
         .single()
 
@@ -130,8 +130,7 @@ export async function createQuote(formData: FormData) {
     const requestedExperienceMode = normalizeExperienceMode(formData.get('experience_mode'), isFree)
 
     if (isFree) {
-        const now = new Date();
-        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const allowance = getFreeQuoteAllowance(profile?.onboarded_at)
 
         const [freeQuoteCountResult, proSampleCountResult] = await Promise.all([
             supabase
@@ -139,7 +138,7 @@ export async function createQuote(formData: FormData) {
                 .select('*', { count: 'exact', head: true })
                 .eq('organization_id', orgId)
                 .eq('experience_mode', 'free_simple')
-                .gte('created_at', firstDayOfMonth.toISOString()),
+                .gte('created_at', allowance.periodStart.toISOString()),
             supabase
                 .from('quotes')
                 .select('*', { count: 'exact', head: true })
@@ -158,9 +157,12 @@ export async function createQuote(formData: FormData) {
         if (
             requestedExperienceMode === 'free_simple'
             && !freeQuoteCountResult.error
-            && (freeQuoteCountResult.count || 0) >= PRICING.freeQuotesPerMonth
+            && (freeQuoteCountResult.count || 0) >= allowance.limit
         ) {
-            return { error: 'LIMIT_REACHED', message: 'Voce ja criou sua proposta simples gratis deste mes. Use o deguste Pro ou assine para criar sem limite.' }
+            const limitMessage = allowance.period === 'activation'
+                ? 'Voce ja usou as 5 propostas simples do periodo inicial. Use o Deguste Pro ou assine para criar sem limite.'
+                : 'Voce ja criou sua proposta simples gratis deste mes. Use o Deguste Pro ou assine para criar sem limite.'
+            return { error: 'LIMIT_REACHED', message: limitMessage }
         }
     }
     // ----------------------
@@ -190,6 +192,17 @@ export async function createQuote(formData: FormData) {
     const afterCreate = formData.get('after_create') as string | null
 
     const items = parseQuoteItems(itemsJson)
+
+    if (
+        isFree
+        && requestedExperienceMode === 'pro_sample'
+        && (!profile?.logo_url || !clientName.trim() || !clientPhone.trim() || items.length === 0)
+    ) {
+        return {
+            error: 'PRO_SAMPLE_REQUIREMENTS',
+            message: 'Para usar o Deguste Pro, informe cliente e WhatsApp, adicione um item e envie sua logo.',
+        }
+    }
 
     // Calcule Total
     const total = items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0)

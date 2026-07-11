@@ -5,16 +5,21 @@ import { PRICING } from "@/lib/pricing-copy"
 interface UpgradeBannerProps {
     quotesUsed?: number
     quotesLimit?: number
+    period?: 'activation' | 'monthly'
+    remainingDays?: number | null
 }
 
-export function UpgradeBanner({ quotesUsed = 0, quotesLimit = PRICING.freeQuotesPerMonth }: UpgradeBannerProps) {
+export function UpgradeBanner({ quotesUsed = 0, quotesLimit = PRICING.freeQuotesPerMonth, period = 'monthly', remainingDays = null }: UpgradeBannerProps) {
     const remaining = quotesLimit - quotesUsed
     const isNearLimit = remaining <= 1
     const isAtLimit = remaining <= 0
 
-    let message = `Plano gratis: ${quotesUsed} de ${quotesLimit} proposta simples usada neste mes. O Pro libera propostas sem marca Zacly, com sua logo, cores e modelos visuais.`
+    const periodLabel = period === 'activation'
+        ? `${remainingDays || 1} dia${remainingDays === 1 ? '' : 's'} restante${remainingDays === 1 ? '' : 's'} no periodo inicial`
+        : 'neste mes'
+    let message = `Plano gratis: ${quotesUsed} de ${quotesLimit} proposta simples usada ${periodLabel}. O Pro libera propostas sem marca Zacly, com sua logo, cores e modelos visuais.`
     if (isAtLimit) {
-        message = `Voce ja usou sua proposta simples gratis deste mes. Use seu deguste Pro na proxima proposta ou assine para criar sem limites.`
+        message = `Voce ja usou suas propostas simples deste periodo. Use seu Deguste Pro na proxima proposta real ou assine para criar sem limites.`
     } else if (isNearLimit) {
         message = `Resta ${remaining} proposta simples gratis. Assine para remover a marca Zacly e criar propostas profissionais ilimitadas.`
     }

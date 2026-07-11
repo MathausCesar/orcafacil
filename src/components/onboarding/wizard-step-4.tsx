@@ -12,6 +12,9 @@ import type { LogoIdentityAnalysis } from "@/lib/color-extractor";
 import { toast } from "sonner";
 import { formatDocument, validateDocument } from "@/lib/utils/document";
 import { captureEvent } from "@/lib/analytics";
+import { ActivationProposalPreview } from "@/components/onboarding/activation-proposal-preview";
+import { getDefaultProfessionalContext } from "@/lib/onboarding-catalog";
+import { getLayoutRecommendationForContext, getProposalModelName } from "@/lib/profession-layout-recommendations";
 
 interface WizardStep4Props {
     userId: string;
@@ -30,6 +33,10 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
     const [themeColor, setThemeColor] = useState<string | null>(data.themeColor || null);
     const [logoAnalysis, setLogoAnalysis] = useState<LogoIdentityAnalysis | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const professionalContext = data.category
+        ? getDefaultProfessionalContext(data.category.slug, data.specialties)
+        : "general";
+    const recommendation = getLayoutRecommendationForContext(professionalContext, "onboarding");
 
     const handleLogoUploaded = (url: string) => {
         setLogoUrl(url);
@@ -59,6 +66,14 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
         }
 
         setIsSubmitting(true);
+        captureEvent("onboarding_identity_completed", {
+            category_id: data.category?.id,
+            category_slug: data.category?.slug,
+            has_logo: Boolean(logoUrl),
+            has_phone: Boolean(phone.trim()),
+            has_document: Boolean(document.trim()),
+            recommended_model: recommendation.model,
+        });
         updateData({
             businessName: businessName.trim(),
             phone,
@@ -75,8 +90,8 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
     return (
         <div className="space-y-6">
             <div className="space-y-2 text-center">
-                <h2 className="text-2xl font-bold tracking-tight">Identidade da sua empresa</h2>
-                <p className="text-muted-foreground">Configure os dados que aparecerao nos seus orcamentos.</p>
+                <h2 className="text-2xl font-bold tracking-tight">Veja sua proposta ganhar forma</h2>
+                <p className="text-muted-foreground">Informe o nome do negocio. A logo e opcional, mas deixa a previa com a sua marca.</p>
             </div>
 
             <div className="w-full space-y-8 rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
@@ -205,6 +220,17 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
                         </div>
                     </div>
                 </div>
+                {data.category && (
+                    <ActivationProposalPreview
+                        businessName={businessName}
+                        categoryName={data.category.name}
+                        categorySlug={data.category.slug}
+                        specialties={data.specialties}
+                        logoUrl={logoUrl}
+                        accentColor={themeColor}
+                        recommendedModel={getProposalModelName(recommendation.model)}
+                    />
+                )}
             </div>
 
             <div className="mt-8 flex items-center justify-between rounded-xl border border-border bg-card p-4">
@@ -213,7 +239,7 @@ export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
                     Voltar
                 </Button>
                 <Button onClick={handleContinue} className="font-semibold shadow-md" disabled={isSubmitting}>
-                    {isSubmitting ? "Finalizando..." : "Concluir setup"}
+                    {isSubmitting ? "Preparando..." : "Usar esta proposta"}
                     <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
             </div>

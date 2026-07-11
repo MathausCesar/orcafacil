@@ -423,10 +423,11 @@ export function ProposalCanvas({
             </header>
 
             <main className="mx-auto w-full max-w-6xl overflow-x-hidden px-3 py-6 sm:px-6 lg:py-10 print:max-w-none print:px-0 print:py-0">
-                {isOwner && accountIsFree && (
+                {isOwner && accountIsFree && status !== 'draft' && (
                     <FreePlanUpgradeNudge
                         quoteId={quote.id}
                         status={status}
+                        experienceMode={quote.experience_mode || 'free_simple'}
                         hasLogo={Boolean(profile?.logo_url)}
                         layoutStyle={proposalModel}
                         professionalContext={professionalContext.id}

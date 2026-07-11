@@ -34,6 +34,7 @@ type GtagFunction = (
 declare global {
     interface Window {
         gtag?: GtagFunction
+        dataLayer?: unknown[]
     }
 }
 
@@ -155,18 +156,29 @@ export function trackGoogleAdsConversion(
     eventName: GoogleAdsConversionName,
     properties: AnalyticsProperties = {}
 ) {
-    if (typeof window === 'undefined' || typeof window.gtag !== 'function') return
+    if (typeof window === 'undefined') return
 
     const label = GOOGLE_ADS_CONVERSION_LABELS[eventName]
     if (!label) return
 
     const sanitized = sanitizeProperties(properties)
-    window.gtag('event', 'conversion', {
+    const conversionPayload = {
         send_to: `${GOOGLE_ADS_ID}/${label}`,
         value: typeof sanitized.value === 'number' ? sanitized.value : undefined,
         currency: typeof sanitized.currency === 'string' ? sanitized.currency : 'BRL',
         transaction_id: typeof sanitized.transaction_id === 'string' ? sanitized.transaction_id : undefined,
-    })
+    }
+
+    // The first product event can happen before the external Google script finishes
+    // loading. Queue it in the standard data layer instead of silently dropping it.
+    if (typeof window.gtag !== 'function') {
+        window.dataLayer = window.dataLayer || []
+        window.gtag = (...args) => {
+            window.dataLayer?.push(args)
+        }
+    }
+
+    window.gtag('event', 'conversion', conversionPayload)
 }
 
 export function captureConversion(

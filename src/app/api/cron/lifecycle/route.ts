@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAppBaseUrl } from '@/lib/app-url'
 import { getResend } from '@/lib/resend'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { ZaclyEmailTemplate } from '@/components/emails/zacly-email-template'
 
 type LifecycleProfile = {
     id: string
@@ -108,7 +109,14 @@ async function dispatchLifecycleEmail(
             to: profile.email,
             subject: copy.subject,
             text: `${copy.message}\n\n${copy.cta}: ${copy.url}`,
-            html: `<p>${copy.message}</p><p><a href="${copy.url}">${copy.cta}</a></p>`,
+            react: ZaclyEmailTemplate({
+                preheader: copy.message,
+                title: copy.subject,
+                message: copy.message,
+                ctaLabel: copy.cta,
+                ctaUrl: copy.url,
+                footer: 'Voce recebeu este lembrete porque iniciou uma etapa no Zacly. Entre na sua conta para continuar ou ignore esta mensagem.',
+            }),
         })
 
         if (result.error) throw new Error(result.error.message)

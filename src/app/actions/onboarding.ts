@@ -3,6 +3,9 @@
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import type { Database, Json } from "@/types/database.types"
+import { getAppBaseUrl } from "@/lib/app-url"
+import { getResend } from "@/lib/resend"
+import { ZaclyEmailTemplate } from "@/components/emails/zacly-email-template"
 import {
     getDefaultProfessionalContext,
     getInitialCatalogForOnboarding,
@@ -208,9 +211,11 @@ export async function applyOnboardingKit(
 
         const { data: existingProfile } = await supabase
             .from("profiles")
-            .select("quote_settings")
+            .select("quote_settings, onboarded_at, email, business_name")
             .eq("id", userId)
             .maybeSingle()
+
+        const isFirstOnboarding = !existingProfile?.onboarded_at
 
         const quoteSettings: Json = {
             ...parseQuoteSettings(existingProfile?.quote_settings),
@@ -280,6 +285,34 @@ export async function applyOnboardingKit(
         }
 
         console.log('Successfully applied onboarding kit and updated profile/org.')
+
+        // A welcome message is an activation aid, not a dependency of onboarding.
+        // Never block the customer from entering the app if the email provider is unavailable.
+        const welcomeEmail = businessProfile?.email || existingProfile?.email || user.email
+        if (isFirstOnboarding && welcomeEmail && process.env.RESEND_API_KEY) {
+            const recipientName = businessName || existingProfile?.business_name || 'voce'
+            const proposalUrl = `${getAppBaseUrl()}/new?quick=1&starter=1&guided=proposal_test`
+            try {
+                const result = await getResend().emails.send({
+                    from: process.env.EMAIL_FROM || 'Zacly <contato@zacly.com.br>',
+                    to: welcomeEmail,
+                    subject: 'Sua primeira proposta profissional comeca agora | Zacly',
+                    text: `Ola, ${recipientName}. Sua conta esta pronta. Crie uma proposta guiada com itens do seu oficio e envie pelo WhatsApp. ${proposalUrl}`,
+                    react: ZaclyEmailTemplate({
+                        preheader: 'Sua conta esta pronta para criar a primeira proposta.',
+                        title: 'Sua conta esta pronta para ganhar tempo',
+                        greeting: `Ola, ${recipientName}!`,
+                        message: 'Comece com uma proposta guiada usando itens do seu oficio. Em poucos minutos, voce tera um orcamento organizado para enviar pelo WhatsApp.',
+                        ctaLabel: 'Criar minha primeira proposta',
+                        ctaUrl: proposalUrl,
+                    }),
+                })
+
+                if (result.error) console.error('Welcome email failed:', result.error)
+            } catch (emailError) {
+                console.error('Welcome email dispatch failed:', emailError)
+            }
+        }
 
         revalidatePath('/', 'layout')
         revalidatePath('/dashboard')

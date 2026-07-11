@@ -1,6 +1,6 @@
 import { getAdminDashboardStats } from "@/app/actions/admin"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Users, CreditCard, FileText, MessageSquare } from "lucide-react"
+import { Users, CreditCard, FileText, MessageSquare, Lightbulb } from "lucide-react"
 
 export const dynamic = 'force-dynamic'
 
@@ -39,6 +39,14 @@ export default async function AdminDashboardPage() {
             icon: MessageSquare,
             color: "text-rose-600",
             bg: "bg-rose-600/10"
+        },
+        {
+            title: "Ideias em Analise",
+            value: stats.openSuggestions,
+            description: "Sugestoes para priorizar",
+            icon: Lightbulb,
+            color: "text-violet-600",
+            bg: "bg-violet-600/10"
         }
     ]
 
@@ -51,7 +59,7 @@ export default async function AdminDashboardPage() {
                 </p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
                 {cards.map((card, idx) => {
                     const Icon = card.icon
                     return (

@@ -15,6 +15,7 @@ import {
 import { replyToTicket } from '@/app/actions/admin'
 import { toast } from 'sonner'
 import { MessageSquareReply, CheckCircle2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export type AdminSupportTicket = {
     id: string
@@ -24,6 +25,7 @@ export type AdminSupportTicket = {
     created_at: string
     status: string
     admin_reply?: string | null
+    replied_at?: string | null
     profiles?: {
         email?: string | null
         business_name?: string | null
@@ -34,8 +36,9 @@ export function TicketReplyDialog({ ticket }: { ticket: AdminSupportTicket }) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [replyText, setReplyText] = useState('')
+    const router = useRouter()
 
-    const isAnswered = ticket.status !== 'open'
+    const isAnswered = ['answered', 'closed'].includes(ticket.status)
 
     const handleReply = async () => {
         if (!replyText.trim()) {
@@ -49,6 +52,7 @@ export function TicketReplyDialog({ ticket }: { ticket: AdminSupportTicket }) {
         if (result.success) {
             toast.success('Resposta enviada com sucesso!')
             setOpen(false)
+            router.refresh()
         } else {
             toast.error(result.error || 'Falha ao enviar resposta.')
         }

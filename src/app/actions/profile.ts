@@ -12,6 +12,10 @@ type ProfileUpdateData = {
     phone?: string
     email?: string
     cnpj?: string
+    pix_key?: string
+    pix_key_type?: string | null
+    pix_recipient_name?: string
+    pix_recipient_city?: string
     cep?: string
     address?: string
     address_number?: string
@@ -72,6 +76,10 @@ export async function updateProfile(formData: FormData) {
     if (formData.has('phone')) updateData.phone = String(formData.get('phone') || '')
     if (formData.has('email')) updateData.email = String(formData.get('email') || '')
     if (formData.has('cnpj')) updateData.cnpj = String(formData.get('cnpj') || '')
+    if (formData.has('pix_key')) updateData.pix_key = String(formData.get('pix_key') || '').trim()
+    if (formData.has('pix_key_type')) updateData.pix_key_type = String(formData.get('pix_key_type') || '').trim() || null
+    if (formData.has('pix_recipient_name')) updateData.pix_recipient_name = String(formData.get('pix_recipient_name') || '').trim()
+    if (formData.has('pix_recipient_city')) updateData.pix_recipient_city = String(formData.get('pix_recipient_city') || '').trim()
     if (formData.has('cep')) updateData.cep = String(formData.get('cep') || '')
     if (formData.has('address')) updateData.address = String(formData.get('address') || '')
     if (formData.has('address_number')) updateData.address_number = String(formData.get('address_number') || '')
@@ -83,11 +91,11 @@ export async function updateProfile(formData: FormData) {
     if (hasProposalFields) {
         const { data: currentProfile } = await supabase
             .from('profiles')
-            .select('plan, subscription_status, quote_settings')
+            .select('plan, subscription_status, pro_trial_ends_at, quote_settings')
             .eq('id', user.id)
             .maybeSingle()
 
-        if (isFreePlan(getEntitledPlan(currentProfile?.plan, currentProfile?.subscription_status))) {
+        if (isFreePlan(getEntitledPlan(currentProfile?.plan, currentProfile?.subscription_status, currentProfile?.pro_trial_ends_at))) {
             updateData.layout_style = FREE_PROPOSAL_MODEL
             updateData.quote_settings = {
                 ...parseJsonObject(currentProfile?.quote_settings),
@@ -133,11 +141,11 @@ export async function updateThemeColor(color: string) {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('plan, subscription_status')
+        .select('plan, subscription_status, pro_trial_ends_at')
         .eq('id', user.id)
         .maybeSingle()
 
-    if (isFreePlan(getEntitledPlan(profile?.plan, profile?.subscription_status))) {
+    if (isFreePlan(getEntitledPlan(profile?.plan, profile?.subscription_status, profile?.pro_trial_ends_at))) {
         return { success: true, locked: true }
     }
 

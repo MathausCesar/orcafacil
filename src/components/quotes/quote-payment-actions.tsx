@@ -15,6 +15,8 @@ type QuotePaymentActionsProps = {
     total: number
     paymentStatus?: string | null
     amountPaid?: number | null
+    depositAmount?: number | null
+    depositStatus?: string | null
 }
 
 function formatCurrency(value: number) {
@@ -30,6 +32,8 @@ export function QuotePaymentActions({
     total,
     paymentStatus,
     amountPaid,
+    depositAmount,
+    depositStatus,
 }: QuotePaymentActionsProps) {
     const router = useRouter()
     const currentStatus = normalizePaymentStatus(paymentStatus)
@@ -38,6 +42,7 @@ export function QuotePaymentActions({
 
     const paidAmount = Number(amountPaid || 0)
     const remaining = Math.max(total - paidAmount, 0)
+    const requestedDeposit = Number(depositAmount || 0)
 
     const handlePaymentUpdate = async (status: PaymentStatus, amount?: number) => {
         if (status === 'partial' && (!amount || amount <= 0)) {
@@ -91,6 +96,14 @@ export function QuotePaymentActions({
                     {currentStatus === 'partial' && (
                         <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
                             Recebido: {formatCurrency(paidAmount)} de {formatCurrency(total)}
+                        </p>
+                    )}
+
+                    {requestedDeposit > 0 && (
+                        <p className={`mt-3 rounded-xl px-3 py-2 text-xs font-semibold ${depositStatus === 'marked_paid' ? 'bg-emerald-50 text-emerald-900' : 'bg-sky-50 text-sky-900'}`}>
+                            {depositStatus === 'marked_paid'
+                                ? `Sinal Pix registrado: ${formatCurrency(requestedDeposit)}`
+                                : `Sinal Pix solicitado: ${formatCurrency(requestedDeposit)}. Confirme pelo extrato antes de marcar como recebido.`}
                         </p>
                     )}
 

@@ -36,6 +36,7 @@ function formatBillingDate(value?: string | null) {
 }
 
 function getPlanLabel(plan?: string | null) {
+    if (plan === 'pro_trial') return 'Teste Pro'
     if (plan === 'pro_yearly') return 'Pro anual'
     if (plan === 'pro_monthly') return 'Pro mensal'
     if (plan && plan !== 'free') return 'Pro'
@@ -87,12 +88,16 @@ export default async function ProfilePage() {
         `)
         .eq('organization_id', orgId || '')
 
-    const accessPlan = getEntitledPlan(profile?.plan, profile?.subscription_status)
+    const accessPlan = getEntitledPlan(profile?.plan, profile?.subscription_status, profile?.pro_trial_ends_at)
     const isPaidPlan = !isFreePlan(accessPlan)
+    const isLocalTrial = accessPlan === 'pro_trial'
+    const hasStripeSubscription = ['active', 'trialing'].includes(profile?.subscription_status || '')
+        && ['pro_monthly', 'pro_yearly'].includes(profile?.plan || '')
     const planLabel = getPlanLabel(accessPlan)
     const billingDate = formatBillingDate(profile?.current_period_end)
+    const trialEndDate = formatBillingDate(profile?.pro_trial_ends_at)
     const cancelAtPeriodEnd = Boolean(profile?.cancel_at_period_end)
-    const statusLabel = getStatusLabel(profile?.subscription_status, cancelAtPeriodEnd)
+    const statusLabel = isLocalTrial ? 'Teste ativo' : getStatusLabel(profile?.subscription_status, cancelAtPeriodEnd)
 
     const teamContent = orgId ? (
         <TeamManager initialMembers={(members || []) as unknown as TeamMember[]} />
@@ -151,7 +156,9 @@ export default async function ProfilePage() {
                             <div>
                                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Plano atual</p>
                                 <p className="mt-1 text-base font-semibold text-foreground">{planLabel}</p>
-                                {isPaidPlan && billingDate ? (
+                                {isLocalTrial && trialEndDate ? (
+                                    <p className="mt-1 text-sm text-muted-foreground">Teste Pro ate {trialEndDate}. Assine para manter o acesso depois.</p>
+                                ) : isPaidPlan && billingDate ? (
                                     <p className="mt-1 text-sm text-muted-foreground">
                                         {cancelAtPeriodEnd ? 'Acesso Pro ate' : 'Proxima renovacao em'} {billingDate}
                                     </p>
@@ -171,7 +178,7 @@ export default async function ProfilePage() {
                         ) : null}
                     </div>
                     <LogoutButton />
-                    <CancelSubscriptionButton isFree={!isPaidPlan || cancelAtPeriodEnd} />
+                    <CancelSubscriptionButton isFree={!hasStripeSubscription || cancelAtPeriodEnd} />
                 </CardContent>
             </Card>
         </div>

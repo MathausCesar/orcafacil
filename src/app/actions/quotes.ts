@@ -52,6 +52,8 @@ type QuoteUpdatePayload = {
     installment_count: number | null
     layout_style: string | null
     professional_context: string
+    deposit_amount: number
+    deposit_status?: 'not_requested'
     status?: 'draft'
 }
 
@@ -124,11 +126,11 @@ export async function createQuote(formData: FormData) {
     // --- FREEMIUM CHECK ---
     const { data: profile } = await supabase
         .from('profiles')
-        .select('plan, subscription_status, onboarded_at, logo_url')
+        .select('plan, subscription_status, pro_trial_ends_at, onboarded_at, logo_url')
         .eq('id', user.id)
         .single()
 
-    const userPlan = getEntitledPlan(profile?.plan, profile?.subscription_status)
+    const userPlan = getEntitledPlan(profile?.plan, profile?.subscription_status, profile?.pro_trial_ends_at)
     const isFree = isFreePlan(userPlan)
     const requestedExperienceMode = normalizeExperienceMode(formData.get('experience_mode'), isFree)
 
@@ -204,6 +206,10 @@ export async function createQuote(formData: FormData) {
 
     // Calcule Total
     const total = items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0)
+    const requestedDepositAmount = Number(formData.get('deposit_amount') || 0)
+    const depositAmount = Number.isFinite(requestedDepositAmount)
+        ? Math.min(Math.max(requestedDepositAmount, 0), total)
+        : 0
 
     // 1. Create Quote
     // The client email column is introduced in the same deployment migration.
@@ -231,7 +237,9 @@ export async function createQuote(formData: FormData) {
             installment_count: installmentCount,
             layout_style: layoutStyle,
             professional_context: professionalContext,
-            experience_mode: requestedExperienceMode
+            experience_mode: requestedExperienceMode,
+            deposit_amount: depositAmount,
+            deposit_status: 'not_requested'
         })
         .select()
         .single()
@@ -304,7 +312,7 @@ export async function updateQuote(id: string, formData: FormData) {
     // Check current status — block locked quotes
     const { data: currentQuote } = await supabase
         .from('quotes')
-        .select('status, organization_id, experience_mode')
+        .select('status, organization_id, experience_mode, deposit_amount')
         .eq('id', id)
         .single()
 
@@ -317,15 +325,15 @@ export async function updateQuote(id: string, formData: FormData) {
     }
 
     // If the client already decided or requested changes, editing creates a new version for re-approval.
-    const shouldResetStatus = ['approved', 'changes_requested'].includes(currentQuote.status || '')
+    const shouldResetStatus = ['sent', 'approved', 'changes_requested'].includes(currentQuote.status || '')
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('plan, subscription_status')
+        .select('plan, subscription_status, pro_trial_ends_at')
         .eq('id', user.id)
         .maybeSingle()
 
-    const userPlan = getEntitledPlan(profile?.plan, profile?.subscription_status)
+    const userPlan = getEntitledPlan(profile?.plan, profile?.subscription_status, profile?.pro_trial_ends_at)
     const isFree = isFreePlan(userPlan)
 
     const clientName = formData.get('clientName') as string
@@ -354,6 +362,10 @@ export async function updateQuote(id: string, formData: FormData) {
 
     const items = parseQuoteItems(itemsJson)
     const total = items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0)
+    const requestedDepositAmount = Number(formData.get('deposit_amount') || 0)
+    const depositAmount = Number.isFinite(requestedDepositAmount)
+        ? Math.min(Math.max(requestedDepositAmount, 0), total)
+        : 0
 
     // 1. Update Quote Info
     const updateData: QuoteUpdatePayload = {
@@ -375,7 +387,8 @@ export async function updateQuote(id: string, formData: FormData) {
         payment_methods: paymentMethods,
         installment_count: installmentCount,
         layout_style: layoutStyle,
-        professional_context: professionalContext
+        professional_context: professionalContext,
+        deposit_amount: depositAmount
     }
 
     // Reset decided quotes back to draft for re-approval
@@ -393,6 +406,13 @@ export async function updateQuote(id: string, formData: FormData) {
             approval_verification_method: null,
             sent_confirmed_at: null,
             sent_via: null,
+            deposit_status: 'not_requested',
+            deposit_requested_at: null,
+            deposit_marked_paid_at: null,
+            pix_key_snapshot: null,
+            pix_key_type_snapshot: null,
+            pix_recipient_name_snapshot: null,
+            pix_recipient_city_snapshot: null,
         }
         : {}
 
@@ -434,6 +454,284 @@ export async function updateQuote(id: string, formData: FormData) {
     revalidatePath(`/quotes/${id}`)
     revalidatePath('/')
     return { success: true, quoteId: id, total, redirect: `/quotes/${id}` }
+}
+
+export async function duplicateQuote(id: string) {
+    const { supabase, user, orgId } = await getAuthContext()
+
+    if (!user || !orgId) {
+        return { error: 'Unauthorized', redirect: '/login' }
+    }
+
+    const [sourceResult, itemsResult, profileResult] = await Promise.all([
+        supabase
+            .from('quotes')
+            .select('*')
+            .eq('id', id)
+            .eq('organization_id', orgId)
+            .maybeSingle(),
+        supabase
+            .from('quote_items')
+            .select('service_id, item_type, description, details, quantity, unit_price, unit_cost')
+            .eq('quote_id', id),
+        supabase
+            .from('profiles')
+            .select('plan, subscription_status, pro_trial_ends_at')
+            .eq('id', user.id)
+            .maybeSingle(),
+    ])
+
+    const sourceQuote = sourceResult.data
+    if (!sourceQuote || sourceQuote.user_id !== user.id) {
+        return { error: 'Proposta nao encontrada.' }
+    }
+
+    const accessPlan = getEntitledPlan(
+        profileResult.data?.plan,
+        profileResult.data?.subscription_status,
+        profileResult.data?.pro_trial_ends_at,
+    )
+
+    if (isFreePlan(accessPlan)) {
+        return {
+            error: 'UPGRADE_REQUIRED',
+            message: 'Usar uma proposta como base faz parte do Pro. Envie sua primeira proposta para liberar o teste Pro de 7 dias.',
+        }
+    }
+
+    if (itemsResult.error) {
+        console.error('Error loading quote items to duplicate:', itemsResult.error)
+        return { error: 'Nao foi possivel copiar os itens desta proposta.' }
+    }
+
+    const expiration = new Date()
+    expiration.setDate(expiration.getDate() + 7)
+
+    // A duplicate is intentionally a fresh draft: no public link, send record,
+    // client decision, payment confirmation or stock deduction is carried over.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: duplicatedQuote, error: duplicateError } = await (supabase.from('quotes') as any)
+        .insert({
+            user_id: user.id,
+            organization_id: orgId,
+            client_name: sourceQuote.client_name,
+            client_phone: sourceQuote.client_phone,
+            client_email: sourceQuote.client_email,
+            client_company_name: sourceQuote.client_company_name,
+            client_type: sourceQuote.client_type,
+            expiration_date: expiration.toISOString().slice(0, 10),
+            payment_terms: sourceQuote.payment_terms,
+            notes: sourceQuote.notes,
+            total: sourceQuote.total,
+            status: 'draft',
+            show_timeline: sourceQuote.show_timeline,
+            show_payment_options: sourceQuote.show_payment_options,
+            show_detailed_items: sourceQuote.show_detailed_items,
+            estimated_days: sourceQuote.estimated_days,
+            cash_discount_type: sourceQuote.cash_discount_type,
+            cash_discount_percent: sourceQuote.cash_discount_percent,
+            cash_discount_fixed: sourceQuote.cash_discount_fixed,
+            payment_methods: sourceQuote.payment_methods,
+            installment_count: sourceQuote.installment_count,
+            layout_style: sourceQuote.layout_style,
+            professional_context: sourceQuote.professional_context,
+            experience_mode: 'pro',
+            deposit_amount: sourceQuote.deposit_amount || 0,
+            deposit_status: 'not_requested',
+            source_quote_id: sourceQuote.id,
+        })
+        .select('id, client_name')
+        .single()
+
+    if (duplicateError || !duplicatedQuote) {
+        console.error('Error duplicating quote:', duplicateError)
+        return { error: 'Nao foi possivel criar a nova proposta.' }
+    }
+
+    const duplicateItems = (itemsResult.data || []).map((item) => ({
+        quote_id: duplicatedQuote.id,
+        service_id: item.service_id || null,
+        item_type: item.item_type || 'service',
+        description: item.description,
+        details: item.details,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        unit_cost: item.unit_cost || 0,
+    }))
+
+    const { error: duplicateItemsError } = await supabase
+        .from('quote_items')
+        .insert(duplicateItems)
+
+    if (duplicateItemsError) {
+        console.error('Error copying quote items:', duplicateItemsError)
+        await supabase.from('quotes').delete().eq('id', duplicatedQuote.id)
+        return { error: 'Nao foi possivel copiar os itens desta proposta.' }
+    }
+
+    await captureServerEvent('quote_duplicated', user.id, {
+        source_quote_id: sourceQuote.id,
+        new_quote_id: duplicatedQuote.id,
+        item_count: duplicateItems.length,
+        source_status: sourceQuote.status || 'unknown',
+        professional_context: sourceQuote.professional_context || 'general',
+    })
+
+    revalidatePath('/quotes')
+    revalidatePath('/')
+    return { success: true, quoteId: duplicatedQuote.id, redirect: `/quotes/${duplicatedQuote.id}/edit` }
+}
+
+type QuoteEvidenceInput = {
+    storagePath: string
+    fileName: string
+    contentType: string
+    fileSize: number
+}
+
+export async function addQuoteEvidence(quoteId: string, evidence: QuoteEvidenceInput) {
+    const { supabase, user, orgId } = await getAuthContext()
+
+    if (!user || !orgId) throw new Error('Unauthorized')
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+    const allowedPath = `${user.id}/${quoteId}/`
+    if (!allowedTypes.includes(evidence.contentType) || evidence.fileSize <= 0 || evidence.fileSize > 6 * 1024 * 1024 || !evidence.storagePath.startsWith(allowedPath)) {
+        throw new Error('Arquivo de evidencia invalido.')
+    }
+
+    const [quoteResult, profileResult, evidenceCountResult] = await Promise.all([
+        supabase
+            .from('quotes')
+            .select('id, user_id, organization_id')
+            .eq('id', quoteId)
+            .eq('organization_id', orgId)
+            .maybeSingle(),
+        supabase
+            .from('profiles')
+            .select('plan, subscription_status, pro_trial_ends_at')
+            .eq('id', user.id)
+            .maybeSingle(),
+        supabase
+            .from('quote_evidences')
+            .select('id', { count: 'exact', head: true })
+            .eq('quote_id', quoteId),
+    ])
+
+    if (!quoteResult.data || quoteResult.data.user_id !== user.id) {
+        throw new Error('Proposta nao encontrada.')
+    }
+
+    const accessPlan = getEntitledPlan(
+        profileResult.data?.plan,
+        profileResult.data?.subscription_status,
+        profileResult.data?.pro_trial_ends_at,
+    )
+    if (isFreePlan(accessPlan)) {
+        throw new Error('Fotos de referencia fazem parte do Pro. Envie sua primeira proposta para liberar o teste Pro de 7 dias.')
+    }
+    if ((evidenceCountResult.count || 0) >= 6) {
+        throw new Error('Cada proposta pode ter ate 6 fotos de referencia.')
+    }
+
+    const { error } = await supabase
+        .from('quote_evidences')
+        .insert({
+            quote_id: quoteId,
+            organization_id: orgId,
+            user_id: user.id,
+            storage_path: evidence.storagePath,
+            file_name: evidence.fileName.slice(0, 180),
+            content_type: evidence.contentType,
+            file_size: evidence.fileSize,
+            is_client_visible: false,
+        })
+
+    if (error) {
+        console.error('Error saving quote evidence:', error)
+        throw new Error('Nao foi possivel salvar a foto na proposta.')
+    }
+
+    await captureServerEvent('quote_evidence_added', user.id, {
+        quote_id: quoteId,
+        file_type: evidence.contentType,
+        file_size_band: evidence.fileSize < 512 * 1024 ? 'under_512kb' : evidence.fileSize < 1024 * 1024 ? '512kb_1mb' : 'over_1mb',
+        source: 'quote_evidence_manager',
+    })
+
+    revalidatePath(`/quotes/${quoteId}`)
+    return { success: true }
+}
+
+export async function updateQuoteEvidenceVisibility(evidenceId: string, visibleToClient: boolean) {
+    const { supabase, user, orgId } = await getAuthContext()
+    if (!user || !orgId) throw new Error('Unauthorized')
+
+    const { data: evidence } = await supabase
+        .from('quote_evidences')
+        .select('id, quote_id, user_id, organization_id')
+        .eq('id', evidenceId)
+        .eq('organization_id', orgId)
+        .maybeSingle()
+
+    if (!evidence || evidence.user_id !== user.id) throw new Error('Foto nao encontrada.')
+
+    const { error } = await supabase
+        .from('quote_evidences')
+        .update({ is_client_visible: visibleToClient })
+        .eq('id', evidenceId)
+        .eq('user_id', user.id)
+
+    if (error) {
+        console.error('Error updating evidence visibility:', error)
+        throw new Error('Nao foi possivel atualizar a visibilidade da foto.')
+    }
+
+    await captureServerEvent('quote_evidence_visibility_changed', user.id, {
+        quote_id: evidence.quote_id,
+        visible_to_client: visibleToClient,
+        source: 'quote_evidence_manager',
+    })
+
+    revalidatePath(`/quotes/${evidence.quote_id}`)
+    return { success: true }
+}
+
+export async function deleteQuoteEvidence(evidenceId: string) {
+    const { supabase, user, orgId } = await getAuthContext()
+    if (!user || !orgId) throw new Error('Unauthorized')
+
+    const { data: evidence } = await supabase
+        .from('quote_evidences')
+        .select('id, quote_id, user_id, organization_id, storage_path')
+        .eq('id', evidenceId)
+        .eq('organization_id', orgId)
+        .maybeSingle()
+
+    if (!evidence || evidence.user_id !== user.id) throw new Error('Foto nao encontrada.')
+
+    const { error: storageError } = await supabase.storage
+        .from('quote-evidences')
+        .remove([evidence.storage_path])
+
+    if (storageError) {
+        console.error('Error deleting evidence file:', storageError)
+        throw new Error('Nao foi possivel remover o arquivo da foto.')
+    }
+
+    const { error } = await supabase
+        .from('quote_evidences')
+        .delete()
+        .eq('id', evidenceId)
+        .eq('user_id', user.id)
+
+    if (error) {
+        console.error('Error deleting quote evidence:', error)
+        throw new Error('Nao foi possivel remover a foto da proposta.')
+    }
+
+    revalidatePath(`/quotes/${evidence.quote_id}`)
+    return { success: true }
 }
 
 export async function deleteQuote(id: string) {
@@ -526,7 +824,7 @@ export async function confirmQuoteSent(id: string, channel: 'whatsapp' | 'email'
 
     const { data: quote } = await supabase
         .from('quotes')
-        .select('id, client_name, client_phone, total, organization_id, status, experience_mode')
+        .select('id, client_name, client_phone, client_email, total, organization_id, status, experience_mode, sent_confirmed_at')
         .eq('id', id)
         .eq('organization_id', orgId)
         .maybeSingle()
@@ -537,6 +835,70 @@ export async function confirmQuoteSent(id: string, channel: 'whatsapp' | 'email'
 
     if (channel === 'whatsapp' && (quote.client_phone || '').replace(/\D/g, '').length < 10) {
         throw new Error('Informe o WhatsApp do cliente antes de confirmar o envio.')
+    }
+
+    if (channel === 'email' && !/^\S+@\S+\.\S+$/.test(quote.client_email || '')) {
+        throw new Error('Informe o email do cliente antes de confirmar o envio.')
+    }
+
+    const wasAlreadyConfirmed = Boolean(quote.sent_confirmed_at)
+    const { data: atomicRows, error: atomicError } = await supabase.rpc('confirm_quote_sent_and_start_trial', {
+        p_quote_id: id,
+        p_channel: channel,
+    })
+
+    if (!atomicError) {
+        const atomicConfirmation = Array.isArray(atomicRows) ? atomicRows[0] : null
+        const confirmedAt = atomicConfirmation?.confirmed_at || new Date().toISOString()
+        const trialStarted = Boolean(atomicConfirmation?.trial_started)
+        const trialEndsAt = atomicConfirmation?.trial_ends_at || null
+        const payload = {
+            quote_id: id,
+            channel,
+            previous_status: quote.status || 'unknown',
+            experience_mode: quote.experience_mode || 'free_simple',
+            total_band: Number(quote.total || 0) < 500 ? 'under_500' : Number(quote.total || 0) < 1500 ? '500_1499' : Number(quote.total || 0) < 5000 ? '1500_4999' : '5000_plus',
+            source: 'owner_confirmed_send',
+        }
+
+        if (!wasAlreadyConfirmed) {
+            await createNotification(
+                user.id,
+                'Orcamento enviado',
+                `O orcamento para ${quote.client_name} foi confirmado como enviado pelo ${channel === 'whatsapp' ? 'WhatsApp' : 'email'}.`,
+                `/quotes/${id}`,
+                'info',
+            )
+            await captureServerEvent('quote_sent_confirmed', user.id, payload)
+            await captureServerActivationStage(user.id, 'quote_sent_no_subscription', payload)
+        }
+
+        if (trialStarted) {
+            await captureServerEvent('pro_trial_started', user.id, {
+                ...payload,
+                source: 'first_confirmed_quote_send',
+                trial_days: 7,
+            })
+            await createNotification(
+                user.id,
+                'Teste Pro liberado por 7 dias',
+                'Sua primeira proposta foi enviada. Agora voce pode testar recursos Pro por 7 dias.',
+                '/profile?tab=proposal',
+                'success',
+            )
+        }
+
+        revalidatePath(`/quotes/${id}`)
+        revalidatePath('/quotes')
+        revalidatePath('/')
+        return { success: true, confirmedAt, trialStarted, trialEndsAt }
+    }
+
+    // A short compatibility fallback prevents a deploy race from blocking a
+    // real send while the database migration is still propagating.
+    if (!atomicError.message.includes('confirm_quote_sent_and_start_trial')) {
+        console.error('Error confirming quote sent:', atomicError)
+        throw new Error(atomicError.message || 'Nao foi possivel confirmar o envio.')
     }
 
     if (['draft', 'pending'].includes(quote.status || '')) {
@@ -593,7 +955,49 @@ export async function confirmQuoteSent(id: string, channel: 'whatsapp' | 'email'
     revalidatePath(`/quotes/${id}`)
     revalidatePath('/quotes')
     revalidatePath('/')
-    return { success: true, confirmedAt }
+    return { success: true, confirmedAt, trialStarted: false, trialEndsAt: null }
+}
+
+export async function recordQuoteFollowUp(id: string) {
+    const { supabase, user, orgId } = await getAuthContext()
+
+    if (!user || !orgId) {
+        throw new Error('Unauthorized')
+    }
+
+    const { data: quote } = await supabase
+        .from('quotes')
+        .select('id, user_id, total, status, first_public_opened_at, organization_id')
+        .eq('id', id)
+        .eq('organization_id', orgId)
+        .maybeSingle()
+
+    if (!quote || quote.user_id !== user.id) {
+        throw new Error('Proposta nao encontrada.')
+    }
+
+    const { data: followUpCount, error } = await supabase.rpc('register_quote_follow_up', {
+        p_quote_id: id,
+    })
+
+    if (error) {
+        console.error('Error registering quote follow-up:', error)
+        throw new Error(error.message || 'Nao foi possivel registrar o lembrete.')
+    }
+
+    await captureServerEvent('quote_follow_up_confirmed', user.id, {
+        quote_id: id,
+        quote_status: quote.status || 'unknown',
+        follow_up_count: Number(followUpCount || 0),
+        has_public_open: Boolean(quote.first_public_opened_at),
+        total_band: Number(quote.total || 0) < 500 ? 'under_500' : Number(quote.total || 0) < 1500 ? '500_1499' : Number(quote.total || 0) < 5000 ? '1500_4999' : '5000_plus',
+        source: 'owner_confirmed_follow_up',
+    })
+
+    revalidatePath(`/quotes/${id}`)
+    revalidatePath('/quotes')
+    revalidatePath('/')
+    return { success: true, followUpCount: Number(followUpCount || 0) }
 }
 
 export async function deductQuoteStock(id: string) {
@@ -636,7 +1040,7 @@ export async function updateQuotePayment(id: string, status: string, amountPaid?
 
     const { data: quote } = await supabase
         .from('quotes')
-        .select('id, client_name, total, organization_id, user_id')
+        .select('id, client_name, total, organization_id, user_id, deposit_amount, deposit_status')
         .eq('id', id)
         .eq('organization_id', orgId)
         .single()
@@ -652,6 +1056,9 @@ export async function updateQuotePayment(id: string, status: string, amountPaid?
         : paymentStatus === 'partial'
             ? Math.min(cleanAmount, total)
             : 0
+    const marksDepositPaid = quote.deposit_status === 'requested'
+        && Number(quote.deposit_amount || 0) > 0
+        && nextAmount >= Number(quote.deposit_amount || 0)
 
     const { error } = await supabase
         .from('quotes')
@@ -660,6 +1067,8 @@ export async function updateQuotePayment(id: string, status: string, amountPaid?
             amount_paid: nextAmount,
             paid_at: paymentStatus === 'paid' ? new Date().toISOString() : null,
             payment_updated_at: new Date().toISOString(),
+            deposit_status: marksDepositPaid ? 'marked_paid' : quote.deposit_status,
+            deposit_marked_paid_at: marksDepositPaid ? new Date().toISOString() : null,
             updated_at: new Date().toISOString(),
         })
         .eq('id', id)
@@ -696,4 +1105,72 @@ export async function updateQuotePayment(id: string, status: string, amountPaid?
     revalidatePath('/')
 
     return { success: true }
+}
+
+export async function markQuoteDepositPaid(id: string) {
+    const { supabase, user, orgId } = await getAuthContext()
+
+    if (!user || !orgId) {
+        throw new Error('Unauthorized')
+    }
+
+    const { data: quote } = await supabase
+        .from('quotes')
+        .select('id, client_name, total, user_id, organization_id, amount_paid, deposit_amount, deposit_status')
+        .eq('id', id)
+        .eq('organization_id', orgId)
+        .maybeSingle()
+
+    if (!quote || quote.user_id !== user.id) {
+        throw new Error('Proposta nao encontrada.')
+    }
+
+    const depositAmount = Number(quote.deposit_amount || 0)
+    if (depositAmount <= 0 || quote.deposit_status === 'not_requested') {
+        throw new Error('Nao ha sinal Pix solicitado nesta proposta.')
+    }
+
+    const currentAmount = Number(quote.amount_paid || 0)
+    const nextAmount = Math.min(Math.max(currentAmount, depositAmount), Number(quote.total || 0))
+    const isFullyPaid = nextAmount >= Number(quote.total || 0) && Number(quote.total || 0) > 0
+    const markedAt = new Date().toISOString()
+
+    const { error } = await supabase
+        .from('quotes')
+        .update({
+            deposit_status: 'marked_paid',
+            deposit_marked_paid_at: markedAt,
+            amount_paid: nextAmount,
+            payment_status: isFullyPaid ? 'paid' : 'partial',
+            paid_at: isFullyPaid ? markedAt : null,
+            payment_updated_at: markedAt,
+            updated_at: markedAt,
+        })
+        .eq('id', id)
+        .eq('organization_id', orgId)
+
+    if (error) {
+        console.error('Error confirming deposit:', error)
+        throw new Error('Nao foi possivel registrar o sinal.')
+    }
+
+    await createNotification(
+        quote.user_id,
+        'Sinal Pix registrado',
+        `O sinal de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(depositAmount)} de ${quote.client_name} foi marcado como recebido.`,
+        `/quotes/${id}`,
+        'success',
+    )
+
+    await captureServerEvent('quote_deposit_marked_paid', user.id, {
+        quote_id: id,
+        deposit_amount: depositAmount,
+        total_band: Number(quote.total || 0) < 500 ? 'under_500' : Number(quote.total || 0) < 1500 ? '500_1499' : Number(quote.total || 0) < 5000 ? '1500_4999' : '5000_plus',
+        source: 'manual_owner_confirmation',
+    })
+
+    revalidatePath(`/quotes/${id}`)
+    revalidatePath('/quotes')
+    revalidatePath('/')
+    return { success: true, amountPaid: nextAmount }
 }

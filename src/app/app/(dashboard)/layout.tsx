@@ -34,7 +34,7 @@ export default async function DashboardLayout({
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('plan, subscription_status, onboarded_at')
+        .select('plan, subscription_status, pro_trial_ends_at, onboarded_at')
         .eq('id', user.id)
         .single()
 
@@ -43,7 +43,7 @@ export default async function DashboardLayout({
         redirect('/onboarding')
     }
 
-    const isFree = isFreePlan(getEntitledPlan(profile?.plan, profile?.subscription_status))
+    const isFree = isFreePlan(getEntitledPlan(profile?.plan, profile?.subscription_status, profile?.pro_trial_ends_at))
     const freeAllowance = getFreeQuoteAllowance(profile?.onboarded_at)
     const quotesCountResult = isFree && orgId
         ? await supabase

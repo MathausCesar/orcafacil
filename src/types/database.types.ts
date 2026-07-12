@@ -257,8 +257,15 @@ export type Database = {
                     onboarded_at: string | null
                     payment_info: string | null
                     phone: string | null
+                    pix_key: string | null
+                    pix_key_type: string | null
+                    pix_recipient_city: string | null
+                    pix_recipient_name: string | null
                     pix_discount_percent: number | null
                     plan: string | null
+                    pro_trial_ends_at: string | null
+                    pro_trial_source: string | null
+                    pro_trial_started_at: string | null
                     quote_font_family: string | null
                     primary_color: string | null
                     quote_settings: Json | null
@@ -293,8 +300,15 @@ export type Database = {
                     onboarded_at?: string | null
                     payment_info?: string | null
                     phone?: string | null
+                    pix_key?: string | null
+                    pix_key_type?: string | null
+                    pix_recipient_city?: string | null
+                    pix_recipient_name?: string | null
                     pix_discount_percent?: number | null
                     plan?: string | null
+                    pro_trial_ends_at?: string | null
+                    pro_trial_source?: string | null
+                    pro_trial_started_at?: string | null
                     quote_font_family?: string | null
                     primary_color?: string | null
                     quote_settings?: Json | null
@@ -329,8 +343,15 @@ export type Database = {
                     onboarded_at?: string | null
                     payment_info?: string | null
                     phone?: string | null
+                    pix_key?: string | null
+                    pix_key_type?: string | null
+                    pix_recipient_city?: string | null
+                    pix_recipient_name?: string | null
                     pix_discount_percent?: number | null
                     plan?: string | null
+                    pro_trial_ends_at?: string | null
+                    pro_trial_source?: string | null
+                    pro_trial_started_at?: string | null
                     quote_font_family?: string | null
                     primary_color?: string | null
                     quote_settings?: Json | null
@@ -402,6 +423,63 @@ export type Database = {
                     },
                 ]
             }
+            quote_evidences: {
+                Row: {
+                    caption: string | null
+                    content_type: string
+                    created_at: string
+                    file_name: string
+                    file_size: number
+                    id: string
+                    is_client_visible: boolean
+                    organization_id: string
+                    quote_id: string
+                    storage_path: string
+                    user_id: string
+                }
+                Insert: {
+                    caption?: string | null
+                    content_type: string
+                    created_at?: string
+                    file_name: string
+                    file_size: number
+                    id?: string
+                    is_client_visible?: boolean
+                    organization_id: string
+                    quote_id: string
+                    storage_path: string
+                    user_id: string
+                }
+                Update: {
+                    caption?: string | null
+                    content_type?: string
+                    created_at?: string
+                    file_name?: string
+                    file_size?: number
+                    id?: string
+                    is_client_visible?: boolean
+                    organization_id?: string
+                    quote_id?: string
+                    storage_path?: string
+                    user_id?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "quote_evidences_organization_id_fkey"
+                        columns: ["organization_id"]
+                        isOneToOne: false
+                        referencedRelation: "organizations"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "quote_evidences_quote_id_fkey"
+                        columns: ["quote_id"]
+                        isOneToOne: false
+                        referencedRelation: "quotes"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
             quotes: {
                 Row: {
                     amount_paid: number
@@ -422,11 +500,17 @@ export type Database = {
                     client_phone: string | null
                     client_type: string | null
                     created_at: string | null
+                    deposit_amount: number
+                    deposit_marked_paid_at: string | null
+                    deposit_requested_at: string | null
+                    deposit_status: string
                     discount: number | null
                     estimated_days: number | null
                     experience_mode: string
                     expiration_date: string | null
                     first_public_opened_at: string | null
+                    follow_up_count: number
+                    follow_up_sent_at: string | null
                     id: string
                     installment_count: number | null
                     layout_style: string | null
@@ -439,12 +523,17 @@ export type Database = {
                     payment_updated_at: string | null
                     professional_context: string
                     public_token: string
+                    pix_key_snapshot: string | null
+                    pix_key_type_snapshot: string | null
+                    pix_recipient_city_snapshot: string | null
+                    pix_recipient_name_snapshot: string | null
                     show_detailed_items: boolean | null
                     show_payment_options: boolean | null
                     show_timeline: boolean | null
                     sent_confirmed_at: string | null
                     sent_via: string | null
                     status: string | null
+                    source_quote_id: string | null
                     total: number | null
                     updated_at: string | null
                     user_id: string
@@ -468,11 +557,17 @@ export type Database = {
                     client_phone?: string | null
                     client_type?: string | null
                     created_at?: string | null
+                    deposit_amount?: number
+                    deposit_marked_paid_at?: string | null
+                    deposit_requested_at?: string | null
+                    deposit_status?: string
                     discount?: number | null
                     estimated_days?: number | null
                     experience_mode?: string
                     expiration_date?: string | null
                     first_public_opened_at?: string | null
+                    follow_up_count?: number
+                    follow_up_sent_at?: string | null
                     id?: string
                     installment_count?: number | null
                     layout_style?: string | null
@@ -485,12 +580,17 @@ export type Database = {
                     payment_updated_at?: string | null
                     professional_context?: string
                     public_token?: string
+                    pix_key_snapshot?: string | null
+                    pix_key_type_snapshot?: string | null
+                    pix_recipient_city_snapshot?: string | null
+                    pix_recipient_name_snapshot?: string | null
                     show_detailed_items?: boolean | null
                     show_payment_options?: boolean | null
                     show_timeline?: boolean | null
                     sent_confirmed_at?: string | null
                     sent_via?: string | null
                     status?: string | null
+                    source_quote_id?: string | null
                     total?: number | null
                     updated_at?: string | null
                     user_id: string
@@ -514,11 +614,17 @@ export type Database = {
                     client_phone?: string | null
                     client_type?: string | null
                     created_at?: string | null
+                    deposit_amount?: number
+                    deposit_marked_paid_at?: string | null
+                    deposit_requested_at?: string | null
+                    deposit_status?: string
                     discount?: number | null
                     estimated_days?: number | null
                     experience_mode?: string
                     expiration_date?: string | null
                     first_public_opened_at?: string | null
+                    follow_up_count?: number
+                    follow_up_sent_at?: string | null
                     id?: string
                     installment_count?: number | null
                     layout_style?: string | null
@@ -531,12 +637,17 @@ export type Database = {
                     payment_updated_at?: string | null
                     professional_context?: string
                     public_token?: string
+                    pix_key_snapshot?: string | null
+                    pix_key_type_snapshot?: string | null
+                    pix_recipient_city_snapshot?: string | null
+                    pix_recipient_name_snapshot?: string | null
                     show_detailed_items?: boolean | null
                     show_payment_options?: boolean | null
                     show_timeline?: boolean | null
                     sent_confirmed_at?: string | null
                     sent_via?: string | null
                     status?: string | null
+                    source_quote_id?: string | null
                     total?: number | null
                     updated_at?: string | null
                     user_id?: string
@@ -861,6 +972,18 @@ export type Database = {
                 }
                 Returns: Json
             }
+            confirm_quote_sent_and_start_trial: {
+                Args: {
+                    p_channel: string
+                    p_quote_id: string
+                }
+                Returns: {
+                    confirmed_at: string
+                    quote_status: string
+                    trial_ends_at: string | null
+                    trial_started: boolean
+                }[]
+            }
             record_stock_movement: {
                 Args: {
                     p_service_id: string
@@ -869,6 +992,12 @@ export type Database = {
                     p_note?: string | null
                 }
                 Returns: Json
+            }
+            register_quote_follow_up: {
+                Args: {
+                    p_quote_id: string
+                }
+                Returns: number
             }
             user_in_organization: {
                 Args: {

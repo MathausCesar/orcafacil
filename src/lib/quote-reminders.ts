@@ -1,4 +1,4 @@
-export type QuoteReminderKind = 'follow_up' | 'expires_today' | 'expired' | 'start_work' | 'collect_payment'
+export type QuoteReminderKind = 'follow_up' | 'opened_no_response' | 'expires_today' | 'expired' | 'start_work' | 'collect_payment'
 
 export type QuoteReminder = {
     kind: QuoteReminderKind
@@ -15,6 +15,11 @@ export type QuoteReminderInput = {
     payment_status?: string | null
     amount_paid?: number | null
     total?: number | null
+    sent_confirmed_at?: string | null
+    first_public_opened_at?: string | null
+    client_responded_at?: string | null
+    follow_up_sent_at?: string | null
+    follow_up_count?: number | null
 }
 
 function parseDate(value?: string | null) {
@@ -37,6 +42,10 @@ export function getQuoteReminder(quote: QuoteReminderInput, now = new Date()): Q
     const status = quote.status || 'draft'
     const paymentStatus = quote.payment_status || 'unpaid'
     const updatedAt = parseDate(quote.updated_at) || parseDate(quote.created_at)
+    const sentAt = parseDate(quote.sent_confirmed_at) || parseDate(quote.created_at)
+    const openedAt = parseDate(quote.first_public_opened_at)
+    const clientRespondedAt = parseDate(quote.client_responded_at)
+    const followUpSentAt = parseDate(quote.follow_up_sent_at)
     const expirationDate = parseDate(quote.expiration_date)
     const isWaitingClient = ['pending', 'sent'].includes(status)
 
@@ -80,11 +89,28 @@ export function getQuoteReminder(quote: QuoteReminderInput, now = new Date()): Q
         }
     }
 
-    if (isWaitingClient && updatedAt && diffDays(updatedAt, now) >= 2) {
+    const lastFollowUpReference = followUpSentAt || openedAt || sentAt
+
+    if (
+        isWaitingClient
+        && openedAt
+        && !clientRespondedAt
+        && lastFollowUpReference
+        && diffDays(lastFollowUpReference, now) >= 1
+    ) {
+        return {
+            kind: 'opened_no_response',
+            label: 'Link aberto sem resposta',
+            description: 'O link da proposta foi aberto. Vale perguntar se ficou alguma duvida antes da validade terminar.',
+            tone: 'amber',
+        }
+    }
+
+    if (isWaitingClient && !openedAt && sentAt && diffDays(followUpSentAt || sentAt, now) >= 2) {
         return {
             kind: 'follow_up',
-            label: 'Cliente sem resposta',
-            description: 'Envie uma mensagem educada para lembrar da proposta.',
+            label: 'Link ainda nao abriu',
+            description: 'A proposta foi confirmada como enviada, mas o link ainda nao registrou abertura. Vale reenviar o lembrete.',
             tone: 'amber',
         }
     }

@@ -67,11 +67,11 @@ export default async function EditQuotePage(props: PageProps) {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('business_name, logo_url, theme_color, primary_color, quote_settings, plan, subscription_status')
+        .select('business_name, logo_url, theme_color, primary_color, quote_settings, plan, subscription_status, pro_trial_ends_at')
         .eq('id', user.id)
         .maybeSingle()
 
-    const accessPlan = getEntitledPlan(profile?.plan, profile?.subscription_status)
+    const accessPlan = getEntitledPlan(profile?.plan, profile?.subscription_status, profile?.pro_trial_ends_at)
     const isFree = isFreePlan(accessPlan)
     const experienceMode: 'free_simple' | 'pro_sample' | 'pro' = quote.experience_mode === 'pro_sample'
         ? 'pro_sample'
@@ -94,6 +94,7 @@ export default async function EditQuotePage(props: PageProps) {
         cashDiscountPercent: quote.cash_discount_percent || 0,
         cashDiscountFixed: quote.cash_discount_fixed || 0,
         cashDiscountType: quote.cash_discount_type || 'percent',
+        depositAmount: quote.deposit_amount || 0,
         paymentMethods: quote.payment_methods || [],
         installmentCount: quote.installment_count || '',
         experienceMode,

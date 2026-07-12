@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Save, Loader2, Building2, Palette, Rocket, Sparkles, CheckCircle2 } from 'lucide-react'
+import { Save, Loader2, Building2, Palette, Rocket, Sparkles, CheckCircle2, QrCode } from 'lucide-react'
 import { LogoUpload } from '@/components/profile/logo-upload'
 import { LogoIdentityPreview } from '@/components/profile/logo-identity-preview'
 import { BrandKitSummary } from '@/components/profile/brand-kit-summary'
@@ -34,7 +34,12 @@ interface ProfileFormProps {
         primary_color?: string | null
         neighborhood?: string | null
         phone?: string | null
+        pix_key?: string | null
+        pix_key_type?: string | null
+        pix_recipient_city?: string | null
+        pix_recipient_name?: string | null
         plan?: string | null
+        pro_trial_ends_at?: string | null
         subscription_status?: string | null
         quote_settings?: unknown
         state?: string | null
@@ -46,7 +51,7 @@ interface ProfileFormProps {
 
 export function ProfileForm({ initialProfile, userId, section = 'all' }: ProfileFormProps) {
     const [loading, setLoading] = useState(false)
-    const accessPlan = getEntitledPlan(initialProfile?.plan, initialProfile?.subscription_status)
+    const accessPlan = getEntitledPlan(initialProfile?.plan, initialProfile?.subscription_status, initialProfile?.pro_trial_ends_at)
     const isFree = isFreePlan(accessPlan)
     const [themeColor, setThemeColor] = useState(
         isFree
@@ -427,6 +432,48 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
                                                 placeholder="Ex: contato@suaempresa.com"
                                                 className="focus-visible:ring-primary h-10"
                                             />
+                                        </div>
+                                    </div>
+
+                                    <div className="border-t border-border pt-6">
+                                        <div className="flex items-start gap-3">
+                                            <div className="rounded-lg bg-emerald-500/10 p-2 text-emerald-700">
+                                                <QrCode className="h-5 w-5" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-foreground">Receber sinal via Pix</p>
+                                                <p className="mt-1 text-xs leading-5 text-muted-foreground">Sua chave fica na proposta apenas quando voce solicitar sinal. A Zacly nao recebe nem confirma o pagamento.</p>
+                                            </div>
+                                        </div>
+                                        <div className="mt-4 grid gap-4 md:grid-cols-2">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="pix_key_type">Tipo da chave</Label>
+                                                <select
+                                                    id="pix_key_type"
+                                                    name="pix_key_type"
+                                                    defaultValue={initialProfile?.pix_key_type || ''}
+                                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                                >
+                                                    <option value="">Selecione</option>
+                                                    <option value="cpf">CPF</option>
+                                                    <option value="cnpj">CNPJ</option>
+                                                    <option value="email">Email</option>
+                                                    <option value="phone">Telefone</option>
+                                                    <option value="random">Chave aleatoria</option>
+                                                </select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="pix_key">Chave Pix</Label>
+                                                <Input id="pix_key" name="pix_key" defaultValue={initialProfile?.pix_key || ''} placeholder="Sua chave para receber" className="h-10" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="pix_recipient_name">Nome do recebedor</Label>
+                                                <Input id="pix_recipient_name" name="pix_recipient_name" defaultValue={initialProfile?.pix_recipient_name || businessName} placeholder="Nome exibido no Pix" className="h-10" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="pix_recipient_city">Cidade do recebedor</Label>
+                                                <Input id="pix_recipient_city" name="pix_recipient_city" defaultValue={initialProfile?.pix_recipient_city || addressData.city} placeholder="Ex: Sao Paulo" maxLength={15} className="h-10" />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

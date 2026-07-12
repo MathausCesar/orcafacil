@@ -90,10 +90,10 @@ export async function approveQuotePublic(
 
     const { data: ownerProfile } = await admin
         .from('profiles')
-        .select('plan, subscription_status, logo_url')
+        .select('plan, subscription_status, pro_trial_ends_at, logo_url')
         .eq('id', quote.user_id)
         .maybeSingle()
-    const ownerPlan = getEntitledPlan(ownerProfile?.plan, ownerProfile?.subscription_status)
+    const ownerPlan = getEntitledPlan(ownerProfile?.plan, ownerProfile?.subscription_status, ownerProfile?.pro_trial_ends_at)
     const ownerIsFree = isFreePlan(ownerPlan)
     const hasProPresentation = !ownerIsFree || quote.experience_mode === 'pro_sample'
 

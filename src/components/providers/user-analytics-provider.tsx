@@ -18,7 +18,7 @@ import { getEntitledPlan } from '@/lib/proposal-style'
 
 type ProfileRow = Pick<
     Database['public']['Tables']['profiles']['Row'],
-    'business_name' | 'email' | 'plan' | 'subscription_status' | 'onboarded_at' | 'quote_settings'
+    'business_name' | 'email' | 'plan' | 'subscription_status' | 'pro_trial_ends_at' | 'onboarded_at' | 'quote_settings'
 >
 
 type ProfileClient = SupabaseClient<Database>
@@ -60,7 +60,7 @@ function getAuthProvider(user: User) {
 async function getProfile(supabase: ProfileClient, userId: string): Promise<ProfileRow | null> {
     const { data, error } = await supabase
         .from('profiles')
-        .select('business_name, email, plan, subscription_status, onboarded_at, quote_settings')
+        .select('business_name, email, plan, subscription_status, pro_trial_ends_at, onboarded_at, quote_settings')
         .eq('id', userId)
         .maybeSingle()
 
@@ -81,7 +81,7 @@ async function identifyUser(supabase: ProfileClient, user: User) {
     const authProvider = getAuthProvider(user)
     const subscriptionStatus = profile?.subscription_status || 'none'
     const billingPlan = profile?.plan || 'free'
-    const plan = getEntitledPlan(billingPlan, subscriptionStatus)
+    const plan = getEntitledPlan(billingPlan, subscriptionStatus, profile?.pro_trial_ends_at)
     const paidTraffic = isPaidAttribution(attribution)
 
     const currentProperties = compact({

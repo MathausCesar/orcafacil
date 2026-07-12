@@ -11,6 +11,8 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { getActiveOrganizationId } from '@/lib/get-active-organization'
+import { OpportunityPanel } from '@/components/dashboard/opportunity-panel'
+import { getQuoteReminder } from '@/lib/quote-reminders'
 
 export default async function Dashboard() {
   const supabase = await createClient()
@@ -26,7 +28,7 @@ export default async function Dashboard() {
   const emptyCountResult = { count: 0, data: null, error: null }
 
   // Parallel fetch: profile, recent quotes and guided first-run progress
-  const [profileResult, quotesResult, quotesCountResult, sentCountResult, openedCountResult] = await Promise.all([
+  const [profileResult, quotesResult, quotesCountResult, sentCountResult, openedCountResult, opportunitiesResult] = await Promise.all([
     supabase
       .from('profiles')
       .select('business_name, logo_url, onboarded_at')
@@ -58,6 +60,15 @@ export default async function Dashboard() {
         .eq('organization_id', orgId)
         .not('first_public_opened_at', 'is', null)
       : Promise.resolve(emptyCountResult),
+    orgId
+      ? supabase
+        .from('quotes')
+        .select('id, client_name, total, status, created_at, updated_at, expiration_date, payment_status, amount_paid, sent_confirmed_at, first_public_opened_at, client_responded_at, follow_up_sent_at, follow_up_count')
+        .eq('organization_id', orgId)
+        .in('status', ['pending', 'sent'])
+        .order('total', { ascending: false })
+        .limit(40)
+      : Promise.resolve({ data: [] }),
   ])
 
   const profile = profileResult.data
@@ -67,6 +78,27 @@ export default async function Dashboard() {
   }
 
   const recentQuotes = quotesResult.data
+  const reminderPriority: Record<string, number> = {
+    expired: 0,
+    expires_today: 1,
+    opened_no_response: 2,
+    follow_up: 3,
+  }
+  const opportunities = (opportunitiesResult.data || [])
+    .map((quote) => ({ quote, reminder: getQuoteReminder(quote) }))
+    .filter((entry): entry is { quote: typeof entry.quote; reminder: NonNullable<typeof entry.reminder> } => Boolean(entry.reminder && ['expired', 'expires_today', 'opened_no_response', 'follow_up'].includes(entry.reminder.kind)))
+    .sort((left, right) => {
+      const priorityDiff = (reminderPriority[left.reminder.kind] ?? 9) - (reminderPriority[right.reminder.kind] ?? 9)
+      if (priorityDiff !== 0) return priorityDiff
+      return Number(right.quote.total || 0) - Number(left.quote.total || 0)
+    })
+    .map(({ quote, reminder }) => ({
+      id: quote.id,
+      clientName: quote.client_name,
+      total: Number(quote.total || 0),
+      reminder,
+      wasOpened: Boolean(quote.first_public_opened_at),
+    }))
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 md:space-y-8">
@@ -108,6 +140,8 @@ export default async function Dashboard() {
 
       {/* Stats Grid with Period Filter */}
       <DashboardStats />
+
+      <OpportunityPanel opportunities={opportunities} />
 
       {/* Recent Activity List - Clean Table Style */}
       <section className="space-y-6">

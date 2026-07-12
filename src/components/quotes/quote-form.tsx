@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { createQuote, updateQuote } from '@/app/actions/quotes'
 import { ProductSearch } from '@/components/quotes/product-search'
+import { VoiceProposalAssistant } from '@/components/quotes/voice-proposal-assistant'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -33,6 +34,7 @@ import {
     type LayoutRecommendation,
 } from '@/lib/profession-layout-recommendations'
 import { calculateProposalReadiness } from '@/lib/proposal-readiness'
+import type { VoiceProposalSuggestion } from '@/lib/voice-proposal-parser'
 
 type NumericQuoteItemField = 'quantity' | 'unitPrice'
 
@@ -92,6 +94,7 @@ interface QuoteFormProps {
         cashDiscountPercent?: number
         cashDiscountFixed?: number
         cashDiscountType?: string
+        depositAmount?: number
         paymentMethods?: string[]
         installmentCount?: string
         layoutStyle?: string
@@ -138,6 +141,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
             ? String(initialData?.cashDiscountFixed || '')
             : String(initialData?.cashDiscountPercent || '')
     )
+    const [depositAmount, setDepositAmount] = useState(String(initialData?.depositAmount || ''))
     const [paymentMethods, setPaymentMethods] = useState<string[]>(initialData?.paymentMethods || [])
     const [installmentCount, setInstallmentCount] = useState(initialData?.installmentCount || '')
     const [layoutStyle, setLayoutStyle] = useState(
@@ -223,6 +227,28 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
 
     const handleRemoveItem = (id: string) => {
         setItems(items.filter(i => i.id !== id))
+    }
+
+    const handleVoiceSuggestion = (suggestion: VoiceProposalSuggestion) => {
+        if (suggestion.clientName) setClientName(suggestion.clientName)
+        if (suggestion.clientPhone) setClientPhone(suggestion.clientPhone)
+        if (suggestion.estimatedDays) {
+            setShowTimeline(true)
+            setEstimatedDays(String(suggestion.estimatedDays))
+        }
+        if (suggestion.notes) {
+            setNotes((current) => current.trim()
+                ? `${current.trim()}\n${suggestion.notes}`
+                : suggestion.notes || '')
+        }
+        if (suggestion.item) {
+            handleAddItem({
+                name: suggestion.item.description,
+                price: suggestion.item.unitPrice,
+                quantity: suggestion.item.quantity,
+                itemType: 'service',
+            })
+        }
     }
 
     const handleUpdateItem = <Field extends keyof QuoteItem>(id: string, field: Field, value: QuoteItem[Field]) => {
@@ -341,6 +367,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                 formData.set('installment_count', installmentCount)
             }
         }
+        formData.set('deposit_amount', hasProPresentation ? String(parseBrazilianNumber(depositAmount) || 0) : '0')
         formData.set('experience_mode', experienceMode)
         formData.set('layout_style', hasProPresentation ? layoutStyle : FREE_PROPOSAL_MODEL)
         formData.set('professional_context', professionalContext)
@@ -361,6 +388,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
             has_timeline: showTimeline,
             has_payment_options: showPaymentOptions,
             payment_method_count: paymentMethods.length,
+            has_pix_deposit: hasProPresentation && (parseBrazilianNumber(depositAmount) || 0) > 0,
             proposal_readiness_score: readiness.score,
             layout_recommendation_model: activeRecommendation.model,
             layout_recommendation_source: activeRecommendation.source,
@@ -638,6 +666,8 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                         </CardHeader>
                         <CardContent className="pt-6 space-y-6">
                             <ProductSearch onAddProduct={handleAddItem} />
+
+                            <VoiceProposalAssistant onApply={handleVoiceSuggestion} />
 
                             {items.length > 0 ? (
                                 <div className="space-y-4">
@@ -1134,6 +1164,31 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                                                             onChange={(e) => setInstallmentCount(e.target.value)}
                                                             className="h-8 text-sm"
                                                         />
+                                                    </div>
+                                                )}
+
+                                                {hasProPresentation ? (
+                                                    <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-3">
+                                                        <div className="flex items-start justify-between gap-3">
+                                                            <div>
+                                                                <Label className="text-xs font-bold text-emerald-950">Solicitar sinal via Pix</Label>
+                                                                <p className="mt-1 text-[11px] leading-4 text-emerald-800">O cliente recebe QR Code e copia e cola. A confirmacao continua manual no seu extrato.</p>
+                                                            </div>
+                                                            <span className="rounded-full bg-white px-2 py-1 text-[10px] font-bold text-emerald-700">Pro</span>
+                                                        </div>
+                                                        <Input
+                                                            type="text"
+                                                            inputMode="decimal"
+                                                            placeholder="Valor do sinal, ex: 150,00"
+                                                            value={depositAmount}
+                                                            onChange={(event) => setDepositAmount(event.target.value)}
+                                                            className="mt-3 h-8 border-emerald-200 bg-white text-sm"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
+                                                        <p className="font-bold text-slate-800">Sinal via Pix no Pro</p>
+                                                        <p className="mt-1">Envie QR Code e copia e cola da sua chave Pix, sem taxa e sem intermediacao da Zacly.</p>
                                                     </div>
                                                 )}
 

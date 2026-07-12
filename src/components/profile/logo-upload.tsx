@@ -148,7 +148,7 @@ export function LogoUpload({
             if (logoAnalysis) {
                 const { data: currentProfile } = await supabase
                     .from('profiles')
-                    .select('plan, subscription_status, quote_settings')
+                    .select('plan, subscription_status, pro_trial_ends_at, quote_settings')
                     .eq('id', userId)
                     .maybeSingle()
 
@@ -160,7 +160,7 @@ export function LogoUpload({
                     brandKit: brandKit as unknown as Json,
                 }
 
-                if (!isFreePlan(getEntitledPlan(currentProfile?.plan, currentProfile?.subscription_status))) {
+                if (!isFreePlan(getEntitledPlan(currentProfile?.plan, currentProfile?.subscription_status, currentProfile?.pro_trial_ends_at))) {
                     updatePayload.theme_color = logoAnalysis.safeAccentColor
                     updatePayload.layout_style = logoAnalysis.recommendedModel
                 }

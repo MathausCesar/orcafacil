@@ -35,6 +35,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/storage/v1/object/public/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'bxaxxeapmriqsnonerdk.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/sign/**',
+      },
     ],
     formats: ['image/avif', 'image/webp'],
   },
@@ -57,7 +63,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+            value: 'camera=(), microphone=(self), geolocation=(), interest-cohort=()',
           },
         ],
       },

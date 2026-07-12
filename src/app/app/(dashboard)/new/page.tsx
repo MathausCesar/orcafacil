@@ -51,7 +51,7 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
         ? await Promise.all([
             supabase
                 .from('profiles')
-                .select('business_name, logo_url, layout_style, theme_color, primary_color, quote_settings, plan, subscription_status')
+                .select('business_name, logo_url, layout_style, theme_color, primary_color, quote_settings, plan, subscription_status, pro_trial_ends_at')
                 .eq('id', user.id)
                 .maybeSingle(),
             orgId
@@ -79,7 +79,7 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
         : [{ data: null }, { count: 0 }, { data: [] as QuoteLayoutHistoryRecord[] }, { count: 0 }]
 
     const profile = profileResult.data
-    const accessPlan = getEntitledPlan(profile?.plan, profile?.subscription_status)
+    const accessPlan = getEntitledPlan(profile?.plan, profile?.subscription_status, profile?.pro_trial_ends_at)
     const isFree = isFreePlan(accessPlan)
     const proSampleAvailable = isFree && (proSampleCountResult.count ?? 0) < PRICING.proSampleQuotes
     const quickMode = quick === '1' || (quoteCountResult.count ?? 0) === 0

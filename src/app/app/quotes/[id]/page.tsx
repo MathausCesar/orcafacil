@@ -7,6 +7,7 @@ import { ProposalCanvas, type ProposalProfile, type ProposalQuote } from '@/comp
 import { getEntitledPlan, isFreePlan, parseProposalIdentitySettings } from '@/lib/proposal-style'
 import { buildQuoteApprovalMessage, buildWhatsAppLink } from '@/lib/quote-share'
 import { PublicQuoteOpenTracker } from '@/components/quotes/public-quote-open-tracker'
+import { buildPixCopyAndPaste } from '@/lib/pix'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params
@@ -87,7 +88,7 @@ export default async function QuotePage({
         .eq('id', quote.user_id)
         .maybeSingle()
 
-    if (!profile && canClientRespond) {
+    if (!profile && canViewPublic) {
         const admin = getSupabaseAdmin()
         const publicProfileResult = await admin
             .from('profiles')
@@ -104,7 +105,7 @@ export default async function QuotePage({
     const approvalUrl = `${getAppBaseUrl()}/quotes/${quote.id}?token=${quote.public_token}&approval=${approvalToken}`
     const pdfUrl = `/api/quotes/${quote.id}/pdf${canViewPublic ? `?token=${quote.public_token}` : ''}`
     const identitySettings = parseProposalIdentitySettings(profile?.quote_settings, profile?.quote_font_family)
-    const accountPlan = getEntitledPlan(profile?.plan, profile?.subscription_status)
+    const accountPlan = getEntitledPlan(profile?.plan, profile?.subscription_status, profile?.pro_trial_ends_at)
     const accountIsFree = isFreePlan(accountPlan)
     const hasProPresentation = !accountIsFree || quote.experience_mode === 'pro_sample'
     const whatsappMessage = buildQuoteApprovalMessage({
@@ -117,6 +118,57 @@ export default async function QuotePage({
         includeZaclyMarketing: !hasProPresentation,
     })
     const whatsappLink = buildWhatsAppLink(quote.client_phone, whatsappMessage)
+    const quoteWithPayments = quote as typeof quote & {
+        deposit_amount?: number | null
+        pix_key_snapshot?: string | null
+        pix_recipient_name_snapshot?: string | null
+        pix_recipient_city_snapshot?: string | null
+    }
+    const depositAmount = Number(quoteWithPayments.deposit_amount || 0)
+    const pixKey = quoteWithPayments.pix_key_snapshot || (isInternalViewer ? profile?.pix_key : null)
+    const pixRecipientName = quoteWithPayments.pix_recipient_name_snapshot || (isInternalViewer ? profile?.pix_recipient_name : null) || profile?.business_name || ''
+    const pixRecipientCity = quoteWithPayments.pix_recipient_city_snapshot || (isInternalViewer ? profile?.pix_recipient_city : null) || profile?.city || ''
+    const pixPayload = buildPixCopyAndPaste({
+        key: pixKey || '',
+        recipientName: pixRecipientName,
+        recipientCity: pixRecipientCity,
+        amount: depositAmount,
+        transactionId: quote.id.replace(/-/g, '').slice(-20),
+    })
+
+    let evidences: Array<{
+        id: string
+        fileName: string
+        isClientVisible: boolean
+        signedUrl: string | null
+    }> = []
+
+    if (isInternalViewer || canViewPublic) {
+        const admin = getSupabaseAdmin()
+        let evidenceQuery = admin
+            .from('quote_evidences')
+            .select('id, file_name, is_client_visible, storage_path')
+            .eq('quote_id', quote.id)
+            .order('created_at', { ascending: true })
+
+        if (!isInternalViewer) {
+            evidenceQuery = evidenceQuery.eq('is_client_visible', true)
+        }
+
+        const { data: evidenceRows } = await evidenceQuery
+        evidences = await Promise.all((evidenceRows || []).map(async (evidence) => {
+            const { data: signed } = await admin.storage
+                .from('quote-evidences')
+                .createSignedUrl(evidence.storage_path, 5 * 60)
+
+            return {
+                id: evidence.id,
+                fileName: evidence.file_name,
+                isClientVisible: evidence.is_client_visible,
+                signedUrl: signed?.signedUrl || null,
+            }
+        }))
+    }
 
     return (
         <>
@@ -132,6 +184,9 @@ export default async function QuotePage({
                 whatsappLink={whatsappLink}
                 whatsappMessage={whatsappMessage}
                 totalFormatted={totalFormatted}
+                pixPayload={pixPayload}
+                evidences={evidences}
+                viewerUserId={isInternalViewer ? user?.id || null : null}
             />
         </>
     )

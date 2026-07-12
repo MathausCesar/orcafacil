@@ -12,6 +12,8 @@ import { QuoteStockActions } from '@/components/quotes/quote-stock-actions'
 import { QuoteNextSteps } from '@/components/quotes/quote-next-steps'
 import { QuotePaymentActions } from '@/components/quotes/quote-payment-actions'
 import { QuoteReminderNotice } from '@/components/quotes/quote-reminder-notice'
+import { PixDepositCard } from '@/components/quotes/pix-deposit-card'
+import { QuoteEvidenceManager, type QuoteEvidenceView } from '@/components/quotes/quote-evidence-manager'
 import { ApproveQuoteClient } from '@/components/quotes/approve-quote-client'
 import { FreePlanUpgradeNudge } from '@/components/quotes/free-plan-upgrade-nudge'
 import { PaymentOptions } from '@/components/quotes/payment-options'
@@ -51,7 +53,10 @@ export type ProposalQuote = {
     id: string
     client_name: string
     client_phone: string | null
+    client_email?: string | null
     created_at: string | null
+    deposit_amount?: number | null
+    deposit_status?: string | null
     expiration_date: string | null
     estimated_days: number | null
     experience_mode?: string | null
@@ -68,6 +73,12 @@ export type ProposalQuote = {
     professional_context?: string | null
     public_token: string
     first_public_opened_at?: string | null
+    follow_up_count?: number | null
+    follow_up_sent_at?: string | null
+    pix_key_snapshot?: string | null
+    pix_key_type_snapshot?: string | null
+    pix_recipient_city_snapshot?: string | null
+    pix_recipient_name_snapshot?: string | null
     quote_items: QuoteItem[]
     client_response_note?: string | null
     client_responded_at?: string | null
@@ -91,6 +102,11 @@ export type ProposalProfile = {
     layout_style?: string | null
     phone: string | null
     plan: string | null
+    pro_trial_ends_at?: string | null
+    pix_key?: string | null
+    pix_key_type?: string | null
+    pix_recipient_city?: string | null
+    pix_recipient_name?: string | null
     subscription_status?: string | null
     theme_color: string | null
     primary_color: string | null
@@ -130,6 +146,9 @@ type ProposalCanvasProps = {
     whatsappLink: string
     whatsappMessage: string
     totalFormatted: string
+    pixPayload?: string | null
+    evidences?: QuoteEvidenceView[]
+    viewerUserId?: string | null
 }
 
 const statusCopy: Record<string, { label: string; className: string }> = {
@@ -329,8 +348,11 @@ export function ProposalCanvas({
     whatsappLink,
     whatsappMessage,
     totalFormatted,
+    pixPayload,
+    evidences = [],
+    viewerUserId,
 }: ProposalCanvasProps) {
-    const accountPlan = getEntitledPlan(profile?.plan, profile?.subscription_status)
+    const accountPlan = getEntitledPlan(profile?.plan, profile?.subscription_status, profile?.pro_trial_ends_at)
     const accountIsFree = isFreePlan(accountPlan)
     const isProSample = quote.experience_mode === 'pro_sample'
     const hasProPresentation = !accountIsFree || isProSample
@@ -362,9 +384,10 @@ export function ProposalCanvas({
     const discount = Math.max(itemTotal - total, 0)
     const professionalContext = getProfessionalContext(quote.professional_context)
     const reminder = isOwner ? getQuoteReminder(quote) : null
-    const followUpUrl = reminder?.kind === 'follow_up'
+    const followUpUrl = reminder && ['follow_up', 'opened_no_response'].includes(reminder.kind)
         ? getWhatsappFollowUpUrl(quote.client_phone, buildQuoteFollowUpMessage(quote.client_name, approvalUrl))
         : null
+    const canManageEvidences = isOwner && viewerUserId === quote.user_id
 
     return (
         <div
@@ -411,6 +434,7 @@ export function ProposalCanvas({
                                 quoteId={quote.id}
                                 clientName={quote.client_name}
                                 clientPhone={quote.client_phone}
+                                clientEmail={quote.client_email}
                                 approvalUrl={approvalUrl}
                                 whatsappLink={whatsappLink}
                                 businessName={businessName}
@@ -646,6 +670,26 @@ export function ProposalCanvas({
                                     <TimelineSection themeColor={themeColor} estimatedDays={quote.estimated_days ?? undefined} quoteStatus={status} />
                                 </section>
                             )}
+
+                            {evidences.length > 0 && (
+                                <section className={cn('border p-5', skin.timelineClass)}>
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div>
+                                            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Referencia visual</p>
+                                            <h3 className="mt-2 text-xl font-black text-slate-950">Fotos do servico</h3>
+                                        </div>
+                                        {isOwner && <span className="text-xs font-semibold text-slate-500">{evidences.length} foto{evidences.length === 1 ? '' : 's'}</span>}
+                                    </div>
+                                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                                        {evidences.map((evidence) => (
+                                            <figure key={evidence.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                                                {evidence.signedUrl && <Image src={evidence.signedUrl} alt="Referencia do servico" width={640} height={352} unoptimized className="h-44 w-full object-cover" />}
+                                                {isOwner && <figcaption className="border-t border-slate-100 px-3 py-2 text-xs font-semibold text-slate-500">{evidence.isClientVisible ? 'Incluida no link do cliente' : 'Visivel apenas para sua equipe'}</figcaption>}
+                                            </figure>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
                         </div>
 
                         <aside className="min-w-0 space-y-5">
@@ -679,6 +723,16 @@ export function ProposalCanvas({
                                     cashDiscountType={quote.cash_discount_type ?? 'percent'}
                                     installmentCount={quote.installment_count}
                                     total={total}
+                                />
+                            )}
+
+                            {(isOwner || ['approved', 'in_progress', 'completed'].includes(status)) && (
+                                <PixDepositCard
+                                    quoteId={quote.id}
+                                    amount={Number(quote.deposit_amount || 0)}
+                                    pixPayload={pixPayload}
+                                    depositStatus={quote.deposit_status}
+                                    isOwner={isOwner}
                                 />
                             )}
 
@@ -757,7 +811,7 @@ export function ProposalCanvas({
                             </div>
 
                                 {isOwner && reminder && (
-                                    <QuoteReminderNotice reminder={reminder} followUpUrl={followUpUrl} />
+                                    <QuoteReminderNotice quoteId={quote.id} reminder={reminder} followUpUrl={followUpUrl} />
                                 )}
 
                                 {isOwner && (
@@ -777,6 +831,17 @@ export function ProposalCanvas({
                                         total={total}
                                         paymentStatus={quote.payment_status}
                                         amountPaid={quote.amount_paid}
+                                        depositAmount={quote.deposit_amount}
+                                        depositStatus={quote.deposit_status}
+                                    />
+                                )}
+
+                                {canManageEvidences && viewerUserId && (
+                                    <QuoteEvidenceManager
+                                        quoteId={quote.id}
+                                        userId={viewerUserId}
+                                        isPro={!accountIsFree}
+                                        evidences={evidences}
                                     />
                                 )}
                             </div>

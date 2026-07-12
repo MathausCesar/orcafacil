@@ -39,6 +39,7 @@ export const FREE_PROPOSAL_MODEL: ProposalModelId = 'professional'
 export const DEFAULT_PROPOSAL_ACCENT = '#0D9B5C'
 const ACTIVE_SUBSCRIPTION_STATUSES = ['active', 'trialing'] as const
 const PAID_PLAN_IDS = ['pro', 'pro_monthly', 'pro_yearly'] as const
+export const LOCAL_PRO_TRIAL_PLAN = 'pro_trial' as const
 
 export const VISUAL_TONES = [
     {
@@ -94,6 +95,12 @@ export function isActivePaidPlan(
     plan: string | null | undefined,
     subscriptionStatus?: string | null,
 ): boolean {
+    // Local trials do not create a Stripe subscription. Callers receive this
+    // synthetic entitlement from getEntitledPlan after its expiry is checked.
+    if (plan === LOCAL_PRO_TRIAL_PLAN) {
+        return subscriptionStatus === undefined || subscriptionStatus === 'trialing'
+    }
+
     if (!plan || !PAID_PLAN_IDS.includes(plan as typeof PAID_PLAN_IDS[number])) return false
 
     if (subscriptionStatus === undefined) {
@@ -103,15 +110,31 @@ export function isActivePaidPlan(
     return ACTIVE_SUBSCRIPTION_STATUSES.includes(subscriptionStatus as typeof ACTIVE_SUBSCRIPTION_STATUSES[number])
 }
 
+export function isLocalProTrialActive(
+    trialEndsAt: string | null | undefined,
+    now = new Date(),
+): boolean {
+    if (!trialEndsAt) return false
+
+    const end = new Date(trialEndsAt)
+    return Number.isFinite(end.getTime()) && end.getTime() > now.getTime()
+}
+
 export function getEntitledPlan(
     plan: string | null | undefined,
     subscriptionStatus?: string | null,
+    trialEndsAt?: string | null,
 ): string {
-    return isActivePaidPlan(plan, subscriptionStatus) ? String(plan) : 'free'
+    if (isActivePaidPlan(plan, subscriptionStatus)) return String(plan)
+    return isLocalProTrialActive(trialEndsAt) ? LOCAL_PRO_TRIAL_PLAN : 'free'
 }
 
-export function isFreePlan(plan: string | null | undefined, subscriptionStatus?: string | null): boolean {
-    return !isActivePaidPlan(plan, subscriptionStatus)
+export function isFreePlan(
+    plan: string | null | undefined,
+    subscriptionStatus?: string | null,
+    trialEndsAt?: string | null,
+): boolean {
+    return !isActivePaidPlan(plan, subscriptionStatus) && !isLocalProTrialActive(trialEndsAt)
 }
 
 export function normalizeProposalModel(value: string | null | undefined): ProposalModelId {

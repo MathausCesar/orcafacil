@@ -42,6 +42,7 @@ type ProfileRow = Pick<
     | 'quote_settings'
     | 'plan'
     | 'subscription_status'
+    | 'pro_trial_ends_at'
 >
 
 type QuoteWithItems = QuoteRow & {
@@ -862,7 +863,7 @@ function drawFreePlanWatermark(doc: PDFKit.PDFDocument, fonts: ReturnType<typeof
 
 async function renderQuotePdf(quote: QuoteWithItems, profile: ProfileRow | null, approvalUrl: string) {
     const businessName = pdfSafeText(profile?.business_name, 'Zacly')
-    const accountPlan = getEntitledPlan(profile?.plan, profile?.subscription_status)
+    const accountPlan = getEntitledPlan(profile?.plan, profile?.subscription_status, profile?.pro_trial_ends_at)
     const accountIsFree = isFreePlan(accountPlan)
     const hasProPresentation = !accountIsFree || quote.experience_mode === 'pro_sample'
     const presentationPlan = hasProPresentation ? (accountPlan === 'free' ? 'pro_monthly' : accountPlan) : 'free'
@@ -970,7 +971,7 @@ export async function GET(
 
     const { data: profile } = await admin
         .from('profiles')
-        .select('business_name, phone, email, cnpj, address, address_number, city, state, payment_info, logo_url, theme_color, primary_color, layout_style, quote_font_family, quote_settings, plan, subscription_status')
+        .select('business_name, phone, email, cnpj, address, address_number, city, state, payment_info, logo_url, theme_color, primary_color, layout_style, quote_font_family, quote_settings, plan, subscription_status, pro_trial_ends_at')
         .eq('id', typedQuote.user_id)
         .maybeSingle()
 

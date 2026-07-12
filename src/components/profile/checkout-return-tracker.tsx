@@ -24,6 +24,7 @@ export function CheckoutReturnTracker({ plan, subscriptionStatus }: CheckoutRetu
 
         const sessionId = searchParams.get("session_id") || "without_session"
         const storageKey = `zacly_checkout_success_${sessionId}`
+        const conversionStorageKey = `zacly_subscription_conversion_${sessionId}`
 
         if (window.sessionStorage.getItem(storageKey)) return
         window.sessionStorage.setItem(storageKey, "1")
@@ -34,19 +35,27 @@ export function CheckoutReturnTracker({ plan, subscriptionStatus }: CheckoutRetu
             source: "stripe_return",
         })
 
+        const captureConfirmedSubscription = (confirmedPlan: string | null | undefined, source: string) => {
+            const isPaidPlan = confirmedPlan === "pro_monthly" || confirmedPlan === "pro_yearly"
+            if (!isPaidPlan || window.sessionStorage.getItem(conversionStorageKey)) return
+
+            window.sessionStorage.setItem(conversionStorageKey, "1")
+            captureConversion("subscription_started", {
+                plan: confirmedPlan,
+                billing_interval: confirmedPlan === "pro_yearly" ? "year" : "month",
+                subscription_status: "active",
+                source,
+                value: confirmedPlan === "pro_yearly" ? PRICING.yearly : PRICING.monthly,
+                currency: "BRL",
+                transaction_id: sessionId,
+            })
+        }
+
         const isActiveSubscription = ["active", "trialing"].includes(subscriptionStatus || "")
         const isPaidPlan = plan === "pro_monthly" || plan === "pro_yearly"
 
         if (isActiveSubscription && isPaidPlan) {
-            captureConversion("subscription_started", {
-                plan,
-                billing_interval: plan === "pro_yearly" ? "year" : "month",
-                subscription_status: subscriptionStatus,
-                source: "stripe_return",
-                value: plan === "pro_yearly" ? PRICING.yearly : PRICING.monthly,
-                currency: "BRL",
-                transaction_id: sessionId,
-            })
+            captureConfirmedSubscription(plan, "stripe_return_profile_active")
             return
         }
 
@@ -61,10 +70,11 @@ export function CheckoutReturnTracker({ plan, subscriptionStatus }: CheckoutRetu
                 const response = await fetch(`/api/checkout/session?session_id=${encodeURIComponent(sessionId)}`, {
                     cache: 'no-store',
                 })
-                const result = await response.json() as { subscriptionActive?: boolean; paymentStatus?: string }
+                const result = await response.json() as { subscriptionActive?: boolean; paymentStatus?: string; plan?: string | null }
                 if (cancelled) return
 
                 if (result.subscriptionActive) {
+                    captureConfirmedSubscription(result.plan, "stripe_session_confirmed")
                     setConfirmationMessage('Acesso Pro ativado. Atualizando seu painel...')
                     router.refresh()
                     return

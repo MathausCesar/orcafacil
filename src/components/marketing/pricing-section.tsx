@@ -17,8 +17,7 @@ export function PricingSection() {
                         viewport={{ once: true, margin: "-100px" }}
                         className="text-4xl md:text-6xl font-black uppercase text-white mb-6"
                     >
-                        Um serviço fechado pode{" "}
-                        <span className="block text-emerald-500">pagar o ano todo.</span>
+                        Comece sem risco e assine quando perceber o valor.
                     </motion.h2>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
@@ -27,7 +26,7 @@ export function PricingSection() {
                         transition={{ delay: 0.1 }}
                         className="text-lg md:text-xl text-zinc-300 font-light leading-relaxed"
                     >
-                        O plano anual custa {formatCurrencyBR(PRICING.yearly)}. Se o Zacly ajudar você a fechar um serviço extra acima desse valor, ele já se pagou.
+                        Teste com clientes reais: 5 propostas simples nos primeiros 14 dias e 1 Deguste Pro. Quando quiser sua marca em todas as propostas, comece pelo mensal.
                     </motion.p>
                 </div>
 
@@ -37,7 +36,7 @@ export function PricingSection() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true, margin: "-100px" }}
                         transition={{ duration: 0.5 }}
-                        className="bg-zinc-900/50 border border-white/10 p-8 flex flex-col backdrop-blur-sm rounded-2xl"
+                        className="md:order-1 bg-zinc-900/50 border border-white/10 p-8 flex flex-col backdrop-blur-sm rounded-2xl"
                     >
                         <div className="mb-6">
                             <h3 className="text-xl font-bold text-white mb-2">Básico</h3>
@@ -49,15 +48,15 @@ export function PricingSection() {
                         <ul className="space-y-4 mb-8 flex-1">
                             <li className="flex items-start gap-3">
                                 <Check className="h-5 w-5 text-emerald-500 shrink-0" />
-                                <span className="text-zinc-300 text-sm">1 proposta simples por mes</span>
+                                <span className="text-zinc-300 text-sm">5 propostas simples nos primeiros 14 dias</span>
                             </li>
                             <li className="flex items-start gap-3">
                                 <Check className="h-5 w-5 text-emerald-500 shrink-0" />
-                                <span className="text-zinc-300 text-sm">1 deguste Pro para comparar o visual premium</span>
+                                <span className="text-zinc-300 text-sm">Depois, 1 proposta simples por mes</span>
                             </li>
                             <li className="flex items-start gap-3">
                                 <Check className="h-5 w-5 text-emerald-500 shrink-0" />
-                                <span className="text-zinc-300 text-sm">Painel para acompanhar propostas</span>
+                                <span className="text-zinc-300 text-sm">1 Deguste Pro para comparar o visual premium</span>
                             </li>
                             <li className="flex items-start gap-3">
                                 <Check className="h-5 w-5 text-emerald-500 shrink-0" />
@@ -81,12 +80,8 @@ export function PricingSection() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true, margin: "-100px" }}
                         transition={{ duration: 0.5, delay: 0.2 }}
-                        className="relative bg-zinc-900 border border-emerald-500/60 p-10 flex flex-col rounded-2xl md:scale-105 shadow-[0_0_40px_rgba(16,185,129,0.15)] z-10"
+                        className="md:order-3 bg-zinc-900/50 border border-white/10 p-8 flex flex-col rounded-2xl"
                     >
-                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-black px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest flex items-center gap-1 shadow-lg shadow-emerald-500/20">
-                            <Star className="w-3 h-3 fill-black" /> Melhor custo-benefício
-                        </div>
-
                         <div className="mb-6 text-center">
                             <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-wide">Pro Anual</h3>
                             <p className="text-emerald-400 text-sm font-medium">Economize {formatCurrencyBR(YEARLY_SAVINGS)} por ano</p>
@@ -124,9 +119,9 @@ export function PricingSection() {
 
                         <Link
                             href={MARKETING_LINKS.registerYearly}
-                            className="relative group w-full py-4 rounded-xl bg-emerald-500 text-black text-center font-black uppercase tracking-wide overflow-hidden hover:scale-[1.02] transition-transform"
+                            className="w-full py-4 rounded-xl border border-zinc-700 text-white text-center font-bold hover:bg-zinc-800 transition-colors"
                         >
-                            <span className="relative z-10">Criar conta e escolher anual</span>
+                            <span>Escolher anual e economizar</span>
                         </Link>
                     </motion.div>
 
@@ -135,14 +130,18 @@ export function PricingSection() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true, margin: "-100px" }}
                         transition={{ duration: 0.5, delay: 0.4 }}
-                        className="bg-zinc-900/50 border border-white/10 p-8 flex flex-col backdrop-blur-sm rounded-2xl"
+                        className="relative md:order-2 bg-zinc-900 border border-emerald-500/60 p-10 flex flex-col rounded-2xl md:scale-105 shadow-[0_0_40px_rgba(16,185,129,0.15)] z-10"
                     >
-                        <div className="mb-6">
-                            <h3 className="text-xl font-bold text-white mb-2">Pro Mensal</h3>
-                            <p className="text-zinc-400 text-sm">Para quem quer flexibilidade.</p>
+                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-black px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest flex items-center gap-1 shadow-lg shadow-emerald-500/20">
+                            <Star className="w-3 h-3 fill-black" /> Melhor para começar
                         </div>
 
-                        <div className="mb-8">
+                        <div className="mb-6 pt-2 text-center">
+                            <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-wide">Pro Mensal</h3>
+                            <p className="text-emerald-400 text-sm font-medium">Sua marca em toda proposta, sem compromisso anual.</p>
+                        </div>
+
+                        <div className="mb-8 flex flex-col items-center">
                             <div className="flex items-end gap-1">
                                 <span className="text-lg font-bold text-zinc-500 mb-1">R$</span>
                                 <span className="font-black text-4xl text-white">
@@ -150,7 +149,7 @@ export function PricingSection() {
                                     <span className="text-2xl text-zinc-500">,{formatNumberBR(PRICING.monthly).split(",")[1]}</span>
                                 </span>
                             </div>
-                            <p className="text-xs text-zinc-400 mt-1">Assinatura mensal. Cancele quando quiser.</p>
+                            <p className="text-xs text-zinc-400 mt-1 text-center">Assinatura mensal. Renova a cada mes.</p>
                         </div>
 
                         <ul className="space-y-4 mb-8 flex-1">
@@ -161,16 +160,16 @@ export function PricingSection() {
                             ].map((feature) => (
                                 <li key={feature} className="flex items-start gap-3">
                                     <Check className="h-5 w-5 text-emerald-500 shrink-0" />
-                                    <span className="text-zinc-300 text-sm">{feature}</span>
+                                    <span className="text-white text-sm font-medium">{feature}</span>
                                 </li>
                             ))}
                         </ul>
 
                         <Link
                             href={MARKETING_LINKS.registerMonthly}
-                            className="w-full py-4 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-center font-bold hover:bg-zinc-700 transition-colors"
+                            className="w-full py-4 rounded-xl bg-emerald-500 text-black text-center font-black uppercase tracking-wide hover:scale-[1.02] transition-transform"
                         >
-                            Criar conta e escolher mensal
+                            Começar no mensal
                         </Link>
                     </motion.div>
                 </div>

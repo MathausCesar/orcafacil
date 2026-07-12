@@ -109,8 +109,7 @@ export function HeroSection() {
                 </div>
 
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.04] text-white mb-7 max-w-5xl">
-                    Seu serviço é profissional. <br className="hidden md:block" />
-                    Seu orçamento também precisa ser.
+                    Transforme preço solto no WhatsApp em uma aprovação profissional.
                 </h1>
 
                 <p className="text-lg md:text-2xl text-zinc-300 max-w-3xl font-light leading-relaxed mb-7">
@@ -133,7 +132,7 @@ export function HeroSection() {
                         href={MARKETING_LINKS.register}
                         className="group h-14 px-8 rounded-full bg-white text-black font-bold text-base md:text-lg flex items-center justify-center gap-3 transition-transform hover:scale-[1.03] active:scale-95 w-full sm:w-auto"
                     >
-                        <span>Criar meu primeiro orçamento grátis</span>
+                        <span>Criar proposta teste da minha oficina</span>
                         <span className="bg-black/10 rounded-full p-1.5 transition-transform group-hover:translate-x-1">
                             <ArrowRight className="h-5 w-5" />
                         </span>

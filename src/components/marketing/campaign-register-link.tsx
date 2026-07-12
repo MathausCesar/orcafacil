@@ -40,21 +40,10 @@ function buildRegisterHref({
         }
     })
 
-    if (!url.searchParams.has("utm_source")) {
-        url.searchParams.set("utm_source", "google")
-    }
-
-    if (!url.searchParams.has("utm_medium")) {
-        url.searchParams.set("utm_medium", "cpc")
-    }
-
-    if (!url.searchParams.has("utm_campaign")) {
-        url.searchParams.set("utm_campaign", campaign)
-    }
-
-    if (content && !url.searchParams.has("utm_content")) {
-        url.searchParams.set("utm_content", content)
-    }
+    // Preserve real paid attribution only. A direct or organic visit must not
+    // be relabelled as Google Ads simply because it reached a campaign page.
+    url.searchParams.set("zacly_campaign", campaign)
+    if (content) url.searchParams.set("zacly_content", content)
 
     return url.toString()
 }

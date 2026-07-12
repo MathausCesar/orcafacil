@@ -21,6 +21,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { usePostHog } from 'posthog-js/react'
 import { addExceptionStep, captureException } from '@/lib/analytics'
+import { buildOnboardingIntentPath, getActivationIntentFromSearchParams, normalizeIntendedPlan } from '@/lib/activation-intent'
 
 type AuthActionResult = {
     error?: string
@@ -48,6 +49,20 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
     const searchParams = useSearchParams()
     const posthog = usePostHog()
     const nextPath = getSafeNextPath(searchParams)
+    const nextPathPlan = (() => {
+        try {
+            return new URL(nextPath || '/', 'https://app.zacly.com.br').searchParams.get('plan')
+        } catch {
+            return null
+        }
+    })()
+    const initialIntent = getActivationIntentFromSearchParams(searchParams)
+    const activationIntent = {
+        ...initialIntent,
+        intendedPlan: initialIntent.intendedPlan || normalizeIntendedPlan(nextPathPlan),
+    }
+    const signupNextPath = buildOnboardingIntentPath(nextPath || '/onboarding', activationIntent)
+    const activationIntentValue = JSON.stringify(activationIntent)
     const [loading, setLoading] = useState(false)
     const [mode, setMode] = useState<'login' | 'register'>(defaultMode)
     const [showSuccessDialog, setShowSuccessDialog] = useState(false)
@@ -87,12 +102,12 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
         const authFlow = action === signup ? 'signup' : 'login'
         posthog.capture(action === signup ? 'auth_signup_started' : 'auth_login_started', {
             method: 'password',
-            next_path: nextPath || '/',
+            next_path: mode === 'register' ? signupNextPath : (nextPath || '/'),
         })
         addExceptionStep('auth_form_submitted', {
             flow: authFlow,
             method: 'password',
-            next_path: nextPath || '/',
+            next_path: mode === 'register' ? signupNextPath : (nextPath || '/'),
         })
 
         try {
@@ -116,7 +131,7 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                 if (result?.success) {
                     posthog.capture('auth_signup_submitted', {
                         method: 'password',
-                        next_path: nextPath || '/',
+                        next_path: mode === 'register' ? signupNextPath : (nextPath || '/'),
                     })
                     setEmailSent(formData.get('email') as string)
                     setShowSuccessDialog(true)
@@ -197,8 +212,8 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                             </span>
                         </h1>
                         <p className="text-lg text-zinc-400 font-light leading-relaxed max-w-xl">
-                            Orçamentos profissionais, gestão de clientes e controle financeiro.
-                            Uma plataforma criada para acelerar em vez de atrapalhar.
+                            Transforme preço solto no WhatsApp em uma proposta clara, profissional e com aceite registrado.
+                            Sem virar um ERP complicado para sua rotina.
                         </p>
                     </div>
 
@@ -211,7 +226,7 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                             <div className="bg-emerald-500/10 p-1 rounded-full text-emerald-400">
                                 <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
                             </div>
-                            <span className="font-medium tracking-wide">Gestão Simplificada</span>
+                            <span className="font-medium tracking-wide">Rotina simples</span>
                         </div>
                         <div className="flex items-center gap-3">
                             <div className="bg-emerald-500/10 p-1 rounded-full text-emerald-400">
@@ -223,7 +238,7 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                             <div className="bg-emerald-500/10 p-1 rounded-full text-emerald-400">
                                 <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
                             </div>
-                            <span className="font-medium tracking-wide">Dashboards Financeiros</span>
+                            <span className="font-medium tracking-wide">Envio pelo WhatsApp</span>
                         </div>
                         <div className="flex items-center gap-3">
                             <div className="bg-emerald-500/10 p-1 rounded-full text-emerald-400">
@@ -302,14 +317,14 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                                 setLoading(true);
                                 posthog.capture('auth_google_started', {
                                     flow: mode,
-                                    next_path: nextPath || '/',
+                                    next_path: mode === 'register' ? signupNextPath : (nextPath || '/'),
                                 })
                                 addExceptionStep('auth_google_started', {
                                     flow: mode,
-                                    next_path: nextPath || '/',
+                                    next_path: mode === 'register' ? signupNextPath : (nextPath || '/'),
                                 })
                                 try {
-                                    const result = await signInWithGoogle(nextPath || undefined);
+                                    const result = await signInWithGoogle(mode === 'register' ? signupNextPath : (nextPath || undefined));
                                     if (result?.error) {
                                         posthog.capture('auth_flow_error', {
                                             flow: mode,
@@ -370,7 +385,12 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                         </div>
 
                         <form action={(formData) => handleSubmit(formData, mode === 'login' ? login : signup)} className="space-y-5">
-                            {nextPath && <input type="hidden" name="next" value={nextPath} />}
+                            {mode === 'register' ? (
+                                <>
+                                    <input type="hidden" name="next" value={signupNextPath} />
+                                    <input type="hidden" name="activation_intent" value={activationIntentValue} />
+                                </>
+                            ) : nextPath ? <input type="hidden" name="next" value={nextPath} /> : null}
                             <div className="space-y-2">
                                 <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Email</Label>
                                 <Input

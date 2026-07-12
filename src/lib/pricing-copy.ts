@@ -43,7 +43,7 @@ export const YEARLY_SAVINGS = (PRICING.monthly * 12) - PRICING.yearly
 export const YEARLY_DISCOUNT_PCT = Math.round((YEARLY_SAVINGS / (PRICING.monthly * 12)) * 100)
 
 export const MARKETING_COPY = {
-    corePromise: 'Crie um orçamento profissional em até 1 minuto, envie pelo WhatsApp e acompanhe se o cliente abriu, aprovou ou ficou parado.',
+    corePromise: 'Transforme preço solto no WhatsApp em uma aprovação profissional, clara e registrada. Crie, envie e acompanhe cada proposta sem virar um ERP.',
     signupHint: `Sem cartão. 5 propostas simples nos primeiros 14 dias e 1 Deguste Pro para sentir a diferença.`,
     freePlan: `Plano gratuito com 5 propostas simples nos primeiros 14 dias, depois 1 por mês, e 1 proposta Deguste Pro.`,
     proPlan: `Plano Pro a partir de ${formatCurrencyBR(YEARLY_MONTHLY_EQUIV)} por mês no plano anual.`,

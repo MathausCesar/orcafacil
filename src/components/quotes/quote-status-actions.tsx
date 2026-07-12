@@ -3,48 +3,22 @@
 import { useState } from 'react'
 import { updateQuoteStatus } from '@/app/actions/quotes'
 import { Button } from '@/components/ui/button'
-import { CheckCircle, Clock, Loader2, PlayCircle, ShieldCheck, Trophy, Send, FileText, XCircle } from 'lucide-react'
+import { CheckCircle, Clock, FileText, Loader2, PlayCircle, ShieldCheck, Trophy, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
-import { usePostHog } from 'posthog-js/react'
-import { addExceptionStep, captureActivationStage, captureConversion, captureException } from '@/lib/analytics'
+import { captureEvent, captureException } from '@/lib/analytics'
 
 interface QuoteActionsProps {
     quoteId: string
     currentStatus: string
     isOwner: boolean
-    whatsappLink?: string
 }
 
-type OwnerStatus = 'sent' | 'in_progress' | 'completed'
+type OwnerStatus = 'in_progress' | 'completed'
 
-export function QuoteStatusActions({ quoteId, currentStatus, isOwner, whatsappLink }: QuoteActionsProps) {
+export function QuoteStatusActions({ quoteId, currentStatus, isOwner }: QuoteActionsProps) {
     const [loading, setLoading] = useState(false)
-    const posthog = usePostHog()
-
-    const openPreparedWhatsApp = (targetWindow: Window | null) => {
-        if (!whatsappLink) return
-
-        if (targetWindow) {
-            targetWindow.opener = null
-            targetWindow.location.href = whatsappLink
-            return
-        }
-
-        window.open(whatsappLink, '_blank', 'noopener,noreferrer')
-    }
 
     const handleStatusChange = async (status: OwnerStatus) => {
-        const whatsappWindow = status === 'sent' && whatsappLink
-            ? window.open('', '_blank')
-            : null
-
-        addExceptionStep('quote_status_change_started', {
-            previous_status: currentStatus,
-            next_status: status,
-            source: 'quote_detail_action',
-            opened_whatsapp: status === 'sent' && Boolean(whatsappLink),
-        })
-
         setLoading(true)
         try {
             if (!isOwner) {
@@ -52,53 +26,20 @@ export function QuoteStatusActions({ quoteId, currentStatus, isOwner, whatsappLi
             }
 
             await updateQuoteStatus(quoteId, status)
-
-            posthog.capture('quote_status_changed', {
+            captureEvent('quote_status_changed', {
+                quote_id: quoteId,
                 previous_status: currentStatus,
                 next_status: status,
                 source: 'quote_detail_action',
-                opened_whatsapp: status === 'sent' && Boolean(whatsappLink),
             })
 
-            if (status === 'sent' && whatsappLink) {
-                captureConversion('quote_share_clicked', {
-                    quote_id: quoteId,
-                    method: 'whatsapp',
-                    previous_status: currentStatus,
-                    marked_as_sent: true,
-                    source: 'mark_as_sent_action',
-                    has_whatsapp_link: true,
-                    currency: 'BRL',
-                    transaction_id: `quote_share_${quoteId}`,
-                })
-            }
-
-            if (status === 'sent') {
-                captureActivationStage('quote_sent_no_subscription', {
-                    quote_id: quoteId,
-                    previous_status: currentStatus,
-                    source: 'quote_detail_action',
-                    has_whatsapp_link: Boolean(whatsappLink),
-                })
-            }
-
-            if (status === 'sent') {
-                openPreparedWhatsApp(whatsappWindow)
-            }
-
-            const messages: Record<string, string> = {
-                sent: whatsappLink ? 'Marcado como enviado. Abrindo WhatsApp...' : 'Marcado como enviado!',
-                in_progress: 'Execução iniciada!',
-                completed: 'Orçamento concluído!',
-            }
-            toast.success(messages[status])
+            toast.success(status === 'in_progress' ? 'Execução iniciada.' : 'Orçamento concluído.')
         } catch (error) {
-            whatsappWindow?.close()
             captureException(error, {
                 source: 'quote_status_action',
+                quote_id: quoteId,
                 previous_status: currentStatus,
                 next_status: status,
-                opened_whatsapp: status === 'sent' && Boolean(whatsappLink),
             })
             toast.error('Erro ao atualizar status.')
         } finally {
@@ -108,7 +49,7 @@ export function QuoteStatusActions({ quoteId, currentStatus, isOwner, whatsappLi
 
     if (currentStatus === 'completed') {
         return (
-            <div className="flex items-center justify-center gap-2 p-4 bg-teal-50 text-teal-700 rounded-lg border border-teal-200 w-full">
+            <div className="flex w-full items-center justify-center gap-2 rounded-lg border border-teal-200 bg-teal-50 p-4 text-teal-700">
                 <Trophy className="h-5 w-5" />
                 <span className="font-bold">Orçamento concluído</span>
             </div>
@@ -117,20 +58,15 @@ export function QuoteStatusActions({ quoteId, currentStatus, isOwner, whatsappLi
 
     if (currentStatus === 'draft') {
         return (
-            <div className="flex flex-col gap-3 w-full print:hidden">
+            <div className="flex w-full flex-col gap-3 print:hidden">
                 <div className="flex items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-zinc-700">
                     <FileText className="h-5 w-5" />
                     <span className="font-bold">Rascunho</span>
                 </div>
                 {isOwner && (
-                    <Button
-                        onClick={() => handleStatusChange('sent')}
-                        disabled={loading}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200"
-                    >
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
-                        Marcar como enviado
-                    </Button>
+                    <p className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-center text-xs leading-5 text-blue-900">
+                        Use Compartilhar para abrir o WhatsApp. A proposta só vira enviada depois da sua confirmação.
+                    </p>
                 )}
             </div>
         )
@@ -138,18 +74,14 @@ export function QuoteStatusActions({ quoteId, currentStatus, isOwner, whatsappLi
 
     if (currentStatus === 'in_progress') {
         return (
-            <div className="flex flex-col gap-3 w-full print:hidden">
-                <div className="flex items-center justify-center gap-2 p-3 bg-violet-50 text-violet-700 rounded-lg border border-violet-200 w-full">
+            <div className="flex w-full flex-col gap-3 print:hidden">
+                <div className="flex w-full items-center justify-center gap-2 rounded-lg border border-violet-200 bg-violet-50 p-3 text-violet-700">
                     <PlayCircle className="h-5 w-5" />
                     <span className="font-bold">Em execução</span>
                 </div>
                 {isOwner && (
-                    <Button
-                        onClick={() => handleStatusChange('completed')}
-                        disabled={loading}
-                        className="w-full bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-200"
-                    >
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trophy className="h-4 w-4 mr-2" />}
+                    <Button onClick={() => handleStatusChange('completed')} disabled={loading} className="w-full bg-teal-600 text-white shadow-md shadow-teal-200 hover:bg-teal-700">
+                        {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trophy className="mr-2 h-4 w-4" />}
                         Marcar como concluído
                     </Button>
                 )}
@@ -159,18 +91,14 @@ export function QuoteStatusActions({ quoteId, currentStatus, isOwner, whatsappLi
 
     if (currentStatus === 'approved') {
         return (
-            <div className="flex flex-col gap-3 w-full print:hidden">
-                <div className="flex items-center justify-center gap-2 p-3 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-200 w-full">
+            <div className="flex w-full flex-col gap-3 print:hidden">
+                <div className="flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
                     <CheckCircle className="h-5 w-5" />
                     <span className="font-bold">Orçamento aprovado</span>
                 </div>
                 {isOwner && (
-                    <Button
-                        onClick={() => handleStatusChange('in_progress')}
-                        disabled={loading}
-                        className="w-full bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-200"
-                    >
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <PlayCircle className="h-4 w-4 mr-2" />}
+                    <Button onClick={() => handleStatusChange('in_progress')} disabled={loading} className="w-full bg-violet-600 text-white shadow-md shadow-violet-200 hover:bg-violet-700">
+                        {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlayCircle className="mr-2 h-4 w-4" />}
                         Iniciar execução
                     </Button>
                 )}
@@ -180,7 +108,7 @@ export function QuoteStatusActions({ quoteId, currentStatus, isOwner, whatsappLi
 
     if (currentStatus === 'rejected') {
         return (
-            <div className="flex items-center justify-center gap-2 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200 w-full">
+            <div className="flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 print:hidden">
                 <XCircle className="h-5 w-5" />
                 <span className="font-bold">Proposta recusada</span>
             </div>
@@ -189,7 +117,7 @@ export function QuoteStatusActions({ quoteId, currentStatus, isOwner, whatsappLi
 
     if (currentStatus === 'changes_requested') {
         return (
-            <div className="flex items-center justify-center gap-2 p-4 bg-amber-50 text-amber-800 rounded-lg border border-amber-200 w-full">
+            <div className="flex items-center justify-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 print:hidden">
                 <XCircle className="h-5 w-5" />
                 <span className="font-bold">Cliente pediu ajuste</span>
             </div>

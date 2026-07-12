@@ -1,4 +1,5 @@
 import type { OnboardingPricingTier } from "@/lib/onboarding-catalog";
+import type { IntendedPlan } from "@/lib/activation-intent";
 
 export type OnboardingData = {
     category: { id: string; name: string; slug: string } | null;
@@ -11,6 +12,8 @@ export type OnboardingData = {
     email: string;
     logoUrl: string | null;
     themeColor: string | null;
+    intendedPlan: IntendedPlan | null;
+    attribution: Record<string, string>;
 };
 
 export const INITIAL_ONBOARDING_DATA: OnboardingData = {
@@ -24,4 +27,6 @@ export const INITIAL_ONBOARDING_DATA: OnboardingData = {
     email: "",
     logoUrl: null,
     themeColor: null,
+    intendedPlan: null,
+    attribution: {},
 };

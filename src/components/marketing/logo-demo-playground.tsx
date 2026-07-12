@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -43,11 +43,14 @@ const sampleItems = [
     ['Mao de obra', 'R$ 280'],
 ]
 
-function getRegisterUrl(campaignContent?: string) {
-    if (!campaignContent) return MARKETING_LINKS.register
-
+function getRegisterUrl(campaignContent?: string, queryString = '') {
     const url = new URL(MARKETING_LINKS.register)
-    url.searchParams.set('utm_content', campaignContent)
+    const source = new URLSearchParams(queryString)
+    ;['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'gclid', 'fbclid', 'msclkid', 'zacly_campaign'].forEach((key) => {
+        const value = source.get(key)
+        if (value) url.searchParams.set(key, value)
+    })
+    if (campaignContent) url.searchParams.set('zacly_content', campaignContent)
     return url.toString()
 }
 
@@ -153,6 +156,7 @@ export function LogoDemoPlayground({
 
                     <div className="mt-5">
                         <button
+                            id="logo-demo-upload"
                             type="button"
                             onClick={() => inputRef.current?.click()}
                             disabled={loading}
@@ -261,6 +265,9 @@ export function LogoDemoPlayground({
 
                     <Link
                         href={getRegisterUrl(campaignContent)}
+                        onClick={(event: MouseEvent<HTMLAnchorElement>) => {
+                            event.currentTarget.href = getRegisterUrl(campaignContent, window.location.search)
+                        }}
                         className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-zinc-950 px-5 text-sm font-black text-white transition hover:bg-zinc-800"
                     >
                         Criar conta e usar minha logo

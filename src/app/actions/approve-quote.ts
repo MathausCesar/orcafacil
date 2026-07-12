@@ -16,11 +16,17 @@ function isClientDecision(status: string): status is ClientDecision {
 export async function approveQuotePublic(
     quoteId: string,
     publicToken: string,
+    approvalToken: string,
     status: string,
-    note?: string
+    note?: string,
+    phoneSuffix?: string,
 ) {
     if (!publicToken) {
         throw new Error('Link de aprovacao invalido.')
+    }
+
+    if (!approvalToken) {
+        throw new Error('Use o link de aceite enviado pelo prestador para registrar sua decisao.')
     }
 
     if (!isClientDecision(status)) {
@@ -28,6 +34,7 @@ export async function approveQuotePublic(
     }
 
     const cleanNote = typeof note === 'string' ? note.trim().slice(0, 500) : ''
+    const cleanPhoneSuffix = typeof phoneSuffix === 'string' ? phoneSuffix.replace(/\D/g, '').slice(-4) : ''
 
     if (['rejected', 'changes_requested'].includes(status) && cleanNote.length < 5) {
         throw new Error('Informe um motivo ou pedido de ajuste para o prestador.')
@@ -36,15 +43,32 @@ export async function approveQuotePublic(
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     const admin = getSupabaseAdmin()
-    const { data: quote, error: quoteError } = await admin
-        .from('quotes')
-        .select('id, status, client_name, user_id, organization_id, total, layout_style, professional_context, experience_mode')
+    // Approval-specific fields are introduced in the same deployment migration.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: quote, error: quoteError } = await (admin.from('quotes') as any)
+        .select('id, status, client_name, client_phone, expiration_date, user_id, organization_id, total, layout_style, professional_context, experience_mode, approval_token')
         .eq('id', quoteId)
         .eq('public_token', publicToken)
         .single()
 
     if (quoteError || !quote) {
         throw new Error('Orcamento nao encontrado ou link invalido.')
+    }
+
+    if (String(quote.approval_token) !== approvalToken) {
+        throw new Error('Este link permite apenas visualizar a proposta. Use o link de aceite enviado pelo prestador.')
+    }
+
+    const expectedPhoneSuffix = String(quote.client_phone || '').replace(/\D/g, '').slice(-4)
+    if (expectedPhoneSuffix.length !== 4 || cleanPhoneSuffix !== expectedPhoneSuffix) {
+        throw new Error('Confirme os quatro ultimos digitos do WhatsApp informado para esta proposta.')
+    }
+
+    if (quote.expiration_date) {
+        const validUntil = new Date(`${quote.expiration_date}T23:59:59`)
+        if (Number.isFinite(validUntil.getTime()) && validUntil.getTime() < Date.now()) {
+            throw new Error('Esta proposta venceu e nao pode mais receber aceite.')
+        }
     }
 
     if (user) {
@@ -73,17 +97,20 @@ export async function approveQuotePublic(
     const ownerIsFree = isFreePlan(ownerPlan)
     const hasProPresentation = !ownerIsFree || quote.experience_mode === 'pro_sample'
 
-    const { data: updatedQuote, error } = await admin
-        .from('quotes')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: updatedQuote, error } = await (admin.from('quotes') as any)
         .update({
             status,
             client_response_note: cleanNote || null,
             client_responded_at: new Date().toISOString(),
+            approval_verified_at: new Date().toISOString(),
+            approval_verification_method: 'approval_link_phone_suffix',
             updated_at: new Date().toISOString()
         })
         .select('id')
         .eq('id', quoteId)
         .eq('public_token', publicToken)
+        .eq('approval_token', approvalToken)
         .in('status', ['pending', 'sent'])
         .maybeSingle()
 

@@ -14,8 +14,8 @@ type OnboardingContextType = {
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
 
-export function OnboardingProvider({ children }: { children: ReactNode }) {
-    const [data, setData] = useState<OnboardingData>(INITIAL_ONBOARDING_DATA);
+export function OnboardingProvider({ children, initialData }: { children: ReactNode; initialData?: Partial<OnboardingData> }) {
+    const [data, setData] = useState<OnboardingData>(() => ({ ...INITIAL_ONBOARDING_DATA, ...initialData }));
     const [step, setStep] = useState(1);
 
     const updateData = (updates: Partial<OnboardingData>) => {

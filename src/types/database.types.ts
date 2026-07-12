@@ -247,7 +247,10 @@ export type Database = {
                     cnpj: string | null
                     delivery_days: number | null
                     email: string | null
+                    first_attribution: Json | null
                     id: string
+                    intended_plan: string | null
+                    last_attribution: Json | null
                     is_superadmin: boolean | null
                     layout_style: string | null
                     logo_url: string | null
@@ -280,7 +283,10 @@ export type Database = {
                     cnpj?: string | null
                     delivery_days?: number | null
                     email?: string | null
+                    first_attribution?: Json | null
                     id: string
+                    intended_plan?: string | null
+                    last_attribution?: Json | null
                     is_superadmin?: boolean | null
                     layout_style?: string | null
                     logo_url?: string | null
@@ -313,7 +319,10 @@ export type Database = {
                     cnpj?: string | null
                     delivery_days?: number | null
                     email?: string | null
+                    first_attribution?: Json | null
                     id?: string
+                    intended_plan?: string | null
+                    last_attribution?: Json | null
                     is_superadmin?: boolean | null
                     layout_style?: string | null
                     logo_url?: string | null
@@ -396,12 +405,19 @@ export type Database = {
             quotes: {
                 Row: {
                     amount_paid: number
+                    approval_link_issued_at: string | null
+                    approval_recipient_name: string | null
+                    approval_recipient_phone: string | null
+                    approval_token: string
+                    approval_verification_method: string | null
+                    approval_verified_at: string | null
                     cash_discount_fixed: number | null
                     cash_discount_percent: number | null
                     cash_discount_type: string | null
                     client_responded_at: string | null
                     client_response_note: string | null
                     client_company_name: string | null
+                    client_email: string | null
                     client_name: string
                     client_phone: string | null
                     client_type: string | null
@@ -410,6 +426,7 @@ export type Database = {
                     estimated_days: number | null
                     experience_mode: string
                     expiration_date: string | null
+                    first_public_opened_at: string | null
                     id: string
                     installment_count: number | null
                     layout_style: string | null
@@ -425,6 +442,8 @@ export type Database = {
                     show_detailed_items: boolean | null
                     show_payment_options: boolean | null
                     show_timeline: boolean | null
+                    sent_confirmed_at: string | null
+                    sent_via: string | null
                     status: string | null
                     total: number | null
                     updated_at: string | null
@@ -432,12 +451,19 @@ export type Database = {
                 }
                 Insert: {
                     amount_paid?: number
+                    approval_link_issued_at?: string | null
+                    approval_recipient_name?: string | null
+                    approval_recipient_phone?: string | null
+                    approval_token?: string
+                    approval_verification_method?: string | null
+                    approval_verified_at?: string | null
                     cash_discount_fixed?: number | null
                     cash_discount_percent?: number | null
                     cash_discount_type?: string | null
                     client_responded_at?: string | null
                     client_response_note?: string | null
                     client_company_name?: string | null
+                    client_email?: string | null
                     client_name: string
                     client_phone?: string | null
                     client_type?: string | null
@@ -446,6 +472,7 @@ export type Database = {
                     estimated_days?: number | null
                     experience_mode?: string
                     expiration_date?: string | null
+                    first_public_opened_at?: string | null
                     id?: string
                     installment_count?: number | null
                     layout_style?: string | null
@@ -461,6 +488,8 @@ export type Database = {
                     show_detailed_items?: boolean | null
                     show_payment_options?: boolean | null
                     show_timeline?: boolean | null
+                    sent_confirmed_at?: string | null
+                    sent_via?: string | null
                     status?: string | null
                     total?: number | null
                     updated_at?: string | null
@@ -468,12 +497,19 @@ export type Database = {
                 }
                 Update: {
                     amount_paid?: number
+                    approval_link_issued_at?: string | null
+                    approval_recipient_name?: string | null
+                    approval_recipient_phone?: string | null
+                    approval_token?: string
+                    approval_verification_method?: string | null
+                    approval_verified_at?: string | null
                     cash_discount_fixed?: number | null
                     cash_discount_percent?: number | null
                     cash_discount_type?: string | null
                     client_responded_at?: string | null
                     client_response_note?: string | null
                     client_company_name?: string | null
+                    client_email?: string | null
                     client_name?: string
                     client_phone?: string | null
                     client_type?: string | null
@@ -482,6 +518,7 @@ export type Database = {
                     estimated_days?: number | null
                     experience_mode?: string
                     expiration_date?: string | null
+                    first_public_opened_at?: string | null
                     id?: string
                     installment_count?: number | null
                     layout_style?: string | null
@@ -497,6 +534,8 @@ export type Database = {
                     show_detailed_items?: boolean | null
                     show_payment_options?: boolean | null
                     show_timeline?: boolean | null
+                    sent_confirmed_at?: string | null
+                    sent_via?: string | null
                     status?: string | null
                     total?: number | null
                     updated_at?: string | null

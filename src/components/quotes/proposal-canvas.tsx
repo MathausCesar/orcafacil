@@ -67,6 +67,7 @@ export type ProposalQuote = {
     payment_terms: string | null
     professional_context?: string | null
     public_token: string
+    first_public_opened_at?: string | null
     quote_items: QuoteItem[]
     client_response_note?: string | null
     client_responded_at?: string | null
@@ -124,6 +125,7 @@ type ProposalCanvasProps = {
     isOwner: boolean
     canClientRespond: boolean
     approvalUrl: string
+    approvalToken: string
     pdfUrl: string
     whatsappLink: string
     whatsappMessage: string
@@ -322,6 +324,7 @@ export function ProposalCanvas({
     isOwner,
     canClientRespond,
     approvalUrl,
+    approvalToken,
     pdfUrl,
     whatsappLink,
     whatsappMessage,
@@ -407,6 +410,7 @@ export function ProposalCanvas({
                             <QuoteShareModal
                                 quoteId={quote.id}
                                 clientName={quote.client_name}
+                                clientPhone={quote.client_phone}
                                 approvalUrl={approvalUrl}
                                 whatsappLink={whatsappLink}
                                 businessName={businessName}
@@ -423,7 +427,18 @@ export function ProposalCanvas({
             </header>
 
             <main className="mx-auto w-full max-w-6xl overflow-x-hidden px-3 py-6 sm:px-6 lg:py-10 print:max-w-none print:px-0 print:py-0">
-                {isOwner && accountIsFree && status !== 'draft' && (
+                {isOwner && accountIsFree && !profile?.logo_url && status === 'draft' && (
+                    <section className="mb-5 flex flex-col gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-4 print:hidden sm:flex-row sm:items-center sm:justify-between sm:p-5">
+                        <div>
+                            <p className="text-sm font-black text-slate-950">Veja sua proxima proposta com a identidade da oficina.</p>
+                            <p className="mt-1 text-xs leading-5 text-slate-600">Envie sua logo. O Zacly sugere cores e libera seu Deguste Pro quando a proposta estiver pronta.</p>
+                        </div>
+                        <Button asChild variant="outline" className="shrink-0">
+                            <Link href="/profile?source=quote_logo_upgrade">Enviar minha logo</Link>
+                        </Button>
+                    </section>
+                )}
+                {isOwner && accountIsFree && (['sent', 'approved', 'changes_requested', 'in_progress', 'completed'].includes(status) || Boolean(quote.first_public_opened_at)) && (
                     <FreePlanUpgradeNudge
                         quoteId={quote.id}
                         status={status}
@@ -519,7 +534,8 @@ export function ProposalCanvas({
                         <div className={cn('min-w-0 border p-5', skin.infoCardClass)}>
                             <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Cliente</p>
                             <p className="mt-2 break-words text-lg font-black text-slate-950">{quote.client_name}</p>
-                            {quote.client_phone && <p className="mt-1 text-sm text-slate-500">{quote.client_phone}</p>}
+                            {isOwner && quote.client_phone && <p className="mt-1 text-sm text-slate-500">{quote.client_phone}</p>}
+                            {!isOwner && quote.client_phone && <p className="mt-1 text-sm text-slate-500">WhatsApp confirmado no aceite seguro</p>}
                         </div>
                         <div className={cn('min-w-0 border p-5', skin.infoCardClass)}>
                             <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Empresa</p>
@@ -696,6 +712,7 @@ export function ProposalCanvas({
                                     <ApproveQuoteClient
                                         quoteId={quote.id}
                                         publicToken={quote.public_token}
+                                        approvalToken={approvalToken}
                                         clientName={quote.client_name}
                                         themeColor={themeColor}
                                         totalFormatted={totalFormatted}
@@ -716,7 +733,6 @@ export function ProposalCanvas({
                                             quoteId={quote.id}
                                             currentStatus={status}
                                             isOwner={isOwner}
-                                            whatsappLink={whatsappLink}
                                         />
                                         <QuoteStockActions
                                             quoteId={quote.id}

@@ -112,7 +112,7 @@ function getColumnId(status: string): string {
 }
 
 function canOwnerMoveToStatus(currentStatus: string, targetStatus: string) {
-    if (targetStatus === 'sent') return ['draft', 'pending', 'sent'].includes(currentStatus)
+    if (targetStatus === 'sent') return false
     if (targetStatus === 'in_progress') return currentStatus === 'approved'
     if (targetStatus === 'completed') return currentStatus === 'in_progress'
     return false
@@ -303,6 +303,13 @@ export function QuotesView({ quotes: initialQuotes, totalCount, initialView = 'l
         const newStatus = STATUS_MAP[targetCol.id]
         if (!newStatus) return
 
+        if (newStatus === 'sent') {
+            toast.info('Confirme o envio pelo WhatsApp', {
+                description: 'Abra a proposta e use Compartilhar. O Zacly pergunta depois se a mensagem foi enviada.',
+            })
+            return
+        }
+
         if (!canOwnerMoveToStatus(quote.status, newStatus)) {
             toast.error('Movimento não permitido', {
                 description: 'Aprovação e recusa só podem vir do link do cliente.',
@@ -363,6 +370,13 @@ export function QuotesView({ quotes: initialQuotes, totalCount, initialView = 'l
 
         const newStatus = STATUS_MAP[targetColumnId]
         if (!newStatus) return
+
+        if (newStatus === 'sent') {
+            toast.info('Confirme o envio pelo WhatsApp', {
+                description: 'Abra a proposta e use Compartilhar. O Zacly pergunta depois se a mensagem foi enviada.',
+            })
+            return
+        }
 
         if (!canOwnerMoveToStatus(quote.status, newStatus)) {
             toast.error('Movimento não permitido', {

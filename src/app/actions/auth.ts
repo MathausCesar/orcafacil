@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getAuthCallbackUrl } from '@/lib/app-url'
+import { parseActivationIntent } from '@/lib/activation-intent'
 
 function normalizeNext(value: FormDataEntryValue | string | null | undefined) {
     if (typeof value !== 'string') return undefined
@@ -57,12 +58,16 @@ export async function signup(formData: FormData) {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const next = normalizeNext(formData.get('next')) || '/onboarding'
+    const signupIntent = parseActivationIntent(formData.get('activation_intent'))
 
     const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
             emailRedirectTo: getAuthCallbackUrl(next),
+            data: {
+                signup_intent: signupIntent,
+            },
         },
     })
 

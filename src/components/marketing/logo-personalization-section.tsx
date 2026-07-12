@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, FileText, Palette, Sparkles, Upload } from "lucide-react";
-import { MARKETING_LINKS } from "@/lib/marketing-links";
 import { LogoDemoPlayground } from "@/components/marketing/logo-demo-playground";
 
 const steps = [
@@ -53,10 +52,10 @@ export function LogoPersonalizationSection() {
 
                     <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                         <Link
-                            href={MARKETING_LINKS.register}
+                            href="#logo-demo-upload"
                             className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-emerald-400 px-6 text-sm font-black text-zinc-950 transition hover:bg-emerald-300"
                         >
-                            Criar proposta com minha logo
+                            Testar com minha logo
                             <ArrowRight className="h-4 w-4" />
                         </Link>
                         <div className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-300">

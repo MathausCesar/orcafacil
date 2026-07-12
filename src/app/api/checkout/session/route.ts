@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
             checkoutStatus: session.status,
             paymentStatus: session.payment_status,
             subscriptionActive,
+            plan: profile?.plan || null,
         })
     } catch (error) {
         console.error('Checkout session confirmation failed:', error)

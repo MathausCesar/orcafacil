@@ -1,248 +1,74 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { useOnboarding } from "@/components/onboarding/onboarding-context";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowLeft, ArrowRight, Palette, Sparkles } from "lucide-react";
-import { LogoUpload } from "@/components/profile/logo-upload";
-import type { LogoIdentityAnalysis } from "@/lib/color-extractor";
-import { toast } from "sonner";
-import { formatDocument, validateDocument } from "@/lib/utils/document";
-import { captureEvent } from "@/lib/analytics";
-import { ActivationProposalPreview } from "@/components/onboarding/activation-proposal-preview";
-import { getDefaultProfessionalContext } from "@/lib/onboarding-catalog";
-import { getLayoutRecommendationForContext, getProposalModelName } from "@/lib/profession-layout-recommendations";
+import { useState } from 'react'
+import { ArrowLeft, ArrowRight, FileText, Sparkles } from 'lucide-react'
+import { useOnboarding } from '@/components/onboarding/onboarding-context'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { toast } from 'sonner'
+import { captureEvent } from '@/lib/analytics'
 
 interface WizardStep4Props {
-    userId: string;
-    initialEmail: string;
+    initialEmail: string
 }
 
-export function WizardStep4({ userId, initialEmail }: WizardStep4Props) {
-    const { data, updateData, nextStep, prevStep } = useOnboarding();
-
-    const [businessName, setBusinessName] = useState(data.businessName || "");
-    const [phone, setPhone] = useState(data.phone || "");
-    const [documentType, setDocumentType] = useState<"cpf" | "cnpj">(data.documentType || "cpf");
-    const [document, setDocument] = useState(data.document || "");
-    const [email, setEmail] = useState(data.email || initialEmail);
-    const [logoUrl, setLogoUrl] = useState(data.logoUrl || null);
-    const [themeColor, setThemeColor] = useState<string | null>(data.themeColor || null);
-    const [logoAnalysis, setLogoAnalysis] = useState<LogoIdentityAnalysis | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const professionalContext = data.category
-        ? getDefaultProfessionalContext(data.category.slug, data.specialties)
-        : "general";
-    const recommendation = getLayoutRecommendationForContext(professionalContext, "onboarding");
-
-    const handleLogoUploaded = (url: string) => {
-        setLogoUrl(url);
-    };
-
-    const handleLogoAnalyzed = (analysis: LogoIdentityAnalysis) => {
-        setLogoAnalysis(analysis);
-        setThemeColor(analysis.safeAccentColor);
-    };
+export function WizardStep4({ initialEmail }: WizardStep4Props) {
+    const { data, updateData, nextStep, prevStep } = useOnboarding()
+    const [businessName, setBusinessName] = useState(data.businessName || '')
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     const handleContinue = () => {
         if (!businessName.trim()) {
-            toast.error("Informe seu nome ou o nome do negocio.");
-            return;
+            toast.error('Informe como seu cliente conhece voce ou seu negocio.')
+            return
         }
 
-        if (document && !validateDocument(document, documentType)) {
-            toast.error(`O ${documentType.toUpperCase()} informado e invalido. Verifique os numeros digitados.`);
-            return;
-        }
-
-        if (!logoUrl) {
-            captureEvent("logo_prompt_skipped", {
-                source: "onboarding_profile_step",
-                document_type: documentType,
-            });
-        }
-
-        setIsSubmitting(true);
-        captureEvent("onboarding_identity_completed", {
+        setIsSubmitting(true)
+        captureEvent('onboarding_business_named', {
             category_id: data.category?.id,
             category_slug: data.category?.slug,
-            has_logo: Boolean(logoUrl),
-            has_phone: Boolean(phone.trim()),
-            has_document: Boolean(document.trim()),
-            recommended_model: recommendation.model,
-        });
+            intended_plan: data.intendedPlan || 'none',
+        })
         updateData({
             businessName: businessName.trim(),
-            phone,
-            documentType,
-            document,
-            email,
-            logoUrl,
-            themeColor,
-        });
-
-        setTimeout(() => nextStep(), 300);
-    };
+            email: data.email || initialEmail,
+        })
+        window.setTimeout(() => nextStep(), 200)
+    }
 
     return (
-        <div className="space-y-6">
+        <div className="mx-auto max-w-xl space-y-6">
             <div className="space-y-2 text-center">
-                <h2 className="text-2xl font-bold tracking-tight">Veja sua proposta ganhar forma</h2>
-                <p className="text-muted-foreground">Informe o nome do negocio. A logo e opcional, mas deixa a previa com a sua marca.</p>
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary"><FileText className="h-6 w-6" /></div>
+                <h2 className="text-2xl font-bold tracking-tight">Vamos preparar sua proposta teste</h2>
+                <p className="text-muted-foreground">Use o nome que seu cliente reconhece. Logo, CNPJ e preferencias entram depois, quando voce ja tiver visto o resultado.</p>
             </div>
 
-            <div className="w-full space-y-8 rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
-                <div className="flex flex-col items-start gap-8 md:flex-row">
-                    <div className="flex w-full flex-col items-center md:w-1/3">
-                        <Label className="mb-4 text-center">Sua logo recomendada</Label>
-                        <LogoUpload
-                            currentLogoUrl={logoUrl}
-                            userId={userId}
-                            onUploadComplete={handleLogoUploaded}
-                            onColorExtracted={setThemeColor}
-                            onLogoAnalyzed={handleLogoAnalyzed}
-                        />
-                        {themeColor && (
-                            <div className="mt-3 flex items-center gap-2">
-                                <div
-                                    className="h-4 w-4 rounded-full border border-border shadow"
-                                    style={{ backgroundColor: themeColor }}
-                                />
-                                <p className="text-[10px] text-muted-foreground">Cor da marca detectada</p>
-                            </div>
-                        )}
-                        <p className="mt-1 max-w-[120px] text-center text-[10px] text-muted-foreground">
-                            Ela ajuda o Zacly a montar cores e layout da proposta automaticamente.
-                        </p>
-                        <div className="mt-4 w-full rounded-xl border border-primary/15 bg-primary/5 p-3 text-left">
-                            <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-                                <Sparkles className="h-4 w-4 text-primary" />
-                                Diferencial visual do Zacly
-                            </div>
-                            <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
-                                O Zacly analisa sua logo, escolhe uma cor segura e prepara uma proposta com cara de marca profissional.
-                            </p>
-                            <div className="mt-3 flex items-center gap-2 text-[11px] font-semibold text-muted-foreground">
-                                <Palette className="h-3.5 w-3.5" />
-                                {logoAnalysis ? `${logoAnalysis.styleLabel} recomendado.` : "Menos configuracao manual."}
-                            </div>
-                            {logoAnalysis && (
-                                <div className="mt-3 flex flex-wrap gap-1.5">
-                                    {logoAnalysis.palette.slice(0, 3).map((color) => (
-                                        <span
-                                            key={color}
-                                            className="h-4 w-4 rounded-full border border-border"
-                                            style={{ backgroundColor: color }}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="w-full space-y-4 md:w-2/3">
-                        <div className="space-y-4 pt-2">
-                            <Label>Como voce atua?</Label>
-                            <RadioGroup
-                                defaultValue={documentType}
-                                onValueChange={(val) => {
-                                    const newType = val as "cpf" | "cnpj";
-                                    setDocumentType(newType);
-                                    if (document) {
-                                        setDocument(formatDocument(document, newType));
-                                    }
-                                }}
-                                className="flex flex-col gap-3 sm:flex-row sm:gap-4"
-                            >
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="cpf" id="cpf" />
-                                    <Label htmlFor="cpf" className="cursor-pointer">Pessoa fisica</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="cnpj" id="cnpj" />
-                                    <Label htmlFor="cnpj" className="cursor-pointer">Pessoa juridica</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="businessName">
-                                {documentType === "cpf" ? "Seu nome ou nome fantasia" : "Nome da empresa"} *
-                            </Label>
-                            <Input
-                                id="businessName"
-                                value={businessName}
-                                onChange={(event) => setBusinessName(event.target.value)}
-                                placeholder={documentType === "cpf" ? "Joao Silva" : "Empresa Exemplo LTDA"}
-                                required
-                                className="h-10 border-primary/20 focus-visible:ring-primary"
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label htmlFor="phone">WhatsApp / telefone</Label>
-                                <Input
-                                    id="phone"
-                                    value={phone}
-                                    onChange={(event) => setPhone(event.target.value)}
-                                    placeholder="(11) 99999-9999"
-                                    className="h-10 border-primary/20 focus-visible:ring-primary"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="document">{documentType === "cpf" ? "CPF" : "CNPJ"} opcional</Label>
-                                <Input
-                                    id="document"
-                                    value={document}
-                                    onChange={(event) => setDocument(formatDocument(event.target.value, documentType))}
-                                    placeholder={documentType === "cpf" ? "000.000.000-00" : "00.000.000/0000-00"}
-                                    maxLength={documentType === "cpf" ? 14 : 18}
-                                    className="h-10 border-primary/20 font-mono focus-visible:ring-primary"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="email">Email de contato</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                value={email}
-                                onChange={(event) => setEmail(event.target.value)}
-                                placeholder="contato@empresa.com"
-                                className="h-10 border-primary/20 focus-visible:ring-primary"
-                            />
-                        </div>
-                    </div>
-                </div>
-                {data.category && (
-                    <ActivationProposalPreview
-                        businessName={businessName}
-                        categoryName={data.category.name}
-                        categorySlug={data.category.slug}
-                        specialties={data.specialties}
-                        logoUrl={logoUrl}
-                        accentColor={themeColor}
-                        recommendedModel={getProposalModelName(recommendation.model)}
+            <div className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-7">
+                <div className="space-y-2">
+                    <Label htmlFor="businessName">Seu nome ou nome da oficina *</Label>
+                    <Input
+                        id="businessName"
+                        value={businessName}
+                        onChange={(event) => setBusinessName(event.target.value)}
+                        placeholder={data.category?.slug === 'mecanicos' ? 'Ex: Oficina do Joao' : 'Ex: Seu negocio'}
+                        autoFocus
+                        className="h-12 text-base"
                     />
-                )}
+                </div>
+                <div className="mt-5 flex gap-3 rounded-xl border border-primary/15 bg-primary/5 p-4 text-sm leading-6 text-muted-foreground">
+                    <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <p>Na proxima tela, o Zacly ja abre itens sugeridos para seu oficio. Voce so ajusta cliente, servicos e valores antes de salvar.</p>
+                </div>
             </div>
 
-            <div className="mt-8 flex items-center justify-between rounded-xl border border-border bg-card p-4">
-                <Button variant="ghost" onClick={prevStep} className="text-muted-foreground">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Voltar
-                </Button>
-                <Button onClick={handleContinue} className="font-semibold shadow-md" disabled={isSubmitting}>
-                    {isSubmitting ? "Preparando..." : "Usar esta proposta"}
-                    <ArrowRight className="ml-2 h-4 w-4" />
+            <div className="flex items-center justify-between rounded-xl border border-border bg-card p-4">
+                <Button variant="ghost" onClick={prevStep} className="text-muted-foreground"><ArrowLeft className="mr-2 h-4 w-4" /> Voltar</Button>
+                <Button onClick={handleContinue} disabled={isSubmitting} className="font-semibold shadow-md">
+                    {isSubmitting ? 'Preparando...' : 'Abrir proposta teste'} <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
             </div>
         </div>
-    );
+    )
 }

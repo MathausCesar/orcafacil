@@ -20,6 +20,7 @@ import { addExceptionStep, captureException } from '@/lib/analytics'
 interface ApproveQuoteClientProps {
     quoteId: string
     publicToken: string
+    approvalToken: string
     clientName: string
     themeColor: string
     totalFormatted: string
@@ -33,6 +34,7 @@ type ClientDecision = 'approved' | 'rejected' | 'changes_requested'
 export function ApproveQuoteClient({
     quoteId,
     publicToken,
+    approvalToken,
     clientName,
     themeColor,
     totalFormatted,
@@ -42,6 +44,7 @@ export function ApproveQuoteClient({
     const [loading, setLoading] = useState(false)
     const [dialog, setDialog] = useState<DecisionDialog>(null)
     const [note, setNote] = useState('')
+    const [phoneSuffix, setPhoneSuffix] = useState('')
     const [done, setDone] = useState<ClientDecision | null>(null)
     const posthog = usePostHog()
 
@@ -77,7 +80,12 @@ export function ApproveQuoteClient({
 
         setLoading(true)
         try {
-            await approveQuotePublic(quoteId, publicToken, status, note)
+            if (phoneSuffix.replace(/\D/g, '').length !== 4) {
+                toast.error('Informe os quatro ultimos digitos do WhatsApp do cliente.')
+                return
+            }
+
+            await approveQuotePublic(quoteId, publicToken, approvalToken, status, note, phoneSuffix)
             setDone(status)
             posthog.capture('quote_client_decision_completed', {
                 ...analyticsPayload,
@@ -240,10 +248,23 @@ export function ApproveQuoteClient({
                     </div>
                     <AlertDialogHeader className="space-y-2 text-center">
                         <AlertDialogTitle className="text-2xl font-bold text-slate-900">Confirmar aprovacao?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-center text-base text-slate-600">
-                            Ao confirmar, o prestador sera notificado e podera iniciar o servico.
-                        </AlertDialogDescription>
+                    <AlertDialogDescription className="text-center text-base text-slate-600">
+                            Confirme os quatro ultimos digitos do seu WhatsApp. Isso protege o aceite e registra a decisao para o prestador.
+                    </AlertDialogDescription>
                     </AlertDialogHeader>
+                    <div className="space-y-2">
+                        <label htmlFor="approval-phone-suffix" className="text-sm font-semibold text-slate-800">Ultimos 4 digitos do seu WhatsApp</label>
+                        <input
+                            id="approval-phone-suffix"
+                            inputMode="numeric"
+                            autoComplete="one-time-code"
+                            maxLength={4}
+                            value={phoneSuffix}
+                            onChange={(event) => setPhoneSuffix(event.target.value.replace(/\D/g, '').slice(-4))}
+                            placeholder="0000"
+                            className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-center text-lg font-bold tracking-[0.35em] outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                        />
+                    </div>
                     <AlertDialogFooter className="flex-col gap-3 pt-4 sm:flex-col">
                         <Button
                             onClick={handleConfirm}
@@ -287,6 +308,18 @@ export function ApproveQuoteClient({
                         className="min-h-[110px] resize-none"
                         placeholder={isChangeRequest ? 'Ex: Pode separar material e mao de obra?' : 'Ex: O valor ficou acima do esperado.'}
                     />
+                    <div className="space-y-2">
+                        <label htmlFor="decision-phone-suffix" className="text-sm font-semibold text-slate-800">Ultimos 4 digitos do seu WhatsApp</label>
+                        <input
+                            id="decision-phone-suffix"
+                            inputMode="numeric"
+                            maxLength={4}
+                            value={phoneSuffix}
+                            onChange={(event) => setPhoneSuffix(event.target.value.replace(/\D/g, '').slice(-4))}
+                            placeholder="0000"
+                            className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-center font-bold tracking-[0.35em] outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                        />
+                    </div>
                     <p className="text-right text-xs text-slate-400">{note.length}/500</p>
                     <AlertDialogFooter className="flex-col gap-3 pt-2 sm:flex-col">
                         <Button

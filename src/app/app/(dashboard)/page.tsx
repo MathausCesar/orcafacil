@@ -26,7 +26,7 @@ export default async function Dashboard() {
   const emptyCountResult = { count: 0, data: null, error: null }
 
   // Parallel fetch: profile, recent quotes and guided first-run progress
-  const [profileResult, quotesResult, clientsCountResult, quotesCountResult, activePipelineResult] = await Promise.all([
+  const [profileResult, quotesResult, quotesCountResult, sentCountResult, openedCountResult] = await Promise.all([
     supabase
       .from('profiles')
       .select('business_name, logo_url, onboarded_at')
@@ -40,12 +40,6 @@ export default async function Dashboard() {
       .limit(5),
     orgId
       ? supabase
-        .from('clients')
-        .select('id', { count: 'exact', head: true })
-        .eq('organization_id', orgId)
-      : Promise.resolve(emptyCountResult),
-    orgId
-      ? supabase
         .from('quotes')
         .select('id', { count: 'exact', head: true })
         .eq('organization_id', orgId)
@@ -55,7 +49,14 @@ export default async function Dashboard() {
         .from('quotes')
         .select('id', { count: 'exact', head: true })
         .eq('organization_id', orgId)
-        .in('status', ['sent', 'approved', 'in_progress', 'completed'])
+        .in('status', ['sent', 'approved', 'changes_requested', 'in_progress', 'completed'])
+      : Promise.resolve(emptyCountResult),
+    orgId
+      ? supabase
+        .from('quotes')
+        .select('id', { count: 'exact', head: true })
+        .eq('organization_id', orgId)
+        .not('first_public_opened_at', 'is', null)
       : Promise.resolve(emptyCountResult),
   ])
 
@@ -76,22 +77,30 @@ export default async function Dashboard() {
       />
 
       <FirstRunGuide
-        clientCount={clientsCountResult.count || 0}
         quoteCount={quotesCountResult.count || 0}
-        activePipelineCount={activePipelineResult.count || 0}
+        sentCount={sentCountResult.count || 0}
+        openedCount={openedCountResult.count || 0}
+        latestQuoteId={recentQuotes?.[0]?.id}
+        hasLogo={Boolean(profile.logo_url)}
       />
 
-      {/* Main Action - Elegant Gradient */}
+      {/* Main activation action */}
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary to-teal-500 shadow-xl shadow-primary/20 transition-all hover:shadow-primary/30">
         <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-foreground/5 blur-3xl"></div>
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-8 md:p-10 gap-6">
-          <div className="text-white space-y-2 text-center md:text-left">
-            <h2 className="text-3xl font-bold tracking-tight">Criar Novo Orçamento</h2>
-            <p className="text-teal-100 font-medium">Gere propostas profissionais em segundos.</p>
+        <div className="relative z-10 flex flex-col items-center justify-between gap-6 p-8 md:flex-row md:p-10">
+          <div className="space-y-2 text-center text-white md:text-left">
+            <h2 className="text-3xl font-bold tracking-tight">
+              {(quotesCountResult.count || 0) === 0 ? 'Crie sua proposta teste' : 'Criar nova proposta'}
+            </h2>
+            <p className="font-medium text-teal-100">
+              {(quotesCountResult.count || 0) === 0
+                ? 'Itens sugeridos para seu oficio. Ajuste e envie pelo WhatsApp.'
+                : 'Transforme preço solto no WhatsApp em uma aprovação clara e registrada.'}
+            </p>
           </div>
           <Link href="/new?quick=1&starter=1&source=dashboard_hero" prefetch={true}>
-            <Button size="lg" className="h-14 px-8 text-lg rounded-xl bg-background text-primary hover:bg-muted shadow-lg border-2 border-transparent transition-all hover:scale-105 active:scale-95 font-semibold">
-              <Plus className="mr-2 h-6 w-6" /> Começar Agora
+            <Button size="lg" className="h-14 rounded-xl border-2 border-transparent bg-background px-8 text-lg font-semibold text-primary shadow-lg transition-all hover:scale-105 hover:bg-muted active:scale-95">
+              <Plus className="mr-2 h-6 w-6" /> {(quotesCountResult.count || 0) === 0 ? 'Criar proposta teste' : 'Nova proposta'}
             </Button>
           </Link>
         </div>

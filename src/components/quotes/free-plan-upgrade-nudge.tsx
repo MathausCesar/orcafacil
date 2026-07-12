@@ -56,7 +56,7 @@ export function FreePlanUpgradeNudge({
         : isProSample
             ? 'Sua proposta com marca profissional ja foi enviada. Mantenha esse padrao no Pro.'
             : 'Sua proposta foi enviada. A proxima pode sair com a marca da sua oficina.'
-    const cta = isApproved ? 'Manter minha marca' : isProSample ? 'Manter visual Pro' : 'Ver plano Pro'
+    const cta = isApproved ? 'Comecar Pro mensal' : isProSample ? 'Manter visual Pro' : 'Ver Pro mensal'
 
     return (
         <section className="mb-5 rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm print:hidden sm:p-5">
@@ -84,7 +84,7 @@ export function FreePlanUpgradeNudge({
                     </div>
                 </div>
                 <Button asChild className="h-11 shrink-0 bg-emerald-600 px-5 font-bold text-white hover:bg-emerald-700">
-                    <Link href={`/pricing?source=proposal_${status}_paywall`} onClick={trackClick}>
+                    <Link href={`/pricing?plan=monthly&source=proposal_${status}_paywall`} onClick={trackClick}>
                         {cta}
                     </Link>
                 </Button>

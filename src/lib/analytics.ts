@@ -11,6 +11,8 @@ export const ATTRIBUTION_KEYS = [
     'gclid',
     'fbclid',
     'msclkid',
+    'zacly_campaign',
+    'zacly_content',
 ] as const
 
 export const ATTRIBUTION_STORAGE_KEY = 'zacly_attribution'

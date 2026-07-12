@@ -8,7 +8,6 @@ import { getInitialCatalogForOnboarding, parseOnboardingQuoteSettings } from '@/
 import {
     buildStarterQuoteItemsFromCatalog,
     catalogSeedToStarterItems,
-    getStarterClientName,
     type StarterCatalogItem,
 } from '@/lib/starter-quote'
 import {
@@ -147,7 +146,8 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
                 hasLogoAnalysis: hasLogoAnalysis(profile?.quote_settings),
             }}
             initialData={{
-                clientName: clientName || (starterMode ? getStarterClientName(professionalContext.id) : ''),
+                // Starter items are prefilled, but the customer remains intentional so this can become a real proposal.
+                clientName: clientName || '',
                 experienceMode: isFree ? 'free_simple' : 'pro',
                 layoutStyle: suggestedLayout,
                 professionalContext: quickMode ? professionalContext.id : 'general',

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
-import { captureServerEvent } from '@/lib/server-analytics'
+import { captureServerActivationStage, captureServerEvent } from '@/lib/server-analytics'
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -27,20 +27,30 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     if (!quote.first_public_opened_at) {
         const openedAt = new Date().toISOString()
-        await admin
+        const { data: openedQuote } = await admin
             .from('quotes')
             .update({ first_public_opened_at: openedAt })
             .eq('id', id)
             .eq('public_token', token)
             .is('first_public_opened_at', null)
+            .select('id')
+            .maybeSingle()
 
-        await captureServerEvent('quote_public_open_confirmed', quote.user_id, {
-            quote_id: quote.id,
-            quote_status: quote.status || 'unknown',
-            experience_mode: quote.experience_mode || 'free_simple',
-            professional_context: quote.professional_context || 'general',
-            source: 'visible_public_quote_page',
-        })
+        // Only the request that actually writes the first-open timestamp emits
+        // an event, avoiding duplicate opening counts on reloads or races.
+        if (openedQuote) {
+            const payload = {
+                quote_id: quote.id,
+                quote_status: quote.status || 'unknown',
+                experience_mode: quote.experience_mode || 'free_simple',
+                professional_context: quote.professional_context || 'general',
+                source: 'visible_public_quote_page',
+            }
+            await captureServerEvent('quote_public_open_confirmed', quote.user_id, payload)
+            if (quote.experience_mode === 'free_simple') {
+                await captureServerActivationStage(quote.user_id, 'client_opened_free', payload)
+            }
+        }
     }
 
     return NextResponse.json({ ok: true })

@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-    Clock, CheckCircle, PlayCircle, Trophy,
+    CheckCircle, Eye, Send, WalletCards,
     Calendar, ChevronDown, X
 } from 'lucide-react'
 import { useOrganization } from '@/contexts/organization-context'
@@ -14,10 +14,16 @@ import { useOrganization } from '@/contexts/organization-context'
 type Period = '7d' | '30d' | 'month' | 'custom'
 
 interface Stats {
-    pending: number
+    sent: number
+    opened: number
     approved: number
-    in_progress: number
-    completed: number
+    negotiationValue: number
+}
+
+interface QuoteMetricRow {
+    status: string | null
+    total: number | null
+    first_public_opened_at: string | null
 }
 
 const periodLabels: Record<Period, string> = {
@@ -32,7 +38,7 @@ export function DashboardStats() {
     const [showPicker, setShowPicker] = useState(false)
     const [customFrom, setCustomFrom] = useState('')
     const [customTo, setCustomTo] = useState('')
-    const [stats, setStats] = useState<Stats>({ pending: 0, approved: 0, in_progress: 0, completed: 0 })
+    const [stats, setStats] = useState<Stats>({ sent: 0, opened: 0, approved: 0, negotiationValue: 0 })
     const [loading, setLoading] = useState(true)
     const { organization, isLoading: isOrgLoading } = useOrganization()
 
@@ -66,7 +72,7 @@ export function DashboardStats() {
     useEffect(() => {
         async function fetchStats() {
             if (!organization?.id) {
-                setStats({ pending: 0, approved: 0, in_progress: 0, completed: 0 })
+                setStats({ sent: 0, opened: 0, approved: 0, negotiationValue: 0 })
                 setLoading(false)
                 return
             }
@@ -75,25 +81,31 @@ export function DashboardStats() {
             const supabase = createClient()
             const { from, to } = getDateRange()
 
-            const statuses = ['pending', 'approved', 'in_progress', 'completed'] as const
+            const { data, error } = await supabase
+                .from('quotes')
+                .select('status, total, first_public_opened_at')
+                .eq('organization_id', organization.id)
+                .gte('created_at', from)
+                .lte('created_at', to)
 
-            const results = await Promise.all(
-                statuses.map(status =>
-                    supabase
-                        .from('quotes')
-                        .select('*', { count: 'exact', head: true })
-                        .in('status', status === 'pending' ? ['pending', 'draft', 'sent'] : [status])
-                        .eq('organization_id', organization.id)
-                        .gte('created_at', from)
-                        .lte('created_at', to)
-                )
-            )
+            if (error) {
+                setStats({ sent: 0, opened: 0, approved: 0, negotiationValue: 0 })
+                setLoading(false)
+                return
+            }
+
+            const quotes = (data || []) as QuoteMetricRow[]
+            const sentStatuses = new Set(['sent', 'approved', 'changes_requested', 'in_progress', 'completed'])
+            const approvedStatuses = new Set(['approved', 'in_progress', 'completed'])
+            const negotiationStatuses = new Set(['sent', 'changes_requested'])
 
             setStats({
-                pending: results[0].count || 0,
-                approved: results[1].count || 0,
-                in_progress: results[2].count || 0,
-                completed: results[3].count || 0,
+                sent: quotes.filter((quote) => sentStatuses.has(quote.status || '')).length,
+                opened: quotes.filter((quote) => Boolean(quote.first_public_opened_at)).length,
+                approved: quotes.filter((quote) => approvedStatuses.has(quote.status || '')).length,
+                negotiationValue: quotes
+                    .filter((quote) => negotiationStatuses.has(quote.status || ''))
+                    .reduce((total, quote) => total + (Number(quote.total) || 0), 0),
             })
             setLoading(false)
         }
@@ -112,12 +124,20 @@ export function DashboardStats() {
 
     const cards = [
         {
-            label: 'Em Análise',
-            value: stats.pending,
-            icon: Clock,
-            color: 'text-amber-500',
-            bg: 'bg-amber-500/10',
-            border: 'border-amber-500/20'
+            label: 'Enviadas',
+            value: stats.sent,
+            icon: Send,
+            color: 'text-blue-600',
+            bg: 'bg-blue-500/10',
+            border: 'border-blue-500/20'
+        },
+        {
+            label: 'Abertas',
+            value: stats.opened,
+            icon: Eye,
+            color: 'text-violet-600',
+            bg: 'bg-violet-500/10',
+            border: 'border-violet-500/20'
         },
         {
             label: 'Aprovados',
@@ -128,20 +148,12 @@ export function DashboardStats() {
             border: 'border-emerald-500/20'
         },
         {
-            label: 'Em Execução',
-            value: stats.in_progress,
-            icon: PlayCircle,
-            color: 'text-violet-500',
-            bg: 'bg-violet-500/10',
-            border: 'border-violet-500/20'
-        },
-        {
-            label: 'Concluídos',
-            value: stats.completed,
-            icon: Trophy,
-            color: 'text-teal-500',
-            bg: 'bg-teal-500/10',
-            border: 'border-teal-500/20'
+            label: 'Em negociação',
+            value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(stats.negotiationValue),
+            icon: WalletCards,
+            color: 'text-amber-600',
+            bg: 'bg-amber-500/10',
+            border: 'border-amber-500/20'
         }
     ]
 
@@ -248,7 +260,7 @@ export function DashboardStats() {
                                     {card.label}
                                 </span>
                             </div>
-                            <h3 className={`text-3xl md:text-4xl font-bold tracking-tight text-foreground ${loading ? 'animate-pulse' : ''}`}>
+                            <h3 className={`text-2xl md:text-3xl font-bold tracking-tight text-foreground ${loading ? 'animate-pulse' : ''}`}>
                                 {loading ? '—' : card.value}
                             </h3>
                         </CardContent>

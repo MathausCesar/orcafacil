@@ -1,17 +1,20 @@
 import Link from 'next/link'
-import { ArrowRight, CheckCircle2, Circle, FileText, KanbanSquare, Palette, UserPlus } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Circle, Eye, FileText, Palette, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface FirstRunGuideProps {
-    clientCount: number
     quoteCount: number
-    activePipelineCount: number
+    sentCount: number
+    openedCount: number
+    latestQuoteId?: string
+    hasLogo: boolean
 }
 
-export function FirstRunGuide({ clientCount, quoteCount, activePipelineCount }: FirstRunGuideProps) {
-    const hasClient = clientCount > 0
+export function FirstRunGuide({ quoteCount, sentCount, openedCount, latestQuoteId, hasLogo }: FirstRunGuideProps) {
     const hasQuote = quoteCount > 0
-    const hasActivePipeline = activePipelineCount > 0
+    const hasSentQuote = sentCount > 0
+    const hasOpenedQuote = openedCount > 0
+    const quoteHref = latestQuoteId ? `/quotes/${latestQuoteId}` : '/quotes'
 
     const steps = [
         {
@@ -22,28 +25,31 @@ export function FirstRunGuide({ clientCount, quoteCount, activePipelineCount }: 
             done: hasQuote,
             active: !hasQuote,
             action: hasQuote ? 'Proposta criada' : 'Criar proposta teste',
+            disabled: false,
         },
         {
-            title: 'Salve clientes recorrentes',
-            description: 'Cadastre nome e telefone dos clientes que voltam para nao digitar tudo de novo.',
-            href: '/clients?first=1',
-            icon: UserPlus,
-            done: hasClient,
-            active: hasQuote && !hasClient,
-            action: hasClient ? 'Cliente cadastrado' : 'Cadastrar cliente',
+            title: 'Envie pelo WhatsApp',
+            description: 'Abra a mensagem pronta, envie o link e confirme somente depois que ela saiu para o cliente.',
+            href: quoteHref,
+            icon: Send,
+            done: hasSentQuote,
+            active: hasQuote && !hasSentQuote,
+            action: hasSentQuote ? 'Proposta enviada' : 'Enviar proposta',
+            disabled: !hasQuote,
         },
         {
-            title: 'Acompanhe no pipeline',
-            description: 'Veja propostas criadas, enviadas, aprovadas e em execucao sem perder o controle.',
+            title: 'Acompanhe a abertura',
+            description: 'Veja quando o cliente abre a proposta e acompanhe a aprovacao sem cobrar no escuro.',
             href: '/quotes?view=pipeline',
-            icon: KanbanSquare,
-            done: hasActivePipeline,
-            active: hasQuote && !hasActivePipeline,
-            action: hasActivePipeline ? 'Pipeline ativo' : 'Abrir pipeline',
+            icon: Eye,
+            done: hasOpenedQuote,
+            active: hasSentQuote && !hasOpenedQuote,
+            action: hasOpenedQuote ? 'Proposta aberta' : 'Acompanhar proposta',
+            disabled: !hasSentQuote,
         },
     ]
 
-    if (hasClient && hasQuote && hasActivePipeline) {
+    if (hasQuote && hasSentQuote && hasOpenedQuote) {
         return null
     }
 
@@ -54,9 +60,9 @@ export function FirstRunGuide({ clientCount, quoteCount, activePipelineCount }: 
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="space-y-1">
                     <p className="text-xs font-bold uppercase tracking-wider text-primary">Primeiros passos</p>
-                    <h2 className="text-xl font-bold text-foreground">Trilha guiada para comecar vendendo</h2>
+                    <h2 className="text-xl font-bold text-foreground">Trilha curta para enviar sua primeira proposta</h2>
                     <p className="max-w-2xl text-sm text-muted-foreground">
-                        Siga um caminho curto: proposta teste, clientes recorrentes e acompanhamento. O primeiro valor aparece antes da configuracao completa.
+                        Proposta teste, envio confirmado e abertura do cliente. O primeiro valor aparece antes da configuracao completa.
                     </p>
                 </div>
                 <div className="rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-bold text-muted-foreground">
@@ -68,7 +74,6 @@ export function FirstRunGuide({ clientCount, quoteCount, activePipelineCount }: 
                 {steps.map((step) => {
                     const Icon = step.icon
                     const StatusIcon = step.done ? CheckCircle2 : Circle
-                    const disabled = step.href.includes('pipeline') && !hasQuote
 
                     return (
                         <div
@@ -93,23 +98,12 @@ export function FirstRunGuide({ clientCount, quoteCount, activePipelineCount }: 
                                 </div>
                             </div>
 
-                            {disabled ? (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="mt-4 w-full"
-                                    disabled
-                                >
+                            {step.disabled ? (
+                                <Button type="button" variant="outline" size="sm" className="mt-4 w-full" disabled>
                                     {step.action}
                                 </Button>
                             ) : (
-                                <Button
-                                    asChild
-                                    variant={step.active ? 'default' : 'outline'}
-                                    size="sm"
-                                    className="mt-4 w-full"
-                                >
+                                <Button asChild variant={step.active ? 'default' : 'outline'} size="sm" className="mt-4 w-full">
                                     <Link href={step.href}>
                                         {step.action}
                                         {!step.done && <ArrowRight className="h-3.5 w-3.5" />}
@@ -125,19 +119,19 @@ export function FirstRunGuide({ clientCount, quoteCount, activePipelineCount }: 
                 Dica: a primeira proposta pode ser um teste. Troque cliente, quantidades e valores antes de enviar para alguem real.
             </div>
 
-            <div className="mt-3 flex flex-col gap-3 rounded-xl border border-primary/15 bg-primary/5 px-4 py-3 text-xs leading-5 text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-start gap-2">
-                    <Palette className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                    <span>
-                        Envie sua logo em Configuracoes: o Zacly detecta a cor da marca e deixa suas propostas mais personalizadas.
-                    </span>
+            {hasQuote && !hasLogo && (
+                <div className="mt-3 flex flex-col gap-3 rounded-xl border border-primary/15 bg-primary/5 px-4 py-3 text-xs leading-5 text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-start gap-2">
+                        <Palette className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                        <span>
+                            Agora veja sua proxima proposta com a identidade da oficina. Envie sua logo e o Zacly sugere cor e visual para ela.
+                        </span>
+                    </div>
+                    <Button asChild variant="outline" size="sm" className="shrink-0">
+                        <Link href="/profile?source=first_quote_logo">Enviar minha logo</Link>
+                    </Button>
                 </div>
-                <Button asChild variant="outline" size="sm" className="shrink-0">
-                    <Link href="/profile">
-                        Ajustar logo
-                    </Link>
-                </Button>
-            </div>
+            )}
         </section>
     )
 }

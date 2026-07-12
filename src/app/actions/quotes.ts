@@ -1,11 +1,13 @@
 'use server'
 
+import { randomUUID } from 'crypto'
 import { revalidatePath } from 'next/cache'
 import { createNotification } from './notifications'
 import { getAuthContext } from '@/lib/get-auth-context'
 import { PRICING, getFreeQuoteAllowance } from '@/lib/pricing-copy'
 import { normalizeProfessionalContext } from '@/lib/professional-context'
 import { FREE_PROPOSAL_MODEL, getEntitledPlan, isFreePlan, normalizeProposalModel } from '@/lib/proposal-style'
+import { captureServerActivationStage, captureServerEvent } from '@/lib/server-analytics'
 
 type QuoteExperienceMode = 'free_simple' | 'pro_sample' | 'pro'
 
@@ -33,6 +35,7 @@ type QuoteItemPayload = {
 type QuoteUpdatePayload = {
     client_name: string
     client_phone: string
+    client_email?: string | null
     expiration_date: string | null
     payment_terms: string
     notes: string
@@ -129,46 +132,9 @@ export async function createQuote(formData: FormData) {
     const isFree = isFreePlan(userPlan)
     const requestedExperienceMode = normalizeExperienceMode(formData.get('experience_mode'), isFree)
 
-    if (isFree) {
-        const allowance = getFreeQuoteAllowance(profile?.onboarded_at)
-
-        const [freeQuoteCountResult, proSampleCountResult] = await Promise.all([
-            supabase
-                .from('quotes')
-                .select('*', { count: 'exact', head: true })
-                .eq('organization_id', orgId)
-                .eq('experience_mode', 'free_simple')
-                .gte('created_at', allowance.periodStart.toISOString()),
-            supabase
-                .from('quotes')
-                .select('*', { count: 'exact', head: true })
-                .eq('organization_id', orgId)
-                .eq('experience_mode', 'pro_sample'),
-        ])
-
-        if (
-            requestedExperienceMode === 'pro_sample'
-            && !proSampleCountResult.error
-            && (proSampleCountResult.count || 0) >= PRICING.proSampleQuotes
-        ) {
-            return { error: 'LIMIT_REACHED', message: 'Seu deguste Pro ja foi usado. Assine o Pro para criar propostas profissionais sem limite.' }
-        }
-
-        if (
-            requestedExperienceMode === 'free_simple'
-            && !freeQuoteCountResult.error
-            && (freeQuoteCountResult.count || 0) >= allowance.limit
-        ) {
-            const limitMessage = allowance.period === 'activation'
-                ? 'Voce ja usou as 5 propostas simples do periodo inicial. Use o Deguste Pro ou assine para criar sem limite.'
-                : 'Voce ja criou sua proposta simples gratis deste mes. Use o Deguste Pro ou assine para criar sem limite.'
-            return { error: 'LIMIT_REACHED', message: limitMessage }
-        }
-    }
-    // ----------------------
-
     const clientName = formData.get('clientName') as string
     const clientPhone = formData.get('clientPhone') as string
+    const clientEmail = formData.get('clientEmail') as string
     const expirationDate = formData.get('expirationDate') as string || null
     const paymentTerms = formData.get('paymentTerms') as string
     const notes = formData.get('notes') as string
@@ -204,17 +170,51 @@ export async function createQuote(formData: FormData) {
         }
     }
 
+    let quotaUsageId: string | null = null
+    if (isFree) {
+        const allowance = getFreeQuoteAllowance(profile?.onboarded_at)
+        const quotaLimit = requestedExperienceMode === 'pro_sample'
+            ? PRICING.proSampleQuotes
+            : allowance.limit
+        const quotaPeriodStart = requestedExperienceMode === 'free_simple'
+            ? allowance.periodStart.toISOString()
+            : null
+
+        // The database reservation serializes simultaneous browser submissions.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: reservationId, error: quotaError } = await (supabase as any).rpc('reserve_free_quote_quota', {
+            p_organization_id: orgId,
+            p_user_id: user.id,
+            p_experience_mode: requestedExperienceMode,
+            p_period_start: quotaPeriodStart,
+            p_limit: quotaLimit,
+        })
+
+        if (quotaError || !reservationId) {
+            const limitMessage = requestedExperienceMode === 'pro_sample'
+                ? 'Seu deguste Pro ja foi usado. Assine o Pro para criar propostas profissionais sem limite.'
+                : allowance.period === 'activation'
+                    ? 'Voce ja usou as 5 propostas simples do periodo inicial. Use o Deguste Pro ou assine para criar sem limite.'
+                    : 'Voce ja criou sua proposta simples gratis deste mes. Use o Deguste Pro ou assine para criar sem limite.'
+            return { error: 'LIMIT_REACHED', message: limitMessage }
+        }
+
+        quotaUsageId = reservationId as string
+    }
+
     // Calcule Total
     const total = items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0)
 
     // 1. Create Quote
-    const { data: quote, error: quoteError } = await supabase
-        .from('quotes')
+    // The client email column is introduced in the same deployment migration.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: quote, error: quoteError } = await (supabase.from('quotes') as any)
         .insert({
             user_id: user.id,
             organization_id: orgId,
             client_name: clientName,
             client_phone: clientPhone,
+            client_email: clientEmail?.trim() || null,
             expiration_date: expirationDate,
             payment_terms: paymentTerms,
             notes: notes,
@@ -238,7 +238,24 @@ export async function createQuote(formData: FormData) {
 
     if (quoteError || !quote) {
         console.error('Error creating quote:', quoteError)
+        if (quotaUsageId) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await (supabase as any).rpc('release_free_quote_quota', { p_usage_id: quotaUsageId })
+        }
         return { error: 'Failed to create quote' }
+    }
+
+    if (quotaUsageId) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: claimError } = await (supabase as any).rpc('claim_free_quote_quota', {
+            p_usage_id: quotaUsageId,
+            p_quote_id: quote.id,
+        })
+
+        if (claimError) {
+            await supabase.from('quotes').delete().eq('id', quote.id)
+            return { error: 'Nao foi possivel confirmar sua cota gratuita. Tente novamente.' }
+        }
     }
 
     // 2. Create Items
@@ -250,6 +267,7 @@ export async function createQuote(formData: FormData) {
 
     if (itemsError) {
         console.error('Error creating items:', itemsError)
+        await supabase.from('quotes').delete().eq('id', quote.id)
         return { error: 'Failed to create items' }
     }
 
@@ -312,6 +330,7 @@ export async function updateQuote(id: string, formData: FormData) {
 
     const clientName = formData.get('clientName') as string
     const clientPhone = formData.get('clientPhone') as string
+    const clientEmail = formData.get('clientEmail') as string
     const expirationDate = formData.get('expirationDate') as string || null
     const paymentTerms = formData.get('paymentTerms') as string
     const notes = formData.get('notes') as string
@@ -340,6 +359,7 @@ export async function updateQuote(id: string, formData: FormData) {
     const updateData: QuoteUpdatePayload = {
         client_name: clientName,
         client_phone: clientPhone,
+        client_email: clientEmail?.trim() || null,
         expiration_date: expirationDate,
         payment_terms: paymentTerms,
         notes: notes,
@@ -363,9 +383,24 @@ export async function updateQuote(id: string, formData: FormData) {
         updateData.status = 'draft'
     }
 
+    const approvalReset = shouldResetStatus
+        ? {
+            approval_token: randomUUID(),
+            approval_recipient_phone: null,
+            approval_recipient_name: null,
+            approval_link_issued_at: null,
+            approval_verified_at: null,
+            approval_verification_method: null,
+            sent_confirmed_at: null,
+            sent_via: null,
+        }
+        : {}
+
     const { error: updateError } = await supabase
         .from('quotes')
-        .update(updateData)
+        // The approval columns are introduced in the same deployment migration.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .update({ ...updateData, ...approvalReset } as any)
         .eq('id', id)
         .eq('organization_id', orgId || '')
 
@@ -431,6 +466,10 @@ export async function updateQuoteStatus(id: string, status: 'sent' | 'in_progres
         throw new Error('Status change is not allowed for quote owners')
     }
 
+    if (status === 'sent') {
+        throw new Error('Confirme o envio pelo fluxo de compartilhamento antes de marcar a proposta como enviada.')
+    }
+
     // Owner-controlled transitions only; client decisions use approveQuotePublic.
     const { error } = await supabase.rpc('update_quote_status', {
         quote_id: id,
@@ -476,6 +515,85 @@ export async function updateQuoteStatus(id: string, status: 'sent' | 'in_progres
 
     revalidatePath(`/quotes/${id}`)
     return { success: true }
+}
+
+export async function confirmQuoteSent(id: string, channel: 'whatsapp' | 'email' = 'whatsapp') {
+    const { supabase, user, orgId } = await getAuthContext()
+
+    if (!user || !orgId) {
+        throw new Error('Unauthorized')
+    }
+
+    const { data: quote } = await supabase
+        .from('quotes')
+        .select('id, client_name, client_phone, total, organization_id, status, experience_mode')
+        .eq('id', id)
+        .eq('organization_id', orgId)
+        .maybeSingle()
+
+    if (!quote) {
+        throw new Error('Orcamento nao encontrado.')
+    }
+
+    if (channel === 'whatsapp' && (quote.client_phone || '').replace(/\D/g, '').length < 10) {
+        throw new Error('Informe o WhatsApp do cliente antes de confirmar o envio.')
+    }
+
+    if (['draft', 'pending'].includes(quote.status || '')) {
+        const { error: sentStatusError } = await supabase.rpc('update_quote_status', {
+            quote_id: id,
+            new_status: 'sent',
+        })
+
+        if (sentStatusError) {
+            console.error('Error updating quote to sent:', sentStatusError)
+            throw new Error('Não foi possível confirmar o envio da proposta.')
+        }
+
+        await createNotification(
+            user.id,
+            'Orçamento enviado',
+            `O orçamento para ${quote.client_name} foi confirmado como enviado pelo ${channel === 'whatsapp' ? 'WhatsApp' : 'email'}.`,
+            `/quotes/${id}`,
+            'info',
+        )
+    }
+
+    const confirmedAt = new Date().toISOString()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase.from('quotes') as any)
+        .update({
+            sent_confirmed_at: confirmedAt,
+            sent_via: channel,
+            approval_recipient_phone: quote.client_phone || null,
+            approval_recipient_name: quote.client_name,
+            approval_link_issued_at: confirmedAt,
+            updated_at: confirmedAt,
+        })
+        .eq('id', id)
+        .eq('organization_id', orgId)
+
+    if (error) {
+        console.error('Error confirming quote sent:', error)
+        throw new Error('Nao foi possivel confirmar o envio.')
+    }
+
+    const payload = {
+        quote_id: id,
+        channel,
+        previous_status: quote.status || 'unknown',
+        experience_mode: quote.experience_mode || 'free_simple',
+        total_band: Number(quote.total || 0) < 500 ? 'under_500' : Number(quote.total || 0) < 1500 ? '500_1499' : Number(quote.total || 0) < 5000 ? '1500_4999' : '5000_plus',
+        source: 'owner_confirmed_send',
+    }
+
+    await captureServerEvent('quote_sent_confirmed', user.id, payload)
+    await captureServerActivationStage(user.id, 'quote_sent_no_subscription', payload)
+
+    revalidatePath(`/quotes/${id}`)
+    revalidatePath('/quotes')
+    revalidatePath('/')
+    return { success: true, confirmedAt }
 }
 
 export async function deductQuoteStock(id: string) {

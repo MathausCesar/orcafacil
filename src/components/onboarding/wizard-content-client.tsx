@@ -11,11 +11,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { captureEvent } from "@/lib/analytics";
 
 interface WizardContentClientProps {
-    userId: string;
     initialEmail: string;
 }
 
-export function WizardContentClient({ userId, initialEmail }: WizardContentClientProps) {
+export function WizardContentClient({ initialEmail }: WizardContentClientProps) {
     const { step } = useOnboarding();
     const visualStep = step >= 4 ? 2 : 1;
 
@@ -54,7 +53,7 @@ export function WizardContentClient({ userId, initialEmail }: WizardContentClien
                         {step === 1 && <WizardStep1 />}
                         {step === 2 && <WizardStep2 />}
                         {step === 3 && <WizardStep3 />}
-                        {step === 4 && <WizardStep4 userId={userId} initialEmail={initialEmail} />}
+                        {step === 4 && <WizardStep4 initialEmail={initialEmail} />}
                         {step === 5 && <LoadingSuccess />}
                     </motion.div>
                 </AnimatePresence>

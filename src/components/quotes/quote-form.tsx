@@ -107,12 +107,19 @@ interface QuoteFormProps {
     layoutRecommendation?: LayoutRecommendation | null
 }
 
+function getDefaultExpirationDate() {
+    const expiration = new Date()
+    expiration.setDate(expiration.getDate() + 7)
+    return expiration.toISOString().split('T')[0]
+}
+
 export function QuoteForm({ initialData, quickMode = false, starterMode = false, proSampleAvailable = false, plan, brandPreview, layoutRecommendation }: QuoteFormProps) {
     const isFree = isFreePlan(plan)
+    const initialExperienceMode = initialData?.experienceMode || (isFree ? 'free_simple' : 'pro')
     const [items, setItems] = useState<QuoteItem[]>(initialData?.items || [])
     const [loading, setLoading] = useState(false)
     const isSubmitting = useRef(false)
-    const [date, setDate] = useState<string>(initialData?.expirationDate || '')
+    const [date, setDate] = useState<string>(initialData?.expirationDate || getDefaultExpirationDate())
     const [clientName, setClientName] = useState(initialData?.clientName || '')
     const [clientPhone, setClientPhone] = useState(initialData?.clientPhone || '')
     const [paymentTerms, setPaymentTerms] = useState(initialData?.paymentTerms || 'A combinar')
@@ -133,11 +140,13 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
     )
     const [paymentMethods, setPaymentMethods] = useState<string[]>(initialData?.paymentMethods || [])
     const [installmentCount, setInstallmentCount] = useState(initialData?.installmentCount || '')
-    const [layoutStyle, setLayoutStyle] = useState(initialData?.layoutStyle || FREE_PROPOSAL_MODEL)
-    const [professionalContext, setProfessionalContext] = useState(initialData?.professionalContext || 'general')
-    const [experienceMode, setExperienceMode] = useState<'free_simple' | 'pro_sample' | 'pro'>(
-        initialData?.experienceMode || (isFree ? 'free_simple' : 'pro')
+    const [layoutStyle, setLayoutStyle] = useState(
+        isFree && initialExperienceMode !== 'pro_sample'
+            ? FREE_PROPOSAL_MODEL
+            : initialData?.layoutStyle || FREE_PROPOSAL_MODEL,
     )
+    const [professionalContext, setProfessionalContext] = useState(initialData?.professionalContext || 'general')
+    const [experienceMode, setExperienceMode] = useState<'free_simple' | 'pro_sample' | 'pro'>(initialExperienceMode)
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(!quickMode)
     const [layoutManuallyChanged, setLayoutManuallyChanged] = useState(Boolean(initialData?.id))
     const starterTrackedRef = useRef(false)
@@ -147,20 +156,6 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
     const router = useRouter()
     const posthog = usePostHog()
     const hasProPresentation = !isFree || experienceMode === 'pro_sample'
-
-    useEffect(() => {
-        if (!date) {
-            const d = new Date()
-            d.setDate(d.getDate() + 7)
-            setDate(d.toISOString().split('T')[0])
-        }
-    }, [date])
-
-    useEffect(() => {
-        if (isFree && experienceMode !== 'pro_sample' && layoutStyle !== FREE_PROPOSAL_MODEL) {
-            setLayoutStyle(FREE_PROPOSAL_MODEL)
-        }
-    }, [experienceMode, isFree, layoutStyle])
 
     useEffect(() => {
         if (!starterMode || items.length === 0 || starterTrackedRef.current) return
@@ -467,6 +462,13 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
         && clientPhone.trim()
         && items.length > 0
     )
+    const canChooseExperience = Boolean(
+        isFree
+        && !initialData?.id
+        && clientName.trim()
+        && clientPhone.trim()
+        && items.length > 0
+    )
     const readiness = calculateProposalReadiness({
         clientName,
         clientPhone,
@@ -519,7 +521,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                 </div>
             )}
 
-            {isFree && !initialData?.id && (
+            {canChooseExperience && (
                 <Card className="mb-6 border-0 shadow-sm ring-1 ring-border">
                     <CardHeader className="pb-3 border-b border-border">
                         <CardTitle className="text-base font-semibold flex items-center gap-2">
@@ -530,7 +532,10 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                     <CardContent className="grid gap-3 pt-4 sm:grid-cols-2">
                         <button
                             type="button"
-                            onClick={() => setExperienceMode('free_simple')}
+                            onClick={() => {
+                                setExperienceMode('free_simple')
+                                setLayoutStyle(FREE_PROPOSAL_MODEL)
+                            }}
                             className={`rounded-2xl border p-4 text-left transition-all ${experienceMode === 'free_simple'
                                 ? 'border-primary bg-primary/5 text-foreground ring-1 ring-primary/20'
                                 : 'border-border bg-card text-muted-foreground hover:border-primary/30'

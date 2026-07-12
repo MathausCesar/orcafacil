@@ -6,6 +6,7 @@ import type { Database, Json } from "@/types/database.types"
 import { getAppBaseUrl } from "@/lib/app-url"
 import { getResend } from "@/lib/resend"
 import { ZaclyEmailTemplate } from "@/components/emails/zacly-email-template"
+import { normalizeActivationIntent, type ActivationIntent } from "@/lib/activation-intent"
 import {
     getDefaultProfessionalContext,
     getInitialCatalogForOnboarding,
@@ -62,7 +63,8 @@ const OnboardingSchema = z.object({
         email: z.string().optional(),
         logoUrl: z.string().nullable().optional(),
         themeColor: z.string().nullable().optional(),
-    }).optional()
+    }).optional(),
+    activationIntent: z.unknown().optional(),
 })
 
 type JsonObject = { [key: string]: Json | undefined }
@@ -90,7 +92,8 @@ export async function applyOnboardingKit(
     categoryId: string,
     specialties: string[],
     pricingTier: PricingTier,
-    businessProfile?: { businessName?: string; phone?: string; documentType?: "cpf" | "cnpj"; document?: string; email?: string; logoUrl?: string | null; themeColor?: string | null }
+    businessProfile?: { businessName?: string; phone?: string; documentType?: "cpf" | "cnpj"; document?: string; email?: string; logoUrl?: string | null; themeColor?: string | null },
+    activationIntent?: ActivationIntent,
 ) {
     const supabase = await createClient()
 
@@ -103,7 +106,7 @@ export async function applyOnboardingKit(
     const userId = user.id
 
     // Validate Input
-    const result = OnboardingSchema.safeParse({ categoryId, specialties, pricingTier, businessProfile })
+    const result = OnboardingSchema.safeParse({ categoryId, specialties, pricingTier, businessProfile, activationIntent })
     if (!result.success) {
         return { success: false, error: "Invalid input data" }
     }
@@ -114,6 +117,7 @@ export async function applyOnboardingKit(
     }
 
     const multiplier = PRICING_MULTIPLIERS[pricingTier] || 1.0
+    const normalizedIntent = normalizeActivationIntent(activationIntent)
 
     try {
         // 1. Fetch the user's organization_id (required by RLS policy on services table)
@@ -209,9 +213,10 @@ export async function applyOnboardingKit(
             if (insertError) throw insertError
         }
 
-        const { data: existingProfile } = await supabase
-            .from("profiles")
-            .select("quote_settings, onboarded_at, email, business_name")
+        // These attribution columns are deployed with the activation migration.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: existingProfile } = await (supabase.from("profiles") as any)
+            .select("quote_settings, onboarded_at, email, business_name, intended_plan, first_attribution")
             .eq("id", userId)
             .maybeSingle()
 
@@ -229,6 +234,10 @@ export async function applyOnboardingKit(
                 recommendedLayout: recommendedLayout.model,
                 recommendedLayoutReason: recommendedLayout.reason,
                 completedAt: new Date().toISOString(),
+            },
+            activation: {
+                intendedPlan: normalizedIntent.intendedPlan,
+                attribution: normalizedIntent.attribution,
             },
         }
 
@@ -311,6 +320,31 @@ export async function applyOnboardingKit(
                 if (result.error) console.error('Welcome email failed:', result.error)
             } catch (emailError) {
                 console.error('Welcome email dispatch failed:', emailError)
+            }
+        }
+
+        if (normalizedIntent.intendedPlan || Object.keys(normalizedIntent.attribution).length > 0) {
+            // Attribution fields are added by the activation migration. Keep the
+            // first touch immutable and refresh the latest known touch.
+            const attributionUpdate: Record<string, unknown> = {
+                last_attribution: normalizedIntent.attribution,
+            }
+
+            if (normalizedIntent.intendedPlan) {
+                attributionUpdate.intended_plan = normalizedIntent.intendedPlan
+            }
+
+            if (!existingProfile?.first_attribution) {
+                attributionUpdate.first_attribution = normalizedIntent.attribution
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { error: attributionError } = await (supabase.from('profiles') as any)
+                .update(attributionUpdate)
+                .eq('id', userId)
+
+            if (attributionError) {
+                console.error('Failed to save activation attribution:', attributionError)
             }
         }
 

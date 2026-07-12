@@ -223,16 +223,16 @@ export default function MechanicLandingPage() {
                         </p>
 
                         <h1 className="mt-6 text-4xl font-black leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
-                            Orcamento profissional para oficina mecanica, sem virar ERP.
+                            Transforme preco solto no WhatsApp em uma aprovacao profissional.
                         </h1>
 
                         <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-300 sm:text-xl">
-                            Pare de mandar preco solto no WhatsApp. Crie uma proposta com pecas, mao de obra, prazo, total e link de aprovacao para o cliente fechar com mais confianca.
+                            Crie uma proposta com pecas, mao de obra, prazo, total e link de aprovacao. Seu cliente entende o servico, aprova com mais confianca e voce acompanha cada etapa.
                         </p>
 
                         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                             <CampaignRegisterLink campaign={CAMPAIGN} content="hero_primary" className={ctaClass}>
-                                Criar meu primeiro orcamento gratis
+                                Criar proposta teste da minha oficina
                                 <ArrowRight className="h-4 w-4" />
                             </CampaignRegisterLink>
                             <Link href="#como-funciona" className={secondaryCtaClass}>
@@ -244,6 +244,10 @@ export default function MechanicLandingPage() {
                             <span className="inline-flex items-center gap-2">
                                 <CheckCircle2 className="h-4 w-4 text-emerald-300" />
                                 Sem cartao no cadastro
+                            </span>
+                            <span className="inline-flex items-center gap-2">
+                                <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+                                5 propostas em 14 dias + 1 Deguste Pro
                             </span>
                             <span className="inline-flex items-center gap-2">
                                 <CheckCircle2 className="h-4 w-4 text-emerald-300" />
@@ -304,7 +308,7 @@ export default function MechanicLandingPage() {
                 industryLabel="oficina mecanica"
             />
 
-            <section className="border-y border-white/10 bg-zinc-900 px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+            <section id="teste-logo" className="border-y border-white/10 bg-zinc-900 px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
                 <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
                     <div>
                         <p className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-emerald-300">
@@ -318,10 +322,10 @@ export default function MechanicLandingPage() {
                             Ao enviar sua logo, o Zacly identifica uma cor de marca e usa isso para orientar o visual da proposta. O cliente recebe algo com aparencia de empresa, nao apenas uma mensagem de preco.
                         </p>
                         <div className="mt-8">
-                            <CampaignRegisterLink campaign={CAMPAIGN} content="logo_identity_cta" className={ctaClass}>
+                            <Link href="#logo-demo-upload" className={ctaClass}>
                                 Testar com minha logo
                                 <ArrowRight className="h-4 w-4" />
-                            </CampaignRegisterLink>
+                            </Link>
                         </div>
                     </div>
 
@@ -347,7 +351,7 @@ export default function MechanicLandingPage() {
                         </p>
                         <div className="mt-8">
                             <CampaignRegisterLink campaign={CAMPAIGN} content="workflow_cta" className={ctaClass}>
-                                Testar com um orcamento real
+                                Criar proposta teste da minha oficina
                                 <ArrowRight className="h-4 w-4" />
                             </CampaignRegisterLink>
                         </div>

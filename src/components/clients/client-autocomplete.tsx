@@ -101,9 +101,25 @@ export function ClientAutocomplete({ onSelect, defaultValue, defaultPhone }: Cli
                 {showSuggestions && (
                     <div className="absolute z-10 w-full bg-popover border border-border rounded-md shadow-lg mt-1 max-h-60 overflow-auto">
                         {suggestions.length === 0 ? (
-                            <div className="p-4 text-sm text-center text-muted-foreground">
-                                {query ? `Nenhum cliente encontrado para "${query}"` : 'Nenhum cliente cadastrado'}
-                            </div>
+                            query ? (
+                                <div
+                                    className="p-3 hover:bg-primary/5 cursor-pointer flex items-center gap-3 transition-colors"
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    onClick={() => handleSelect({ name: query, phone })}
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                        <Plus className="h-4 w-4 text-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium">Usar &quot;{query}&quot; como novo cliente</p>
+                                        <p className="text-xs text-muted-foreground">Nenhum cliente cadastrado com esse nome ainda</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="p-4 text-sm text-center text-muted-foreground">
+                                    Nenhum cliente cadastrado
+                                </div>
+                            )
                         ) : (
                             suggestions.map((client) => (
                                 <div

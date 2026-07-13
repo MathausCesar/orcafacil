@@ -45,17 +45,17 @@ export const VISUAL_TONES = [
     {
         id: 'balanced',
         name: 'Equilibrado',
-        description: 'Visual versátil para a maioria dos clientes.',
+        description: 'Clareza profissional, com destaque moderado da sua marca.',
     },
     {
         id: 'formal',
-        name: 'Sóbrio',
-        description: 'Mais institucional para negociações formais.',
+        name: 'Institucional',
+        description: 'Linguagem mais objetiva e presença de cor mais discreta.',
     },
     {
         id: 'creative',
-        name: 'Criativo',
-        description: 'Mais expressivo sem perder organização.',
+        name: 'Comercial',
+        description: 'Comunicação mais próxima e maior presença da sua marca.',
     },
 ] as const
 
@@ -89,6 +89,30 @@ export const PROPOSAL_TONE_INTRO: Record<VisualToneId, string> = {
     balanced: 'Escopo, valores e condicoes organizados para decisao rapida. A aprovacao deve ser feita pelo link publico enviado ao cliente.',
     formal: 'Documento comercial estruturado com escopo, condicoes e investimento para uma decisao segura do cliente.',
     creative: 'Uma proposta clara, visual e personalizada para apresentar o servico com mais presenca e confianca.',
+}
+
+// The model owns the proposal structure. This layer only tunes how the
+// proposal speaks and how strongly the existing brand accent is emphasized.
+export const PROPOSAL_COMMUNICATION_TONE: Record<VisualToneId, {
+    eyebrow: string
+    heroAccentOpacity: number
+    summaryAccentOpacity: number
+}> = {
+    balanced: {
+        eyebrow: 'Proposta clara e profissional',
+        heroAccentOpacity: 0.18,
+        summaryAccentOpacity: 0.62,
+    },
+    formal: {
+        eyebrow: 'Documento comercial',
+        heroAccentOpacity: 0.08,
+        summaryAccentOpacity: 0.32,
+    },
+    creative: {
+        eyebrow: 'Proposta personalizada',
+        heroAccentOpacity: 0.34,
+        summaryAccentOpacity: 1,
+    },
 }
 
 export function isActivePaidPlan(

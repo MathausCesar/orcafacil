@@ -7,9 +7,11 @@ import { Boxes, PlusCircle, Users, Settings, FileText, LayoutDashboard, LogOut }
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { signout } from '@/app/actions/auth'
+import type { WorkspaceBranding } from '@/lib/workspace-branding'
 
 interface DesktopSidebarProps {
     className?: string
+    workspaceBranding?: WorkspaceBranding
 }
 
 function normalizeAppPathname(pathname: string) {
@@ -17,8 +19,13 @@ function normalizeAppPathname(pathname: string) {
     return normalized || '/'
 }
 
-export function DesktopSidebar({ className }: DesktopSidebarProps) {
+export function DesktopSidebar({ className, workspaceBranding }: DesktopSidebarProps) {
     const pathname = normalizeAppPathname(usePathname())
+    const activeWorkspaceBranding: (WorkspaceBranding & { logoUrl: string }) | null = workspaceBranding?.enabled
+        && typeof workspaceBranding.logoUrl === 'string'
+        && workspaceBranding.logoUrl.length > 0
+        ? { ...workspaceBranding, logoUrl: workspaceBranding.logoUrl }
+        : null
 
     const links = [
         {
@@ -52,31 +59,47 @@ export function DesktopSidebar({ className }: DesktopSidebarProps) {
         <div className={cn("flex flex-col h-full bg-sidebar border-r border-sidebar-border", className)}>
             {/* Logo Area */}
             <div className="h-24 flex items-center justify-center border-b border-sidebar-border p-4">
-                <Link href="/" className="relative h-full w-full max-w-[200px] transition-transform hover:scale-105 active:scale-95 block">
-                    {/* Light mode logo (dark text) */}
-                    <Image
-                        src="/logo/logozacly.png"
-                        alt="Zacly Logo"
-                        fill
-                        className="object-contain dark:hidden"
-                        priority
-                    />
-                    {/* Dark mode logo (light/colored) */}
-                    <Image
-                        src="/logo/logo.png"
-                        alt="Zacly Logo"
-                        fill
-                        className="object-contain hidden dark:block"
-                        priority
-                    />
-                </Link>
+                {activeWorkspaceBranding ? (
+                    <Link href="/" className="flex h-full min-w-0 w-full max-w-[200px] flex-col items-center justify-center gap-1.5 transition-transform hover:scale-[1.02] active:scale-[0.98]">
+                        <div className="relative h-11 w-28 overflow-hidden rounded-lg border border-sidebar-border bg-white p-1.5">
+                            <Image
+                                src={activeWorkspaceBranding.logoUrl}
+                                alt={activeWorkspaceBranding.businessName}
+                                fill
+                                className="object-contain p-1"
+                                unoptimized
+                            />
+                        </div>
+                        <span className="max-w-full truncate text-xs font-bold text-sidebar-foreground">{activeWorkspaceBranding.businessName}</span>
+                        <span className="text-[10px] font-medium text-sidebar-foreground/50">com Zacly</span>
+                    </Link>
+                ) : (
+                    <Link href="/" className="relative h-full w-full max-w-[200px] transition-transform hover:scale-105 active:scale-95 block">
+                        {/* Light mode logo (dark text) */}
+                        <Image
+                            src="/logo/logozacly.png"
+                            alt="Zacly Logo"
+                            fill
+                            className="object-contain dark:hidden"
+                            priority
+                        />
+                        {/* Dark mode logo (light/colored) */}
+                        <Image
+                            src="/logo/logo.png"
+                            alt="Zacly Logo"
+                            fill
+                            className="object-contain hidden dark:block"
+                            priority
+                        />
+                    </Link>
+                )}
             </div>
 
             {/* Navigation */}
             <div className="flex-1 py-6 px-3 space-y-6 overflow-y-auto">
                 <div className="px-2">
                     <Link href="/new">
-                        <Button className="w-full bg-primary hover:bg-teal-700 text-white shadow-lg shadow-primary/30 font-bold h-11 rounded-lg flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:translate-y-0 active:shadow-md">
+                        <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/30 font-bold h-11 rounded-lg flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:translate-y-0 active:shadow-md">
                             <PlusCircle className="h-4 w-4" />
                             <span>Criar Novo</span>
                         </Button>
@@ -119,6 +142,12 @@ export function DesktopSidebar({ className }: DesktopSidebarProps) {
 
             {/* Footer / Logout */}
             <div className="p-4 border-t border-sidebar-border mt-auto">
+                {activeWorkspaceBranding && (
+                    <div className="mb-3 flex items-center justify-center gap-1 text-[10px] font-medium text-sidebar-foreground/45">
+                        <span>Operado com</span>
+                        <span className="font-bold text-sidebar-foreground/65">Zacly</span>
+                    </div>
+                )}
                 <form action={signout}>
                     <button
                         type="submit"

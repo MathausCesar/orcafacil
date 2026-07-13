@@ -25,6 +25,7 @@ import { getProfessionalContext } from '@/lib/professional-context'
 import { buildQuoteFollowUpMessage, getQuoteReminder } from '@/lib/quote-reminders'
 import {
     DEFAULT_PROPOSAL_ACCENT,
+    PROPOSAL_COMMUNICATION_TONE,
     PROPOSAL_TONE_INTRO,
     ProposalFont,
     ProposalModelId,
@@ -369,6 +370,7 @@ export function ProposalCanvas({
         : normalizeColor(identitySettings.approvalAccentColor || profile?.theme_color || profile?.primary_color)
     const proposalModel = resolveProposalModelForPlan(presentationPlan, quote.layout_style || profile?.layout_style)
     const visualTone = normalizeVisualTone(identitySettings.visualTone)
+    const communicationTone = PROPOSAL_COMMUNICATION_TONE[visualTone]
     const proposalFont = normalizeProposalFont(identitySettings.quoteFont)
     const skin = proposalSkins[proposalModel]
     const footerText = identitySettings.footerText.trim()
@@ -483,7 +485,10 @@ export function ProposalCanvas({
                     {isFree && <Watermark />}
 
                     <section className={cn('relative overflow-hidden px-4 py-8 sm:px-10 lg:px-12', skin.heroClass)}>
-                        <div className={cn('absolute inset-y-0 right-0 w-2/5', skin.heroAccentClass)} />
+                        <div
+                            className={cn('absolute inset-y-0 right-0 w-2/5', skin.heroAccentClass)}
+                            style={{ opacity: communicationTone.heroAccentOpacity }}
+                        />
                         <div
                             className={cn(
                                 'relative grid min-w-0 gap-8',
@@ -516,7 +521,7 @@ export function ProposalCanvas({
                                 </div>
 
                                 <p className="text-xs font-bold uppercase tracking-[0.28em]" style={{ color: themeColor }}>
-                                    Orçamento profissional
+                                    {communicationTone.eyebrow}
                                 </p>
                                 <h2
                                     className={cn(
@@ -697,7 +702,12 @@ export function ProposalCanvas({
                         </div>
 
                         <aside className="min-w-0 space-y-5">
-                            <section className={cn('border p-6', skin.summaryClass)}>
+                            <section className={cn('relative overflow-hidden border p-6', skin.summaryClass)}>
+                                <span
+                                    aria-hidden="true"
+                                    className="absolute inset-x-0 top-0 h-1"
+                                    style={{ backgroundColor: themeColor, opacity: communicationTone.summaryAccentOpacity }}
+                                />
                                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/45">Resumo</p>
                                 <div className="mt-5 space-y-3 text-sm">
                                     <div className="flex justify-between gap-4">

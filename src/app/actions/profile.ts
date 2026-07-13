@@ -36,6 +36,7 @@ const FREE_QUOTE_SETTINGS: JsonObject = {
     footerText: '',
     quote_font_family: 'Inter',
     whatsappMessageTemplate: '',
+    workspaceBranding: { enabled: false },
 }
 
 function parseJsonObject(value: unknown): JsonObject {

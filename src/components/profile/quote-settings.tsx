@@ -17,6 +17,7 @@ import {
     normalizeProposalFont,
     normalizeVisualTone,
 } from '@/lib/proposal-style'
+import type { WorkspaceBrandingSettings } from '@/lib/workspace-branding'
 import { BriefcaseBusiness, Lock, MessageCircle, MessageSquareQuote, Sparkles, SquarePen } from 'lucide-react'
 
 export interface QuoteSettingsData {
@@ -28,6 +29,7 @@ export interface QuoteSettingsData {
     logoPosition?: 'header' | 'footer'
     logoAlignment?: 'left' | 'center' | 'right'
     whatsappMessageTemplate?: string
+    workspaceBranding?: WorkspaceBrandingSettings
     brandKit?: unknown
 }
 
@@ -89,12 +91,17 @@ export function QuoteSettings({ settings, plan, onChange }: QuoteSettingsProps) 
             <section className="relative space-y-3 rounded-2xl border bg-muted/20 p-5">
                 {isFree && (
                     <UpgradeLockOverlay
-                        title="Tom visual Pro"
-                        description="No gratis, usamos o tom equilibrado. O Pro libera propostas mais sobrias ou criativas conforme o cliente."
+                        title="Tom da comunicação Pro"
+                        description="No grátis, usamos a comunicação equilibrada. O Pro libera uma abordagem institucional ou comercial conforme o cliente."
                     />
                 )}
                 <div className={cn('space-y-3', isFree && 'pointer-events-none select-none opacity-40 blur-[1px]')}>
-                    <Label className="text-sm font-semibold text-foreground">Tom visual</Label>
+                    <div>
+                        <Label className="text-sm font-semibold text-foreground">Tom da comunicação</Label>
+                        <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                            O modelo acima define a estrutura. Aqui você ajusta a linguagem e a intensidade da cor da marca.
+                        </p>
+                    </div>
                     <RadioGroup
                         value={currentSettings.visualTone}
                         onValueChange={(value) => updateSettings('visualTone', normalizeVisualTone(value))}

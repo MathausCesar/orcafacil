@@ -11,11 +11,13 @@ import { Save, Loader2, Building2, Palette, Rocket, Sparkles, CheckCircle2, QrCo
 import { LogoUpload } from '@/components/profile/logo-upload'
 import { LogoIdentityPreview } from '@/components/profile/logo-identity-preview'
 import { BrandKitSummary } from '@/components/profile/brand-kit-summary'
+import { WorkspaceBrandingCard } from '@/components/profile/workspace-branding-card'
 import { LayoutSelector } from '@/components/profile/layout-selector'
 import { QuoteSettings, QuoteSettingsData } from '@/components/profile/quote-settings'
 import { buildBrandKitFromLogoAnalysis, getBrandKitFromQuoteSettings, type BrandKit } from '@/lib/brand-kit'
 import { DEFAULT_PROPOSAL_ACCENT, FREE_PROPOSAL_MODEL, getEntitledPlan, isFreePlan } from '@/lib/proposal-style'
 import { getLayoutRecommendationFromQuoteSettings } from '@/lib/profession-layout-recommendations'
+import { getWorkspaceBrandingSettings, type WorkspaceBrandingSettings } from '@/lib/workspace-branding'
 import { toast } from 'sonner'
 import type { LogoIdentityAnalysis } from '@/lib/color-extractor'
 
@@ -151,6 +153,16 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
         setLogoUrl(newUrl)
     }
 
+    const handleWorkspaceBrandingChange = (workspaceBranding: WorkspaceBrandingSettings) => {
+        if (isFree) return
+
+        setQuoteSettings((current) => ({
+            footerText: current?.footerText || '',
+            ...(current || {}),
+            workspaceBranding,
+        }))
+    }
+
     const handleLogoAnalyzed = async (analysis: LogoIdentityAnalysis) => {
         setLogoAnalysis(analysis)
         setThemeColor(analysis.safeAccentColor)
@@ -184,6 +196,10 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
             if (!isFree && quoteSettings) {
                 formData.append('quoteSettings', JSON.stringify(quoteSettings))
             }
+        }
+
+        if (showCompany && !isFree && quoteSettings && !formData.has('quoteSettings')) {
+            formData.append('quoteSettings', JSON.stringify(quoteSettings))
         }
 
         try {
@@ -278,6 +294,15 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
                                     />
 
                                     <BrandKitSummary brandKit={brandKit} isFree={isFree} />
+
+                                    <WorkspaceBrandingCard
+                                        accentColor={themeColor}
+                                        businessName={businessName}
+                                        isFree={isFree}
+                                        logoUrl={logoUrl}
+                                        settings={getWorkspaceBrandingSettings(quoteSettings)}
+                                        onChange={handleWorkspaceBrandingChange}
+                                    />
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">

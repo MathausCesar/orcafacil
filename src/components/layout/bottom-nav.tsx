@@ -58,7 +58,7 @@ export function BottomNav() {
                                 aria-current={isActive ? 'page' : undefined}
                                 aria-label="Criar novo orçamento"
                             >
-                                <div className="h-14 w-14 rounded-full bg-gradient-to-br from-primary to-emerald-600 text-white shadow-lg shadow-primary/30 flex items-center justify-center transition-all active:scale-95 hover:shadow-xl hover:shadow-primary/40">
+                                <div className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 flex items-center justify-center transition-all active:scale-95 hover:shadow-xl hover:shadow-primary/40">
                                     <Icon className="h-7 w-7" />
                                 </div>
                                 <span className="text-[10px] font-semibold mt-1 text-primary">

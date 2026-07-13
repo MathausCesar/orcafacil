@@ -98,6 +98,13 @@ export default async function ProfilePage() {
     const trialEndDate = formatBillingDate(profile?.pro_trial_ends_at)
     const cancelAtPeriodEnd = Boolean(profile?.cancel_at_period_end)
     const statusLabel = isLocalTrial ? 'Teste ativo' : getStatusLabel(profile?.subscription_status, cancelAtPeriodEnd)
+    // A free account that never had a Stripe subscription has no meaningful
+    // status to show; "Inativo" next to "Gratuito" reads like the account
+    // itself is disabled instead of just being on the free tier.
+    const showStatusBadge = isPaidPlan
+        || isLocalTrial
+        || cancelAtPeriodEnd
+        || ['past_due', 'canceled'].includes(profile?.subscription_status || '')
 
     const teamContent = orgId ? (
         <TeamManager initialMembers={(members || []) as unknown as TeamMember[]} />
@@ -164,12 +171,14 @@ export default async function ProfilePage() {
                                     </p>
                                 ) : null}
                             </div>
-                            <Badge
-                                variant={cancelAtPeriodEnd ? 'secondary' : isPaidPlan ? 'default' : 'outline'}
-                                className={isPaidPlan && !cancelAtPeriodEnd ? 'bg-emerald-500 text-white' : ''}
-                            >
-                                {statusLabel}
-                            </Badge>
+                            {showStatusBadge && (
+                                <Badge
+                                    variant={cancelAtPeriodEnd ? 'secondary' : isPaidPlan ? 'default' : 'outline'}
+                                    className={isPaidPlan && !cancelAtPeriodEnd ? 'bg-emerald-500 text-white' : ''}
+                                >
+                                    {statusLabel}
+                                </Badge>
+                            )}
                         </div>
                         {cancelAtPeriodEnd ? (
                             <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-foreground">

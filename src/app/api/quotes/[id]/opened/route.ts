@@ -27,9 +27,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     if (!quote.first_public_opened_at) {
         const openedAt = new Date().toISOString()
+        const update: Record<string, string> = { first_public_opened_at: openedAt }
+        // A quote left in "draft" (owner never confirmed sending it) still needs
+        // to accept client decisions once the client actually opens the link,
+        // otherwise the approve button never renders and the link looks broken.
+        if (quote.status === 'draft') {
+            update.status = 'sent'
+        }
         const { data: openedQuote } = await admin
             .from('quotes')
-            .update({ first_public_opened_at: openedAt })
+            .update(update)
             .eq('id', id)
             .eq('public_token', token)
             .is('first_public_opened_at', null)

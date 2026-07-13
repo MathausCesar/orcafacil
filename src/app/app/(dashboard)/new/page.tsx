@@ -108,7 +108,8 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
     const suggestedLayout = normalizeProposalModel(
         layoutRecommendation.model || onboardingSettings?.recommendedLayout || profile?.layout_style,
     )
-    const starterMode = quickMode && (starter === '1' || demo === '1' || guided === 'proposal_test')
+    const isFirstQuote = (quoteCountResult.count ?? 0) === 0
+    const starterMode = quickMode && (starter === '1' || demo === '1' || guided === 'proposal_test' || isFirstQuote)
     let starterQuoteItems: QuoteItem[] = []
 
     if (starterMode && orgId) {

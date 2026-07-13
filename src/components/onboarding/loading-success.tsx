@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { ArrowRight, CheckCircle2, CreditCard, FileText, Home, Loader2, RotateCcw } from "lucide-react"
 import { useOnboarding } from "@/components/onboarding/onboarding-context"
@@ -9,7 +9,9 @@ import { applyOnboardingKit } from "@/app/actions/onboarding"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
-import { captureActivationStage, captureConversion, captureEvent } from "@/lib/analytics"
+import { captureActivationStage, captureConversion, captureEvent, captureException } from "@/lib/analytics"
+
+const SETUP_TIMEOUT_MS = 20000
 
 export function LoadingSuccess() {
     const { data, prevStep } = useOnboarding()
@@ -17,14 +19,13 @@ export function LoadingSuccess() {
     const [status, setStatus] = useState("Iniciando setup...")
     const [complete, setComplete] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const startedRef = useRef(false)
+    const [retryCount, setRetryCount] = useState(0)
 
     useEffect(() => {
-        if (startedRef.current) return
-        startedRef.current = true
         let active = true
 
         const runSetup = async () => {
+            setError(null)
             setProgress(10)
             setStatus("Identificando perfil...")
 
@@ -86,9 +87,31 @@ export function LoadingSuccess() {
             }
         }
 
-        void runSetup()
-        return () => { active = false }
-    }, [data])
+        const timeoutId = setTimeout(() => {
+            if (!active) return
+            active = false
+            captureException(new Error("onboarding_setup_timeout"), {
+                source: "loading_success",
+                category_id: data.category?.id,
+            })
+            setError("Isso esta demorando mais que o esperado. Tente novamente.")
+        }, SETUP_TIMEOUT_MS)
+
+        runSetup()
+            .catch((err) => {
+                if (!active) return
+                captureException(err, { source: "loading_success", category_id: data.category?.id })
+                setError("Nao foi possivel concluir o onboarding. Tente novamente.")
+            })
+            .finally(() => {
+                clearTimeout(timeoutId)
+            })
+
+        return () => {
+            active = false
+            clearTimeout(timeoutId)
+        }
+    }, [data, retryCount])
 
     const testQuoteHref = "/new?quick=1&starter=1&guided=proposal_test&source=onboarding_success"
     const selectedPlanLabel = data.intendedPlan === 'yearly' ? 'Pro Anual' : 'Pro Mensal'
@@ -132,7 +155,12 @@ export function LoadingSuccess() {
                 </div>
             )}
 
-            {error && <Button type="button" variant="outline" onClick={prevStep} className="w-full"><RotateCcw className="mr-2 h-4 w-4" /> Revisar dados</Button>}
+            {error && (
+                <div className="space-y-2">
+                    <Button type="button" onClick={() => setRetryCount((count) => count + 1)} className="w-full"><RotateCcw className="mr-2 h-4 w-4" /> Tentar novamente</Button>
+                    <Button type="button" variant="outline" onClick={prevStep} className="w-full">Revisar dados</Button>
+                </div>
+            )}
         </div>
     )
 }

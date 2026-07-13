@@ -452,12 +452,16 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                                             </svg>
                                         )}
                                     </button>
-                                    <p className="text-xs text-zinc-400 leading-relaxed">
+                                    <p
+                                        onClick={() => setAcceptedTerms((v) => !v)}
+                                        className="text-xs text-zinc-400 leading-relaxed cursor-pointer select-none"
+                                    >
                                         Li e concordo com os{' '}
                                         <a
                                             href="https://zacly.com.br/termos-de-uso"
                                             target="_blank"
                                             rel="noreferrer"
+                                            onClick={(e) => e.stopPropagation()}
                                             className="text-emerald-400 hover:underline font-medium"
                                         >
                                             Termos de Uso
@@ -466,6 +470,7 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                                             href="https://zacly.com.br/politica-de-privacidade"
                                             target="_blank"
                                             rel="noreferrer"
+                                            onClick={(e) => e.stopPropagation()}
                                             className="text-emerald-400 hover:underline font-medium"
                                         >
                                             Política de Privacidade

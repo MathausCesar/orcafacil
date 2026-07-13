@@ -228,6 +228,9 @@ export function ApproveQuoteClient({
                     <ThumbsDown className="mr-2 h-4 w-4" />
                     Recusar proposta
                 </Button>
+                <p className="text-center text-xs text-slate-400">
+                    Para confirmar, vamos pedir os 4 ultimos digitos do seu WhatsApp.
+                </p>
             </div>
 
             <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-3 py-3 shadow-[0_-12px_28px_rgba(15,23,42,0.16)] backdrop-blur lg:hidden print:hidden">

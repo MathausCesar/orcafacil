@@ -61,7 +61,7 @@ export async function approveQuotePublic(
 
     const expectedPhoneSuffix = String(quote.client_phone || '').replace(/\D/g, '').slice(-4)
     if (expectedPhoneSuffix.length !== 4 || cleanPhoneSuffix !== expectedPhoneSuffix) {
-        throw new Error('Confirme os quatro ultimos digitos do WhatsApp informado para esta proposta.')
+        throw new Error('Os digitos nao conferem com o WhatsApp cadastrado nesta proposta. Se o numero certo e o seu, peca ao prestador para conferir o telefone salvo e reenviar o link.')
     }
 
     if (quote.expiration_date) {

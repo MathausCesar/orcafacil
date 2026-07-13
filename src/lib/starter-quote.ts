@@ -20,6 +20,7 @@ export type StarterQuoteItem = {
     quantity: number
     unitPrice: number
     unitCost?: number
+    costIsKnown?: boolean
 }
 
 const STARTER_PRIORITY_BY_CONTEXT: Record<string, string[]> = {
@@ -135,7 +136,8 @@ export function buildStarterQuoteItemsFromCatalog(
         details: item.details || null,
         quantity: getStarterQuantity(item),
         unitPrice: Number(item.default_price) || 0,
-        unitCost: Number(item.cost_price) || 0,
+        unitCost: Number(item.cost_price) || undefined,
+        costIsKnown: Number(item.cost_price) > 0,
     }))
 }
 

@@ -8,6 +8,76 @@ import { getEntitledPlan, isFreePlan, parseProposalIdentitySettings } from '@/li
 import { buildQuoteApprovalMessage, buildWhatsAppLink } from '@/lib/quote-share'
 import { PublicQuoteOpenTracker } from '@/components/quotes/public-quote-open-tracker'
 import { buildPixCopyAndPaste } from '@/lib/pix'
+import type { ClientReturnReminder } from '@/components/quotes/client-return-panel'
+
+// Public proposal links are served with the service role after their token is
+// validated. Keep this projection explicit so internal billing and cost data
+// can never leak into a customer-facing route by accident.
+const PUBLIC_QUOTE_SELECT = `
+    id,
+    client_name,
+    client_phone,
+    created_at,
+    deposit_amount,
+    deposit_status,
+    expiration_date,
+    estimated_days,
+    experience_mode,
+    installment_count,
+    layout_style,
+    notes,
+    organization_id,
+    payment_methods,
+    payment_terms,
+    professional_context,
+    public_token,
+    approval_token,
+    pix_key_snapshot,
+    pix_key_type_snapshot,
+    pix_recipient_city_snapshot,
+    pix_recipient_name_snapshot,
+    show_detailed_items,
+    show_payment_options,
+    show_timeline,
+    status,
+    total,
+    cash_discount_percent,
+    cash_discount_fixed,
+    cash_discount_type,
+    user_id,
+    quote_items (
+        id,
+        description,
+        details,
+        item_type,
+        quantity,
+        service_id,
+        stock_deducted_at,
+        unit_price,
+        total_price
+    )
+`
+
+const PUBLIC_PROFILE_SELECT = `
+    business_name,
+    cnpj,
+    email,
+    logo_url,
+    layout_style,
+    phone,
+    plan,
+    pro_trial_ends_at,
+    pix_key,
+    pix_key_type,
+    pix_recipient_city,
+    pix_recipient_name,
+    subscription_status,
+    theme_color,
+    primary_color,
+    quote_settings,
+    quote_font_family,
+    city
+`
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params
@@ -48,10 +118,7 @@ export default async function QuotePage({
         const admin = getSupabaseAdmin()
         const publicQuoteResult = await admin
             .from('quotes')
-            .select(`
-                *,
-                quote_items (*)
-            `)
+            .select(PUBLIC_QUOTE_SELECT)
             .eq('id', id)
             .eq('public_token', token)
             .maybeSingle()
@@ -92,7 +159,7 @@ export default async function QuotePage({
         const admin = getSupabaseAdmin()
         const publicProfileResult = await admin
             .from('profiles')
-            .select('*')
+            .select(PUBLIC_PROFILE_SELECT)
             .eq('id', quote.user_id)
             .maybeSingle()
 
@@ -142,6 +209,7 @@ export default async function QuotePage({
         isClientVisible: boolean
         signedUrl: string | null
     }> = []
+    let clientReturnReminder: ClientReturnReminder | null = null
 
     if (isInternalViewer || canViewPublic) {
         const admin = getSupabaseAdmin()
@@ -170,6 +238,27 @@ export default async function QuotePage({
         }))
     }
 
+    if (isInternalViewer && user?.id === quote.user_id && quote.status === 'completed') {
+        // The reminder remains private operational data; it is never queried for
+        // a customer viewing the public proposal link.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: returnReminder } = await (supabase.from('client_return_reminders') as any)
+            .select('id, due_date, status, note')
+            .eq('quote_id', quote.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+
+        if (returnReminder) {
+            clientReturnReminder = {
+                id: returnReminder.id,
+                dueDate: returnReminder.due_date,
+                status: returnReminder.status,
+                note: returnReminder.note,
+            }
+        }
+    }
+
     return (
         <>
             {canViewPublic && token && <PublicQuoteOpenTracker quoteId={quote.id} token={token} />}
@@ -186,6 +275,7 @@ export default async function QuotePage({
                 totalFormatted={totalFormatted}
                 pixPayload={pixPayload}
                 evidences={evidences}
+                clientReturnReminder={clientReturnReminder}
                 viewerUserId={isInternalViewer ? user?.id || null : null}
             />
         </>

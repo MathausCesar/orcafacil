@@ -20,6 +20,7 @@ import {
 type NewQuotePageProps = {
     searchParams: Promise<{
         clientName?: string
+        clientId?: string
         quick?: string
         starter?: string
         demo?: string
@@ -42,16 +43,16 @@ function hasLogoAnalysis(value: unknown) {
 }
 
 export default async function NewQuotePage({ searchParams }: NewQuotePageProps) {
-    const { clientName, quick, starter, demo, guided } = await searchParams
+    const { clientName, clientId, quick, starter, demo, guided } = await searchParams
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     const orgId = user ? await getActiveOrganizationId(supabase) : null
 
-    const [profileResult, quoteCountResult, quoteHistoryResult, proSampleCountResult] = user
+    const [profileResult, quoteCountResult, quoteHistoryResult, proSampleCountResult, selectedClientResult] = user
         ? await Promise.all([
             supabase
                 .from('profiles')
-                .select('business_name, logo_url, layout_style, theme_color, primary_color, quote_settings, plan, subscription_status, pro_trial_ends_at')
+                .select('business_name, logo_url, layout_style, theme_color, primary_color, quote_settings, plan, subscription_status, pro_trial_ends_at, target_margin_percent')
                 .eq('id', user.id)
                 .maybeSingle(),
             orgId
@@ -75,10 +76,19 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
                     .eq('organization_id', orgId)
                     .eq('experience_mode', 'pro_sample')
                 : Promise.resolve({ count: 0 }),
+            orgId && clientId
+                ? supabase
+                    .from('clients')
+                    .select('id, name, phone')
+                    .eq('id', clientId)
+                    .eq('organization_id', orgId)
+                    .maybeSingle()
+                : Promise.resolve({ data: null }),
         ])
-        : [{ data: null }, { count: 0 }, { data: [] as QuoteLayoutHistoryRecord[] }, { count: 0 }]
+        : [{ data: null }, { count: 0 }, { data: [] as QuoteLayoutHistoryRecord[] }, { count: 0 }, { data: null }]
 
     const profile = profileResult.data
+    const selectedClient = selectedClientResult.data
     const accessPlan = getEntitledPlan(profile?.plan, profile?.subscription_status, profile?.pro_trial_ends_at)
     const isFree = isFreePlan(accessPlan)
     const proSampleAvailable = isFree && (proSampleCountResult.count ?? 0) < PRICING.proSampleQuotes
@@ -147,7 +157,10 @@ export default async function NewQuotePage({ searchParams }: NewQuotePageProps) 
             }}
             initialData={{
                 // Starter items are prefilled, but the customer remains intentional so this can become a real proposal.
-                clientName: clientName || '',
+                clientId: selectedClient?.id || null,
+                clientName: selectedClient?.name || clientName || '',
+                clientPhone: selectedClient?.phone || '',
+                targetMarginPercent: Number(profile?.target_margin_percent ?? 30),
                 experienceMode: isFree ? 'free_simple' : 'pro',
                 layoutStyle: suggestedLayout,
                 professionalContext: quickMode ? professionalContext.id : 'general',

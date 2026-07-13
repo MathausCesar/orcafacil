@@ -56,6 +56,7 @@ type GoogleAdsConversionName = keyof typeof GOOGLE_ADS_CONVERSION_LABELS
 const SENSITIVE_QUERY_KEYS = [
     'token',
     'public_token',
+    'approval',
     'code',
     'access_token',
     'refresh_token',
@@ -82,7 +83,7 @@ export function redactUrl(value: string) {
 
         return url.toString()
     } catch {
-        return value.replace(/([?&](?:token|public_token|code|access_token|refresh_token|auth|email|phone|session_id|password)=)[^&]+/gi, '$1[redacted]')
+        return value.replace(/([?&](?:token|public_token|approval|code|access_token|refresh_token|auth|email|phone|session_id|password)=)[^&]+/gi, '$1[redacted]')
     }
 }
 

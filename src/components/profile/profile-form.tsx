@@ -41,6 +41,7 @@ interface ProfileFormProps {
         plan?: string | null
         pro_trial_ends_at?: string | null
         subscription_status?: string | null
+        target_margin_percent?: number | null
         quote_settings?: unknown
         state?: string | null
         theme_color?: string | null
@@ -474,6 +475,33 @@ export function ProfileForm({ initialProfile, userId, section = 'all' }: Profile
                                                 <Label htmlFor="pix_recipient_city">Cidade do recebedor</Label>
                                                 <Input id="pix_recipient_city" name="pix_recipient_city" defaultValue={initialProfile?.pix_recipient_city || addressData.city} placeholder="Ex: Sao Paulo" maxLength={15} className="h-10" />
                                             </div>
+                                        </div>
+                                        <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                                <div>
+                                                    <p className="text-sm font-bold text-foreground">Meta de margem nas propostas</p>
+                                                    <p className="mt-1 text-xs leading-5 text-muted-foreground">O Zacly usa esse percentual como referencia nas proximas propostas para alertar antes de voce enviar.</p>
+                                                </div>
+                                                <div className="w-full sm:w-32">
+                                                    <Label htmlFor="target_margin_percent" className="sr-only">Meta de margem</Label>
+                                                    <div className="relative">
+                                                        <Input
+                                                            id="target_margin_percent"
+                                                            name="target_margin_percent"
+                                                            type="number"
+                                                            min="0"
+                                                            max="95"
+                                                            step="1"
+                                                            inputMode="decimal"
+                                                            defaultValue={initialProfile?.target_margin_percent ?? 30}
+                                                            disabled={isFree}
+                                                            className="h-10 pr-8"
+                                                        />
+                                                        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm font-bold text-muted-foreground">%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {isFree && <p className="mt-3 text-xs font-semibold text-amber-800">Ajuste a sua meta no Pro. No gratuito, voce continua vendo a margem estimada de cada proposta.</p>}
                                         </div>
                                     </div>
                                 </div>

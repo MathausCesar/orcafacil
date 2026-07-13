@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { approveQuotePublic } from '@/app/actions/approve-quote'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -26,6 +27,7 @@ interface ApproveQuoteClientProps {
     totalFormatted: string
     layoutStyle?: string
     professionalContext?: string
+    hasDeposit?: boolean
 }
 
 type DecisionDialog = 'approve' | 'reject' | 'changes' | null
@@ -40,6 +42,7 @@ export function ApproveQuoteClient({
     totalFormatted,
     layoutStyle,
     professionalContext,
+    hasDeposit = false,
 }: ApproveQuoteClientProps) {
     const [loading, setLoading] = useState(false)
     const [dialog, setDialog] = useState<DecisionDialog>(null)
@@ -47,6 +50,7 @@ export function ApproveQuoteClient({
     const [phoneSuffix, setPhoneSuffix] = useState('')
     const [done, setDone] = useState<ClientDecision | null>(null)
     const posthog = usePostHog()
+    const router = useRouter()
 
     const resetDialog = () => {
         setDialog(null)
@@ -87,6 +91,12 @@ export function ApproveQuoteClient({
 
             await approveQuotePublic(quoteId, publicToken, approvalToken, status, note, phoneSuffix)
             setDone(status)
+            router.refresh()
+            if (status === 'approved' && hasDeposit) {
+                window.setTimeout(() => {
+                    document.getElementById('pix-deposit')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                }, 450)
+            }
             posthog.capture('quote_client_decision_completed', {
                 ...analyticsPayload,
             })
@@ -130,9 +140,16 @@ export function ApproveQuoteClient({
                 <div>
                     <h2 className="text-2xl font-bold text-emerald-800">Orcamento aprovado</h2>
                     <p className="mx-auto mt-2 max-w-sm text-base text-emerald-700">
-                        Obrigado, {clientName}! O prestador ja foi notificado e entrara em contato para iniciar o servico.
+                        {hasDeposit
+                            ? `Obrigado, ${clientName}! O sinal Pix ja esta disponivel nesta proposta para reservar o servico.`
+                            : `Obrigado, ${clientName}! O prestador ja foi notificado e entrara em contato para iniciar o servico.`}
                     </p>
                 </div>
+                {hasDeposit && (
+                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700" onClick={() => document.getElementById('pix-deposit')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>
+                        Ver sinal Pix
+                    </Button>
+                )}
                 <Button variant="outline" className="mt-2 border-emerald-200 text-emerald-700 hover:bg-emerald-100" onClick={handleClose}>
                     Fechar janela
                 </Button>

@@ -31,7 +31,7 @@ const iconClass: Record<QuoteReminder['tone'], string> = {
 export function QuoteReminderNotice({ quoteId, reminder, followUpUrl }: QuoteReminderNoticeProps) {
     const [confirming, setConfirming] = useState(false)
     const [showConfirmation, setShowConfirmation] = useState(false)
-    const canFollowUp = Boolean(followUpUrl) && ['follow_up', 'opened_no_response'].includes(reminder.kind)
+    const canFollowUp = Boolean(followUpUrl) && ['follow_up', 'opened_no_response', 'expires_today', 'expired'].includes(reminder.kind)
     const Icon = reminder.tone === 'red'
         ? AlertTriangle
         : canFollowUp
@@ -79,7 +79,7 @@ export function QuoteReminderNotice({ quoteId, reminder, followUpUrl }: QuoteRem
                     className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-current/20 bg-white/70 px-4 py-2 text-sm font-bold transition hover:bg-white"
                 >
                     <MessageCircle className="h-4 w-4" />
-                    Enviar lembrete no WhatsApp
+                    Abrir proxima mensagem no WhatsApp
                 </a>
             )}
 

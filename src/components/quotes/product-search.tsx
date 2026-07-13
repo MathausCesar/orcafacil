@@ -173,7 +173,7 @@ export function ProductSearch({ onAddProduct }: ProductSearchProps) {
             price: priceVal,
             quantity: qtyVal,
             details: selectedDetails,
-            unitCost: selectedService?.cost_price || 0,
+            unitCost: selectedService?.cost_price || undefined,
         })
 
         setDescription('')

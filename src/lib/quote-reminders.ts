@@ -118,11 +118,23 @@ export function getQuoteReminder(quote: QuoteReminderInput, now = new Date()): Q
     return null
 }
 
-export function buildQuoteFollowUpMessage(clientName: string, approvalUrl: string) {
+export function buildQuoteFollowUpMessage(
+    clientName: string,
+    approvalUrl: string,
+    reminderKind: QuoteReminderKind = 'follow_up',
+) {
+    const opening = reminderKind === 'opened_no_response'
+        ? 'Vi que voce conseguiu abrir a proposta e quis saber se ficou alguma duvida para decidir com tranquilidade.'
+        : reminderKind === 'expires_today'
+            ? 'A validade da proposta esta perto do fim. Quer que eu esclareca algum ponto ou ajuste algo antes de vencer?'
+            : reminderKind === 'expired'
+                ? 'A proposta venceu, mas posso atualizar a validade ou ajustar algum ponto para voce avaliar novamente.'
+                : 'Passando para saber se ficou alguma duvida sobre a proposta que enviei.'
+
     return [
         `Ola, ${clientName}.`,
         '',
-        'Passando para saber se ficou alguma duvida sobre a proposta que enviei.',
+        opening,
         'Segue o link para visualizar e aprovar quando estiver tudo certo:',
         approvalUrl,
         '',

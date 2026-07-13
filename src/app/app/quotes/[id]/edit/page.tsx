@@ -31,6 +31,7 @@ type QuoteItemRecord = {
     quantity?: number | null
     unit_price?: number | null
     unit_cost?: number | null
+    cost_is_known?: boolean | null
 }
 
 export default async function EditQuotePage(props: PageProps) {
@@ -67,7 +68,7 @@ export default async function EditQuotePage(props: PageProps) {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('business_name, logo_url, theme_color, primary_color, quote_settings, plan, subscription_status, pro_trial_ends_at')
+        .select('business_name, logo_url, theme_color, primary_color, quote_settings, plan, subscription_status, pro_trial_ends_at, target_margin_percent')
         .eq('id', user.id)
         .maybeSingle()
 
@@ -82,6 +83,7 @@ export default async function EditQuotePage(props: PageProps) {
     // Transform data for QuoteForm
     const initialData = {
         id: quote.id,
+        clientId: quote.client_id || null,
         clientName: quote.client_name,
         clientPhone: quote.client_phone,
         expirationDate: quote.expiration_date,
@@ -95,6 +97,7 @@ export default async function EditQuotePage(props: PageProps) {
         cashDiscountFixed: quote.cash_discount_fixed || 0,
         cashDiscountType: quote.cash_discount_type || 'percent',
         depositAmount: quote.deposit_amount || 0,
+        targetMarginPercent: quote.target_margin_percent || profile?.target_margin_percent || 30,
         paymentMethods: quote.payment_methods || [],
         installmentCount: quote.installment_count || '',
         experienceMode,
@@ -108,7 +111,8 @@ export default async function EditQuotePage(props: PageProps) {
             details: item.details,
             quantity: item.quantity || 0,
             unitPrice: item.unit_price || 0,
-            unitCost: item.unit_cost || 0
+            unitCost: item.unit_cost || 0,
+            costIsKnown: item.cost_is_known ?? Number(item.unit_cost || 0) > 0,
         }))
     }
 

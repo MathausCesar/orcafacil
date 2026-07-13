@@ -12,6 +12,7 @@ import { QuoteStockActions } from '@/components/quotes/quote-stock-actions'
 import { QuoteNextSteps } from '@/components/quotes/quote-next-steps'
 import { QuotePaymentActions } from '@/components/quotes/quote-payment-actions'
 import { QuoteReminderNotice } from '@/components/quotes/quote-reminder-notice'
+import { ClientReturnPanel, type ClientReturnReminder } from '@/components/quotes/client-return-panel'
 import { PixDepositCard } from '@/components/quotes/pix-deposit-card'
 import { QuoteEvidenceManager, type QuoteEvidenceView } from '@/components/quotes/quote-evidence-manager'
 import { ApproveQuoteClient } from '@/components/quotes/approve-quote-client'
@@ -46,6 +47,7 @@ type QuoteItem = {
     service_id?: string | null
     stock_deducted_at?: string | null
     unit_cost?: number | null
+    cost_is_known?: boolean | null
     unit_price: number | null
 }
 
@@ -148,6 +150,7 @@ type ProposalCanvasProps = {
     totalFormatted: string
     pixPayload?: string | null
     evidences?: QuoteEvidenceView[]
+    clientReturnReminder?: ClientReturnReminder | null
     viewerUserId?: string | null
 }
 
@@ -350,6 +353,7 @@ export function ProposalCanvas({
     totalFormatted,
     pixPayload,
     evidences = [],
+    clientReturnReminder,
     viewerUserId,
 }: ProposalCanvasProps) {
     const accountPlan = getEntitledPlan(profile?.plan, profile?.subscription_status, profile?.pro_trial_ends_at)
@@ -384,8 +388,8 @@ export function ProposalCanvas({
     const discount = Math.max(itemTotal - total, 0)
     const professionalContext = getProfessionalContext(quote.professional_context)
     const reminder = isOwner ? getQuoteReminder(quote) : null
-    const followUpUrl = reminder && ['follow_up', 'opened_no_response'].includes(reminder.kind)
-        ? getWhatsappFollowUpUrl(quote.client_phone, buildQuoteFollowUpMessage(quote.client_name, approvalUrl))
+    const followUpUrl = reminder && ['follow_up', 'opened_no_response', 'expires_today', 'expired'].includes(reminder.kind)
+        ? getWhatsappFollowUpUrl(quote.client_phone, buildQuoteFollowUpMessage(quote.client_name, approvalUrl, reminder.kind))
         : null
     const canManageEvidences = isOwner && viewerUserId === quote.user_id
 
@@ -727,13 +731,15 @@ export function ProposalCanvas({
                             )}
 
                             {(isOwner || ['approved', 'in_progress', 'completed'].includes(status)) && (
-                                <PixDepositCard
-                                    quoteId={quote.id}
-                                    amount={Number(quote.deposit_amount || 0)}
-                                    pixPayload={pixPayload}
-                                    depositStatus={quote.deposit_status}
-                                    isOwner={isOwner}
-                                />
+                                <div id="pix-deposit">
+                                    <PixDepositCard
+                                        quoteId={quote.id}
+                                        amount={Number(quote.deposit_amount || 0)}
+                                        pixPayload={pixPayload}
+                                        depositStatus={quote.deposit_status}
+                                        isOwner={isOwner}
+                                    />
+                                </div>
                             )}
 
                             {(quote.payment_terms || quote.notes) && (
@@ -772,6 +778,7 @@ export function ProposalCanvas({
                                         totalFormatted={totalFormatted}
                                         layoutStyle={proposalModel}
                                         professionalContext={professionalContext.id}
+                                        hasDeposit={Number(quote.deposit_amount || 0) > 0 && Boolean(pixPayload)}
                                     />
                                 ) : isOwner ? (
                                     <>
@@ -822,6 +829,16 @@ export function ProposalCanvas({
                                         total={total}
                                         pendingStockItems={pendingStockItems}
                                         deductedStockItems={deductedStockItems}
+                                    />
+                                )}
+
+                                {isOwner && status === 'completed' && (
+                                    <ClientReturnPanel
+                                        quoteId={quote.id}
+                                        clientName={quote.client_name}
+                                        clientPhone={quote.client_phone}
+                                        reminder={clientReturnReminder}
+                                        isPro={!accountIsFree}
                                     />
                                 )}
 

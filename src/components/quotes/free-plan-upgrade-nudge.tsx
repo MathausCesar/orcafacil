@@ -52,11 +52,11 @@ export function FreePlanUpgradeNudge({
     const isProSample = experienceMode === 'pro_sample'
     const isApproved = status === 'approved'
     const heading = isApproved
-        ? 'Voce fechou um servico. Mantenha sua identidade nas proximas propostas.'
+        ? 'Voce fechou um servico. Agora proteja o recebimento e faca esse cliente voltar.'
         : isProSample
-            ? 'Sua proposta com marca profissional ja foi enviada. Mantenha esse padrao no Pro.'
-            : 'Sua proposta foi enviada. A proxima pode sair com a marca da sua oficina.'
-    const cta = isApproved ? 'Comecar Pro mensal' : isProSample ? 'Manter visual Pro' : 'Ver Pro mensal'
+            ? 'Sua proposta profissional ja foi enviada. Mantenha esse padrao em cada nova venda.'
+            : 'Sua proposta foi enviada. O Pro ajuda voce a nao perder o retorno nem a margem.'
+    const cta = isApproved ? 'Proteger esta venda' : isProSample ? 'Manter recursos Pro' : 'Conhecer o Pro'
 
     return (
         <section className="mb-5 rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm print:hidden sm:p-5">
@@ -79,7 +79,7 @@ export function FreePlanUpgradeNudge({
                                 <Sparkles className="h-4 w-4" />
                                 Plano Pro
                             </p>
-                            <p className="mt-1">Sua logo, cores do negocio, mensagem personalizada e proposta sem marca Zacly.</p>
+                            <p className="mt-1">Sua marca, meta de margem, retorno de clientes, sinal Pix e lembretes para fechar e receber.</p>
                         </div>
                     </div>
                 </div>

@@ -35,8 +35,9 @@ import {
 } from '@/lib/profession-layout-recommendations'
 import { calculateProposalReadiness } from '@/lib/proposal-readiness'
 import type { VoiceProposalSuggestion } from '@/lib/voice-proposal-parser'
+import { ProfitGuard } from '@/components/quotes/profit-guard'
 
-type NumericQuoteItemField = 'quantity' | 'unitPrice'
+type NumericQuoteItemField = 'quantity' | 'unitPrice' | 'unitCost'
 
 function parseBrazilianNumber(value: string) {
     const cleanValue = value.trim().replace(/\s/g, '')
@@ -72,6 +73,7 @@ export interface QuoteItem {
     quantity: number;
     unitPrice: number;
     unitCost?: number;
+    costIsKnown?: boolean;
 }
 
 interface QuoteFormProps {
@@ -81,6 +83,7 @@ interface QuoteFormProps {
     plan?: string | null
     initialData?: {
         id?: string
+        clientId?: string | null
         experienceMode?: 'free_simple' | 'pro_sample' | 'pro'
         clientName: string
         clientPhone?: string
@@ -95,6 +98,7 @@ interface QuoteFormProps {
         cashDiscountFixed?: number
         cashDiscountType?: string
         depositAmount?: number
+        targetMarginPercent?: number
         paymentMethods?: string[]
         installmentCount?: string
         layoutStyle?: string
@@ -125,6 +129,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
     const [date, setDate] = useState<string>(initialData?.expirationDate || getDefaultExpirationDate())
     const [clientName, setClientName] = useState(initialData?.clientName || '')
     const [clientPhone, setClientPhone] = useState(initialData?.clientPhone || '')
+    const [clientId, setClientId] = useState(initialData?.clientId || '')
     const [paymentTerms, setPaymentTerms] = useState(initialData?.paymentTerms || 'A combinar')
     const [notes, setNotes] = useState(initialData?.notes || '')
     const [itemDrafts, setItemDrafts] = useState<Record<string, Partial<Record<NumericQuoteItemField, string>>>>({})
@@ -142,6 +147,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
             : String(initialData?.cashDiscountPercent || '')
     )
     const [depositAmount, setDepositAmount] = useState(String(initialData?.depositAmount || ''))
+    const [targetMarginPercent, setTargetMarginPercent] = useState(Number(initialData?.targetMarginPercent ?? 30))
     const [paymentMethods, setPaymentMethods] = useState<string[]>(initialData?.paymentMethods || [])
     const [installmentCount, setInstallmentCount] = useState(initialData?.installmentCount || '')
     const [layoutStyle, setLayoutStyle] = useState(
@@ -215,7 +221,8 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
             details: product.details || null,
             quantity: product.quantity,
             unitPrice: product.price,
-            unitCost: product.unitCost || 0
+            unitCost: product.unitCost,
+            costIsKnown: typeof product.unitCost === 'number' && Number.isFinite(product.unitCost) && product.unitCost > 0,
         }
         setItems([...items, newItem])
         captureEvent('quote_item_added', {
@@ -265,6 +272,9 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
         }))
 
         const parsed = parseBrazilianNumber(value)
+        if (field === 'unitCost') {
+            handleUpdateItem(id, 'costIsKnown', parsed !== null && value.trim() !== '')
+        }
         if (parsed !== null) {
             handleUpdateItem(id, field, parsed)
         }
@@ -336,6 +346,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
         setLoading(true)
         formData.set('items', JSON.stringify(items))
         formData.set('clientName', clientName)
+        formData.set('clientId', clientId)
         if (clientPhone) formData.set('clientPhone', clientPhone)
         formData.set('expirationDate', date)
         formData.set('paymentTerms', paymentTerms)
@@ -368,6 +379,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
             }
         }
         formData.set('deposit_amount', hasProPresentation ? String(parseBrazilianNumber(depositAmount) || 0) : '0')
+        formData.set('target_margin_percent', String(targetMarginPercent))
         formData.set('experience_mode', experienceMode)
         formData.set('layout_style', hasProPresentation ? layoutStyle : FREE_PROPOSAL_MODEL)
         formData.set('professional_context', professionalContext)
@@ -389,6 +401,8 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
             has_payment_options: showPaymentOptions,
             payment_method_count: paymentMethods.length,
             has_pix_deposit: hasProPresentation && (parseBrazilianNumber(depositAmount) || 0) > 0,
+            target_margin_percent: targetMarginPercent,
+            known_cost_item_count: items.filter((item) => item.costIsKnown).length,
             proposal_readiness_score: readiness.score,
             layout_recommendation_model: activeRecommendation.model,
             layout_recommendation_source: activeRecommendation.source,
@@ -643,6 +657,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                                 onSelect={(client) => {
                                     setClientName(client.name)
                                     setClientPhone(client.phone || '')
+                                    setClientId(client.id || '')
                                     captureEvent('quote_client_selected', {
                                         source: 'autocomplete',
                                         has_phone: Boolean(client.phone),
@@ -651,6 +666,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                                 }}
                             />
                             <input type="hidden" name="clientPhone" value={clientPhone} />
+                            <input type="hidden" name="clientId" value={clientId} />
                         </CardContent>
                     </Card>
 
@@ -716,7 +732,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                                                     />
                                                 </div>
 
-                                                <div className="lg:col-span-3 flex items-center lg:justify-end min-w-0">
+                                                <div className="lg:col-span-2 flex items-center lg:justify-end min-w-0">
                                                     <span className="lg:hidden text-sm text-muted-foreground mr-2 shrink-0">Unitário:</span>
                                                     <Input
                                                         type="text"
@@ -725,6 +741,19 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                                                         onChange={(e) => handleItemNumberChange(item.id, 'unitPrice', e.target.value)}
                                                         onBlur={() => handleItemNumberBlur(item.id, 'unitPrice')}
                                                         className="w-full max-w-[120px] text-right h-8"
+                                                    />
+                                                </div>
+
+                                                <div className="flex min-w-0 items-center gap-2 lg:col-span-1 lg:flex-col lg:items-stretch">
+                                                    <span className="text-xs text-muted-foreground lg:text-[10px]">Custo</span>
+                                                    <Input
+                                                        type="text"
+                                                        inputMode="decimal"
+                                                        value={itemDrafts[item.id]?.unitCost ?? (item.costIsKnown ? formatNumberInput(item.unitCost || 0) : '')}
+                                                        onChange={(e) => handleItemNumberChange(item.id, 'unitCost', e.target.value)}
+                                                        onBlur={() => handleItemNumberBlur(item.id, 'unitCost')}
+                                                        placeholder="-"
+                                                        className="h-8 min-w-0 text-right text-xs"
                                                     />
                                                 </div>
 
@@ -868,6 +897,13 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                                 )}
                             </CardContent>
                         </Card>
+
+                        <ProfitGuard
+                            items={items}
+                            targetMarginPercent={targetMarginPercent}
+                            onTargetMarginChange={setTargetMarginPercent}
+                            isPro={hasProPresentation}
+                        />
 
                         {/* Summary & Save */}
                         <Card className="order-last lg:order-first border-0 shadow-lg ring-1 ring-border bg-slate-900 dark:bg-card text-white dark:text-card-foreground overflow-hidden">

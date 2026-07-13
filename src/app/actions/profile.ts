@@ -16,6 +16,7 @@ type ProfileUpdateData = {
     pix_key_type?: string | null
     pix_recipient_name?: string
     pix_recipient_city?: string
+    target_margin_percent?: number
     cep?: string
     address?: string
     address_number?: string
@@ -80,6 +81,13 @@ export async function updateProfile(formData: FormData) {
     if (formData.has('pix_key_type')) updateData.pix_key_type = String(formData.get('pix_key_type') || '').trim() || null
     if (formData.has('pix_recipient_name')) updateData.pix_recipient_name = String(formData.get('pix_recipient_name') || '').trim()
     if (formData.has('pix_recipient_city')) updateData.pix_recipient_city = String(formData.get('pix_recipient_city') || '').trim()
+    if (formData.has('target_margin_percent')) {
+        const parsedTargetMargin = Number(String(formData.get('target_margin_percent') || '').replace(',', '.'))
+        if (!Number.isFinite(parsedTargetMargin) || parsedTargetMargin < 0 || parsedTargetMargin > 95) {
+            return { error: 'A meta de margem deve ficar entre 0% e 95%.' }
+        }
+        updateData.target_margin_percent = parsedTargetMargin
+    }
     if (formData.has('cep')) updateData.cep = String(formData.get('cep') || '')
     if (formData.has('address')) updateData.address = String(formData.get('address') || '')
     if (formData.has('address_number')) updateData.address_number = String(formData.get('address_number') || '')
@@ -87,6 +95,18 @@ export async function updateProfile(formData: FormData) {
     if (formData.has('neighborhood')) updateData.neighborhood = String(formData.get('neighborhood') || '')
     if (formData.has('city')) updateData.city = String(formData.get('city') || '')
     if (formData.has('state')) updateData.state = String(formData.get('state') || '')
+
+    if (formData.has('target_margin_percent')) {
+        const { data: marginProfile } = await supabase
+            .from('profiles')
+            .select('plan, subscription_status, pro_trial_ends_at')
+            .eq('id', user.id)
+            .maybeSingle()
+
+        if (isFreePlan(getEntitledPlan(marginProfile?.plan, marginProfile?.subscription_status, marginProfile?.pro_trial_ends_at))) {
+            delete updateData.target_margin_percent
+        }
+    }
 
     if (hasProposalFields) {
         const { data: currentProfile } = await supabase

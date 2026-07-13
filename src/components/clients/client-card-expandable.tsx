@@ -27,6 +27,8 @@ interface Quote {
     total: number
     status: string
     created_at: string
+    amount_paid?: number | null
+    payment_status?: string | null
 }
 
 export function ClientCardExpandable({ client }: { client: Client }) {
@@ -42,8 +44,8 @@ export function ClientCardExpandable({ client }: { client: Client }) {
                 const supabase = createClient()
                 const { data } = await supabase
                     .from('quotes')
-                    .select('id, client_name, total, status, created_at')
-                    .eq('client_name', client.name)
+                    .select('id, client_name, total, status, created_at, amount_paid, payment_status')
+                    .eq('client_id', client.id)
                     .order('created_at', { ascending: false })
 
                 setQuotes(data || [])
@@ -59,6 +61,11 @@ export function ClientCardExpandable({ client }: { client: Client }) {
 
     const formatBRL = (value: number) =>
         new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+
+    const approvedValue = quotes
+        .filter((quote) => ['approved', 'in_progress', 'completed'].includes(quote.status))
+        .reduce((sum, quote) => sum + Number(quote.total || 0), 0)
+    const receivedValue = quotes.reduce((sum, quote) => sum + Number(quote.amount_paid || 0), 0)
 
     return (
         <Card className="hover:border-primary/25 hover:shadow-md transition-all border-primary/10">
@@ -122,6 +129,16 @@ export function ClientCardExpandable({ client }: { client: Client }) {
                                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-3">
                                     {quotes.length} orçamento{quotes.length !== 1 ? 's' : ''}
                                 </p>
+                                <div className="mb-3 grid grid-cols-2 gap-2">
+                                    <div className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2">
+                                        <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-700">Aprovado</p>
+                                        <p className="mt-1 text-sm font-black text-emerald-950">{formatBRL(approvedValue)}</p>
+                                    </div>
+                                    <div className="rounded-lg border border-sky-100 bg-sky-50 px-3 py-2">
+                                        <p className="text-[10px] font-bold uppercase tracking-wide text-sky-700">Recebido</p>
+                                        <p className="mt-1 text-sm font-black text-sky-950">{formatBRL(receivedValue)}</p>
+                                    </div>
+                                </div>
                                 {quotes.map((quote) => (
                                     <Link
                                         key={quote.id}

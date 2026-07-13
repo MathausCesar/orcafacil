@@ -12,6 +12,8 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { getActiveOrganizationId } from '@/lib/get-active-organization'
 import { OpportunityPanel } from '@/components/dashboard/opportunity-panel'
+import { CommercialScoreboard } from '@/components/dashboard/commercial-scoreboard'
+import { ClientReturnQueue, type ClientReturnQueueItem } from '@/components/dashboard/client-return-queue'
 import { getQuoteReminder } from '@/lib/quote-reminders'
 
 export default async function Dashboard() {
@@ -28,7 +30,8 @@ export default async function Dashboard() {
   const emptyCountResult = { count: 0, data: null, error: null }
 
   // Parallel fetch: profile, recent quotes and guided first-run progress
-  const [profileResult, quotesResult, quotesCountResult, sentCountResult, openedCountResult, opportunitiesResult] = await Promise.all([
+  const today = new Date().toISOString().slice(0, 10)
+  const [profileResult, quotesResult, quotesCountResult, sentCountResult, openedCountResult, opportunitiesResult, commercialQuotesResult, dueReturnsResult] = await Promise.all([
     supabase
       .from('profiles')
       .select('business_name, logo_url, onboarded_at')
@@ -69,6 +72,25 @@ export default async function Dashboard() {
         .order('total', { ascending: false })
         .limit(40)
       : Promise.resolve({ data: [] }),
+    orgId
+      ? supabase
+        .from('quotes')
+        .select('status, total, amount_paid, payment_status, first_public_opened_at, sent_confirmed_at')
+        .eq('organization_id', orgId)
+        .order('created_at', { ascending: false })
+        .limit(1000)
+      : Promise.resolve({ data: [] }),
+    orgId
+      // The relation is introduced by the commercial loop migration.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? (supabase.from('client_return_reminders') as any)
+        .select('id, quote_id, due_date, note, quotes!inner(client_name)')
+        .eq('organization_id', orgId)
+        .eq('status', 'scheduled')
+        .lte('due_date', today)
+        .order('due_date', { ascending: true })
+        .limit(12)
+      : Promise.resolve({ data: [] }),
   ])
 
   const profile = profileResult.data
@@ -99,6 +121,37 @@ export default async function Dashboard() {
       reminder,
       wasOpened: Boolean(quote.first_public_opened_at),
     }))
+
+  const commercialQuotes = commercialQuotesResult.data || []
+  const valueForStatuses = (statuses: string[]) => commercialQuotes
+    .filter((quote) => statuses.includes(quote.status || ''))
+    .reduce((sum, quote) => sum + Number(quote.total || 0), 0)
+  const sentValue = valueForStatuses(['sent', 'changes_requested'])
+  const openedValue = commercialQuotes
+    .filter((quote) => Boolean(quote.first_public_opened_at) && ['sent', 'changes_requested'].includes(quote.status || ''))
+    .reduce((sum, quote) => sum + Number(quote.total || 0), 0)
+  const approvedValue = valueForStatuses(['approved', 'in_progress', 'completed'])
+  const receivedValue = commercialQuotes.reduce((sum, quote) => sum + Number(quote.amount_paid || 0), 0)
+  const outstandingValue = commercialQuotes
+    .filter((quote) => ['approved', 'in_progress', 'completed'].includes(quote.status || ''))
+    .reduce((sum, quote) => sum + Math.max(0, Number(quote.total || 0) - Number(quote.amount_paid || 0)), 0)
+  const lostValue = valueForStatuses(['rejected'])
+  const dueReturns: ClientReturnQueueItem[] = ((dueReturnsResult.data || []) as Array<{
+    id: string
+    quote_id: string
+    due_date: string
+    note?: string | null
+    quotes?: { client_name?: string | null } | Array<{ client_name?: string | null }> | null
+  }>).map((reminder) => {
+    const quote = Array.isArray(reminder.quotes) ? reminder.quotes[0] : reminder.quotes
+    return {
+      id: reminder.id,
+      quoteId: reminder.quote_id,
+      clientName: quote?.client_name || 'Cliente',
+      dueDate: reminder.due_date,
+      note: reminder.note || null,
+    }
+  })
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 md:space-y-8">
@@ -141,7 +194,19 @@ export default async function Dashboard() {
       {/* Stats Grid with Period Filter */}
       <DashboardStats />
 
+      <CommercialScoreboard
+        sentValue={sentValue}
+        openedValue={openedValue}
+        approvedValue={approvedValue}
+        receivedValue={receivedValue}
+        outstandingValue={outstandingValue}
+        lostValue={lostValue}
+        quoteCount={quotesCountResult.count || 0}
+      />
+
       <OpportunityPanel opportunities={opportunities} />
+
+      <ClientReturnQueue returns={dueReturns} />
 
       {/* Recent Activity List - Clean Table Style */}
       <section className="space-y-6">

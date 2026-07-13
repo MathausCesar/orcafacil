@@ -19,6 +19,7 @@ type QuoteFormItem = {
     quantity: number
     unitPrice: number
     unitCost?: number
+    costIsKnown?: boolean
 }
 
 type QuoteItemPayload = {
@@ -30,9 +31,11 @@ type QuoteItemPayload = {
     quantity: number
     unit_price: number
     unit_cost: number
+    cost_is_known: boolean
 }
 
 type QuoteUpdatePayload = {
+    client_id?: string | null
     client_name: string
     client_phone: string
     client_email?: string | null
@@ -53,14 +56,121 @@ type QuoteUpdatePayload = {
     layout_style: string | null
     professional_context: string
     deposit_amount: number
+    cost_total?: number
+    profit_amount?: number
+    profit_margin_percent?: number
+    target_margin_percent?: number
+    costs_complete?: boolean
     deposit_status?: 'not_requested'
     status?: 'draft'
 }
 
 type PaymentStatus = 'unpaid' | 'partial' | 'paid'
 
+type QuoteFinancialSummary = {
+    total: number
+    costTotal: number
+    profitAmount: number
+    profitMarginPercent: number
+    targetMarginPercent: number
+    costsComplete: boolean
+}
+
+type LinkedQuoteClient = {
+    id: string
+}
+
 function normalizePaymentStatus(value: string): PaymentStatus {
     return ['unpaid', 'partial', 'paid'].includes(value) ? value as PaymentStatus : 'unpaid'
+}
+
+function normalizeTargetMargin(value: FormDataEntryValue | null, fallback = 30) {
+    const normalizedValue = typeof value === 'string' ? value.replace(',', '.').trim() : ''
+    const parsed = Number(normalizedValue)
+    const nextValue = Number.isFinite(parsed) ? parsed : fallback
+    return Math.min(95, Math.max(0, nextValue))
+}
+
+function calculateQuoteFinancialSummary(items: QuoteFormItem[], targetMarginPercent: number): QuoteFinancialSummary {
+    const relevantItems = items.filter((item) => item.quantity > 0)
+    const total = relevantItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0)
+    const costsComplete = relevantItems.length > 0 && relevantItems.every((item) => Boolean(item.costIsKnown))
+    const costTotal = relevantItems.reduce((sum, item) => sum + (item.costIsKnown ? item.quantity * (item.unitCost || 0) : 0), 0)
+    const profitAmount = costsComplete ? total - costTotal : 0
+    const profitMarginPercent = total > 0 && costsComplete ? (profitAmount / total) * 100 : 0
+
+    return {
+        total,
+        costTotal,
+        profitAmount,
+        profitMarginPercent,
+        targetMarginPercent,
+        costsComplete,
+    }
+}
+
+async function resolveQuoteClient({
+    supabase,
+    userId,
+    orgId,
+    requestedClientId,
+    clientName,
+    clientPhone,
+    clientEmail,
+}: {
+    supabase: Awaited<ReturnType<typeof getAuthContext>>['supabase']
+    userId: string
+    orgId: string
+    requestedClientId: string
+    clientName: string
+    clientPhone: string
+    clientEmail: string
+}): Promise<LinkedQuoteClient> {
+    const clientId = requestedClientId.trim()
+
+    if (clientId) {
+        const { data: selectedClient, error } = await supabase
+            .from('clients')
+            .select('id')
+            .eq('id', clientId)
+            .eq('organization_id', orgId)
+            .maybeSingle()
+
+        if (error || !selectedClient) {
+            throw new Error('O cliente selecionado nao pertence a sua organizacao.')
+        }
+
+        return selectedClient
+    }
+
+    const { data: existingClient } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('organization_id', orgId)
+        .eq('name', clientName)
+        .maybeSingle()
+
+    if (existingClient) return existingClient
+
+    const { data: createdClient, error: createClientError } = await supabase
+        .from('clients')
+        .insert({
+            user_id: userId,
+            organization_id: orgId,
+            name: clientName,
+            phone: clientPhone || null,
+            email: clientEmail || null,
+            notes: null,
+            person_type: 'pf',
+        })
+        .select('id')
+        .single()
+
+    if (createClientError || !createdClient) {
+        throw new Error('Nao foi possivel registrar este cliente junto da proposta.')
+    }
+
+    return createdClient
 }
 
 function normalizeExperienceMode(value: FormDataEntryValue | null, isFree: boolean): QuoteExperienceMode {
@@ -82,6 +192,8 @@ function parseQuoteItems(itemsJson: string): QuoteFormItem[] {
         const quantity = Number(record.quantity)
         const unitPrice = Number(record.unitPrice)
         const unitCost = Number(record.unitCost)
+        const costIsKnown = record.costIsKnown === true
+            || (record.costIsKnown !== false && Number.isFinite(unitCost) && unitCost > 0)
         const serviceId = typeof record.serviceId === 'string' && record.serviceId.trim()
             ? record.serviceId
             : null
@@ -95,6 +207,7 @@ function parseQuoteItems(itemsJson: string): QuoteFormItem[] {
             quantity: Number.isFinite(quantity) ? quantity : 0,
             unitPrice: Number.isFinite(unitPrice) ? unitPrice : 0,
             unitCost: Number.isFinite(unitCost) ? unitCost : 0,
+            costIsKnown,
         }
     })
 }
@@ -108,7 +221,8 @@ function buildQuoteItems(quoteId: string, items: QuoteFormItem[]): QuoteItemPayl
         details: item.details,
         quantity: item.quantity,
         unit_price: item.unitPrice,
-        unit_cost: item.unitCost || 0
+        unit_cost: item.unitCost || 0,
+        cost_is_known: Boolean(item.costIsKnown),
     }))
 }
 
@@ -126,7 +240,7 @@ export async function createQuote(formData: FormData) {
     // --- FREEMIUM CHECK ---
     const { data: profile } = await supabase
         .from('profiles')
-        .select('plan, subscription_status, pro_trial_ends_at, onboarded_at, logo_url')
+        .select('plan, subscription_status, pro_trial_ends_at, onboarded_at, logo_url, target_margin_percent')
         .eq('id', user.id)
         .single()
 
@@ -137,6 +251,7 @@ export async function createQuote(formData: FormData) {
     const clientName = formData.get('clientName') as string
     const clientPhone = formData.get('clientPhone') as string
     const clientEmail = formData.get('clientEmail') as string
+    const requestedClientId = String(formData.get('clientId') || '')
     const expirationDate = formData.get('expirationDate') as string || null
     const paymentTerms = formData.get('paymentTerms') as string
     const notes = formData.get('notes') as string
@@ -160,6 +275,10 @@ export async function createQuote(formData: FormData) {
     const afterCreate = formData.get('after_create') as string | null
 
     const items = parseQuoteItems(itemsJson)
+
+    if (!clientName?.trim()) {
+        return { error: 'Informe o nome do cliente antes de criar a proposta.' }
+    }
 
     if (
         isFree
@@ -204,8 +323,31 @@ export async function createQuote(formData: FormData) {
         quotaUsageId = reservationId as string
     }
 
-    // Calcule Total
-    const total = items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0)
+    let linkedClient: LinkedQuoteClient
+    try {
+        linkedClient = await resolveQuoteClient({
+            supabase,
+            userId: user.id,
+            orgId,
+            requestedClientId,
+            clientName: clientName.trim(),
+            clientPhone: clientPhone?.trim() || '',
+            clientEmail: clientEmail?.trim() || '',
+        })
+    } catch (error) {
+        if (quotaUsageId) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await (supabase as any).rpc('release_free_quote_quota', { p_usage_id: quotaUsageId })
+        }
+        return { error: error instanceof Error ? error.message : 'Nao foi possivel vincular o cliente.' }
+    }
+
+    const targetMarginPercent = normalizeTargetMargin(
+        isFree ? null : formData.get('target_margin_percent'),
+        Number(profile?.target_margin_percent ?? 30),
+    )
+    const financialSummary = calculateQuoteFinancialSummary(items, targetMarginPercent)
+    const total = financialSummary.total
     const requestedDepositAmount = Number(formData.get('deposit_amount') || 0)
     const depositAmount = Number.isFinite(requestedDepositAmount)
         ? Math.min(Math.max(requestedDepositAmount, 0), total)
@@ -218,6 +360,7 @@ export async function createQuote(formData: FormData) {
         .insert({
             user_id: user.id,
             organization_id: orgId,
+            client_id: linkedClient.id,
             client_name: clientName,
             client_phone: clientPhone,
             client_email: clientEmail?.trim() || null,
@@ -239,7 +382,12 @@ export async function createQuote(formData: FormData) {
             professional_context: professionalContext,
             experience_mode: requestedExperienceMode,
             deposit_amount: depositAmount,
-            deposit_status: 'not_requested'
+            deposit_status: 'not_requested',
+            cost_total: financialSummary.costTotal,
+            profit_amount: financialSummary.profitAmount,
+            profit_margin_percent: financialSummary.profitMarginPercent,
+            target_margin_percent: financialSummary.targetMarginPercent,
+            costs_complete: financialSummary.costsComplete,
         })
         .select()
         .single()
@@ -305,18 +453,18 @@ export async function createQuote(formData: FormData) {
 export async function updateQuote(id: string, formData: FormData) {
     const { supabase, user, orgId } = await getAuthContext()
 
-    if (!user) {
+    if (!user || !orgId) {
         return { error: 'Unauthorized', redirect: '/login' }
     }
 
     // Check current status — block locked quotes
     const { data: currentQuote } = await supabase
         .from('quotes')
-        .select('status, organization_id, experience_mode, deposit_amount')
+        .select('status, organization_id, experience_mode, deposit_amount, user_id')
         .eq('id', id)
         .single()
 
-    if (!currentQuote || currentQuote.organization_id !== orgId) {
+    if (!currentQuote || currentQuote.organization_id !== orgId || currentQuote.user_id !== user.id) {
         return { error: 'Quote not found or Unauthorized' }
     }
 
@@ -329,7 +477,7 @@ export async function updateQuote(id: string, formData: FormData) {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('plan, subscription_status, pro_trial_ends_at')
+        .select('plan, subscription_status, pro_trial_ends_at, target_margin_percent')
         .eq('id', user.id)
         .maybeSingle()
 
@@ -339,6 +487,7 @@ export async function updateQuote(id: string, formData: FormData) {
     const clientName = formData.get('clientName') as string
     const clientPhone = formData.get('clientPhone') as string
     const clientEmail = formData.get('clientEmail') as string
+    const requestedClientId = String(formData.get('clientId') || '')
     const expirationDate = formData.get('expirationDate') as string || null
     const paymentTerms = formData.get('paymentTerms') as string
     const notes = formData.get('notes') as string
@@ -361,7 +510,31 @@ export async function updateQuote(id: string, formData: FormData) {
     const professionalContext = normalizeProfessionalContext(formData.get('professional_context') as string | null)
 
     const items = parseQuoteItems(itemsJson)
-    const total = items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0)
+    if (!clientName?.trim()) {
+        return { error: 'Informe o nome do cliente antes de atualizar a proposta.' }
+    }
+
+    let linkedClient: LinkedQuoteClient
+    try {
+        linkedClient = await resolveQuoteClient({
+            supabase,
+            userId: user.id,
+            orgId,
+            requestedClientId,
+            clientName: clientName.trim(),
+            clientPhone: clientPhone?.trim() || '',
+            clientEmail: clientEmail?.trim() || '',
+        })
+    } catch (error) {
+        return { error: error instanceof Error ? error.message : 'Nao foi possivel vincular o cliente.' }
+    }
+
+    const targetMarginPercent = normalizeTargetMargin(
+        isFree ? null : formData.get('target_margin_percent'),
+        Number(profile?.target_margin_percent ?? 30),
+    )
+    const financialSummary = calculateQuoteFinancialSummary(items, targetMarginPercent)
+    const total = financialSummary.total
     const requestedDepositAmount = Number(formData.get('deposit_amount') || 0)
     const depositAmount = Number.isFinite(requestedDepositAmount)
         ? Math.min(Math.max(requestedDepositAmount, 0), total)
@@ -369,6 +542,7 @@ export async function updateQuote(id: string, formData: FormData) {
 
     // 1. Update Quote Info
     const updateData: QuoteUpdatePayload = {
+        client_id: linkedClient.id,
         client_name: clientName,
         client_phone: clientPhone,
         client_email: clientEmail?.trim() || null,
@@ -388,7 +562,12 @@ export async function updateQuote(id: string, formData: FormData) {
         installment_count: installmentCount,
         layout_style: layoutStyle,
         professional_context: professionalContext,
-        deposit_amount: depositAmount
+        deposit_amount: depositAmount,
+        cost_total: financialSummary.costTotal,
+        profit_amount: financialSummary.profitAmount,
+        profit_margin_percent: financialSummary.profitMarginPercent,
+        target_margin_percent: financialSummary.targetMarginPercent,
+        costs_complete: financialSummary.costsComplete,
     }
 
     // Reset decided quotes back to draft for re-approval
@@ -998,6 +1177,195 @@ export async function recordQuoteFollowUp(id: string) {
     revalidatePath('/quotes')
     revalidatePath('/')
     return { success: true, followUpCount: Number(followUpCount || 0) }
+}
+
+export async function scheduleClientReturn(quoteId: string, days: number, note?: string) {
+    const { supabase, user, orgId } = await getAuthContext()
+
+    if (!user || !orgId) return { error: 'Sua sessao expirou. Entre novamente para agendar o retorno.' }
+
+    if (![30, 90, 180].includes(days)) {
+        return { error: 'Escolha um prazo valido para o retorno.' }
+    }
+
+    const trimmedNote = String(note || '').trim()
+    if (trimmedNote.length > 500) return { error: 'A observacao pode ter no maximo 500 caracteres.' }
+
+    const [quoteResult, profileResult] = await Promise.all([
+        supabase
+            .from('quotes')
+            .select('id, user_id, organization_id, client_id, client_name, client_phone, client_email, status')
+            .eq('id', quoteId)
+            .eq('organization_id', orgId)
+            .maybeSingle(),
+        supabase
+            .from('profiles')
+            .select('plan, subscription_status, pro_trial_ends_at')
+            .eq('id', user.id)
+            .maybeSingle(),
+    ])
+
+    const quote = quoteResult.data
+    if (!quote || quote.user_id !== user.id) return { error: 'Proposta nao encontrada.' }
+    if (quote.status !== 'completed') return { error: 'O retorno pode ser agendado depois de concluir o servico.' }
+
+    const accessPlan = getEntitledPlan(
+        profileResult.data?.plan,
+        profileResult.data?.subscription_status,
+        profileResult.data?.pro_trial_ends_at,
+    )
+    if (isFreePlan(accessPlan)) {
+        return { error: 'Retornos pos-servico fazem parte do Pro. Envie uma proposta para liberar seu teste Pro de 7 dias.' }
+    }
+
+    let clientId = quote.client_id
+    if (!clientId) {
+        try {
+            const linkedClient = await resolveQuoteClient({
+                supabase,
+                userId: user.id,
+                orgId,
+                requestedClientId: '',
+                clientName: quote.client_name,
+                clientPhone: quote.client_phone || '',
+                clientEmail: quote.client_email || '',
+            })
+            clientId = linkedClient.id
+            await supabase
+                .from('quotes')
+                // The client relation is introduced in this deployment migration.
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                .update({ client_id: clientId } as any)
+                .eq('id', quoteId)
+                .eq('organization_id', orgId)
+        } catch (error) {
+            return { error: error instanceof Error ? error.message : 'Nao foi possivel vincular o cliente.' }
+        }
+    }
+
+    const dueDate = new Date()
+    dueDate.setUTCDate(dueDate.getUTCDate() + days)
+    const dueDateValue = dueDate.toISOString().slice(0, 10)
+
+    // A quote has one active return reminder. Rescheduling keeps the history
+    // clear instead of flooding the owner with duplicate reminders.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const reminderTable = supabase.from('client_return_reminders') as any
+    const { data: activeReminder, error: activeReminderError } = await reminderTable
+        .select('id')
+        .eq('quote_id', quoteId)
+        .eq('status', 'scheduled')
+        .maybeSingle()
+
+    if (activeReminderError) {
+        console.error('Error loading client return reminder:', activeReminderError)
+        return { error: 'Nao foi possivel preparar o retorno.' }
+    }
+
+    const reminderPayload = {
+        client_id: clientId,
+        organization_id: orgId,
+        user_id: user.id,
+        due_date: dueDateValue,
+        note: trimmedNote || null,
+        status: 'scheduled',
+        sent_at: null,
+        dismissed_at: null,
+    }
+
+    const { data: reminder, error: reminderError } = activeReminder
+        ? await reminderTable
+            .update(reminderPayload)
+            .eq('id', activeReminder.id)
+            .eq('user_id', user.id)
+            .select('id, due_date, status, note')
+            .single()
+        : await reminderTable
+            .insert({ quote_id: quoteId, ...reminderPayload })
+            .select('id, due_date, status, note')
+            .single()
+
+    if (reminderError || !reminder) {
+        console.error('Error scheduling client return:', reminderError)
+        return { error: 'Nao foi possivel agendar o retorno.' }
+    }
+
+    await createNotification(
+        user.id,
+        'Retorno de cliente agendado',
+        `Lembre de falar com ${quote.client_name} em ${days} dias.`,
+        `/quotes/${quoteId}`,
+        'info',
+    )
+    await captureServerEvent('client_return_scheduled', user.id, {
+        quote_id: quoteId,
+        days,
+        has_note: Boolean(trimmedNote),
+        source: 'quote_completion',
+    })
+
+    revalidatePath(`/quotes/${quoteId}`)
+    revalidatePath('/clients')
+    revalidatePath('/')
+    return {
+        success: true,
+        reminder: {
+            id: reminder.id,
+            dueDate: reminder.due_date,
+            status: reminder.status,
+            note: reminder.note,
+        },
+    }
+}
+
+async function updateClientReturnStatus(reminderId: string, status: 'sent' | 'dismissed') {
+    const { supabase, user, orgId } = await getAuthContext()
+    if (!user || !orgId) return { error: 'Sua sessao expirou. Entre novamente.' }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const reminderTable = supabase.from('client_return_reminders') as any
+    const { data: reminder } = await reminderTable
+        .select('id, quote_id, organization_id, user_id, status')
+        .eq('id', reminderId)
+        .eq('organization_id', orgId)
+        .maybeSingle()
+
+    if (!reminder || reminder.user_id !== user.id) return { error: 'Lembrete nao encontrado.' }
+    if (reminder.status !== 'scheduled') return { error: 'Este retorno ja foi encerrado.' }
+
+    const now = new Date().toISOString()
+    const { error } = await reminderTable
+        .update({
+            status,
+            sent_at: status === 'sent' ? now : null,
+            dismissed_at: status === 'dismissed' ? now : null,
+        })
+        .eq('id', reminderId)
+        .eq('user_id', user.id)
+        .eq('status', 'scheduled')
+
+    if (error) {
+        console.error('Error updating client return reminder:', error)
+        return { error: 'Nao foi possivel atualizar o retorno.' }
+    }
+
+    await captureServerEvent(status === 'sent' ? 'client_return_sent_confirmed' : 'client_return_dismissed', user.id, {
+        quote_id: reminder.quote_id,
+        reminder_id: reminderId,
+        source: 'client_return_panel',
+    })
+    revalidatePath(`/quotes/${reminder.quote_id}`)
+    revalidatePath('/clients')
+    revalidatePath('/')
+    return { success: true }
+}
+
+export async function confirmClientReturnSent(reminderId: string) {
+    return updateClientReturnStatus(reminderId, 'sent')
+}
+
+export async function dismissClientReturn(reminderId: string) {
+    return updateClientReturnStatus(reminderId, 'dismissed')
 }
 
 export async function deductQuoteStock(id: string) {

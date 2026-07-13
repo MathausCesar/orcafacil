@@ -41,4 +41,14 @@ export const marketingFaqs = [
         answer:
             "Os pagamentos são processados pela Stripe. A Zacly não armazena dados do seu cartão. O plano grátis não exige cartão para começar.",
     },
+    {
+        question: "O que acontece quando minhas propostas grátis acabarem?",
+        answer:
+            "Nada some. Suas propostas e clientes continuam salvos. Você só passa a aguardar a próxima proposta simples liberada por mês, ou assina o Pro quando quiser orçamentos ilimitados e sua marca em todas as propostas.",
+    },
+    {
+        question: "Como faço para cancelar minha assinatura?",
+        answer:
+            "Quando quiser, direto no painel em Perfil > Assinatura, sem precisar falar com suporte. O cancelamento vale a partir da próxima renovação e você mantém o acesso Pro até lá.",
+    },
 ] as const;

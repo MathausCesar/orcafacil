@@ -14,7 +14,7 @@ import { Share2, Mail, Copy, Download, Check, MessageCircle, Send } from 'lucide
 import { toast } from 'sonner'
 import { confirmQuoteSent } from '@/app/actions/quotes'
 import { usePostHog } from 'posthog-js/react'
-import { captureActivationStage, captureEvent, captureException } from '@/lib/analytics'
+import { captureActivationStage, captureConversion, captureException } from '@/lib/analytics'
 import { useRouter } from 'next/navigation'
 
 interface QuoteShareModalProps {
@@ -57,7 +57,7 @@ export function QuoteShareModal({
     const shouldMarkAsSent = ['draft', 'pending'].includes(quoteStatus || '')
 
     const trackShare = (method: ShareMethod) => {
-        captureEvent('quote_share_clicked', {
+        captureConversion('quote_share_clicked', {
             quote_id: quoteId,
             method,
             previous_status: quoteStatus || 'unknown',

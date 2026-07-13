@@ -20,6 +20,7 @@ interface CampaignRegisterLinkProps {
     campaign: string
     content?: string
     nextPath?: string
+    onClick?: (event: MouseEvent<HTMLAnchorElement>) => void
 }
 
 function buildRegisterHref({
@@ -54,6 +55,7 @@ export function CampaignRegisterLink({
     campaign,
     content,
     nextPath = "/onboarding",
+    onClick,
 }: CampaignRegisterLinkProps) {
     const href = buildRegisterHref({ campaign, content, nextPath })
 
@@ -64,6 +66,7 @@ export function CampaignRegisterLink({
             nextPath,
             queryString: window.location.search,
         })
+        onClick?.(event)
     }
 
     return (

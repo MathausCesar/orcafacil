@@ -2,9 +2,8 @@
 
 import { motion } from "framer-motion";
 import { Check, X, Star } from "lucide-react";
-import Link from "next/link";
 import { PRICING, YEARLY_MONTHLY_EQUIV, YEARLY_SAVINGS, formatCurrencyBR, formatNumberBR } from "@/lib/pricing-copy";
-import { MARKETING_LINKS } from "@/lib/marketing-links";
+import { CampaignRegisterLink } from "@/components/marketing/campaign-register-link";
 
 export function PricingSection() {
     return (
@@ -67,12 +66,13 @@ export function PricingSection() {
                                 <span className="text-zinc-500 text-sm">Proposta simples mantem marca Zacly</span>
                             </li>
                         </ul>
-                        <Link
-                            href={MARKETING_LINKS.registerFree}
+                        <CampaignRegisterLink
+                            campaign="homepage_pricing_free"
+                            nextPath="/onboarding"
                             className="w-full py-4 rounded-xl border border-zinc-700 text-white text-center font-bold hover:bg-zinc-800 transition-colors"
                         >
                             Começar grátis
-                        </Link>
+                        </CampaignRegisterLink>
                     </motion.div>
 
                     <motion.div
@@ -117,12 +117,13 @@ export function PricingSection() {
                             ))}
                         </ul>
 
-                        <Link
-                            href={MARKETING_LINKS.registerYearly}
+                        <CampaignRegisterLink
+                            campaign="homepage_pricing_yearly"
+                            nextPath="/pricing?plan=yearly"
                             className="w-full py-4 rounded-xl border border-zinc-700 text-white text-center font-bold hover:bg-zinc-800 transition-colors"
                         >
                             <span>Escolher anual e economizar</span>
-                        </Link>
+                        </CampaignRegisterLink>
                     </motion.div>
 
                     <motion.div
@@ -165,12 +166,13 @@ export function PricingSection() {
                             ))}
                         </ul>
 
-                        <Link
-                            href={MARKETING_LINKS.registerMonthly}
+                        <CampaignRegisterLink
+                            campaign="homepage_pricing_monthly"
+                            nextPath="/pricing?plan=monthly"
                             className="w-full py-4 rounded-xl bg-emerald-500 text-black text-center font-black uppercase tracking-wide hover:scale-[1.02] transition-transform"
                         >
                             Começar no mensal
-                        </Link>
+                        </CampaignRegisterLink>
                     </motion.div>
                 </div>
 

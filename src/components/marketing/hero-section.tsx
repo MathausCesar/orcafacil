@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, MessageCircle, FileText } from "lucide-react";
 import { MARKETING_COPY } from "@/lib/pricing-copy";
 import { MARKETING_LINKS } from "@/lib/marketing-links";
+import { CampaignRegisterLink } from "@/components/marketing/campaign-register-link";
 
 const professions = ["Mecânicos", "Marceneiros", "Eletricistas", "Pintores", "Técnicos", "Instaladores"];
 
@@ -127,19 +128,20 @@ export function HeroSection() {
                     ))}
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
-                    <Link
-                        href={MARKETING_LINKS.register}
+                <div className="flex flex-col items-center justify-center gap-4 w-full sm:w-auto">
+                    <CampaignRegisterLink
+                        campaign="homepage_hero"
+                        nextPath="/onboarding"
                         className="group h-14 px-8 rounded-full bg-white text-black font-bold text-base md:text-lg flex items-center justify-center gap-3 transition-transform hover:scale-[1.03] active:scale-95 w-full sm:w-auto"
                     >
                         <span>Criar proposta teste da minha oficina</span>
                         <span className="bg-black/10 rounded-full p-1.5 transition-transform group-hover:translate-x-1">
                             <ArrowRight className="h-5 w-5" />
                         </span>
-                    </Link>
+                    </CampaignRegisterLink>
                     <Link
                         href={MARKETING_LINKS.exampleQuote}
-                        className="h-14 px-8 rounded-full border border-white/15 text-white font-bold text-base flex items-center justify-center hover:bg-white/10 transition-colors w-full sm:w-auto"
+                        className="text-sm text-zinc-400 font-medium hover:text-white underline underline-offset-4 transition-colors"
                     >
                         Ver exemplo de proposta
                     </Link>

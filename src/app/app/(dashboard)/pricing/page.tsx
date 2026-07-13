@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { CheckCircle2, Zap, Loader2, TrendingDown } from "lucide-react"
 import { toast } from "sonner"
 import { usePostHog } from "posthog-js/react"
-import { addExceptionStep, captureException } from "@/lib/analytics"
+import { addExceptionStep, captureConversion, captureException } from "@/lib/analytics"
 import {
     PRICING,
     YEARLY_MONTHLY_EQUIV as YEARLY_MONTHLY_EQUIV_VALUE,
@@ -93,7 +93,7 @@ export default function PricingPage() {
         try {
             const checkoutResult = await createCheckoutUrl(plan)
             if (checkoutResult.checkoutStarted) {
-                posthog.capture("checkout_started", {
+                captureConversion("checkout_started", {
                     ...checkoutPayload,
                     transaction_id: `checkout_${plan}_${Date.now()}`,
                 })

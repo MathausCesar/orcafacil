@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import { MARKETING_LINKS } from "@/lib/marketing-links";
+import { CampaignRegisterLink } from "@/components/marketing/campaign-register-link";
 
 const navItems = [
     { href: MARKETING_LINKS.resourcesPage, label: "Recursos" },
@@ -62,12 +63,13 @@ export function MarketingHeader() {
                     >
                         Entrar
                     </Link>
-                    <Link
-                        href={MARKETING_LINKS.register}
+                    <CampaignRegisterLink
+                        campaign="homepage_header"
+                        nextPath="/onboarding"
                         className="text-sm font-bold bg-white text-black px-5 py-2 rounded-full hover:bg-zinc-200 transition-colors"
                     >
                         Criar orcamento gratis
-                    </Link>
+                    </CampaignRegisterLink>
                 </nav>
 
                 <button
@@ -101,13 +103,14 @@ export function MarketingHeader() {
                     >
                         Entrar
                     </Link>
-                    <Link
-                        href={MARKETING_LINKS.register}
+                    <CampaignRegisterLink
+                        campaign="homepage_header_mobile"
+                        nextPath="/onboarding"
                         onClick={() => setMenuOpen(false)}
                         className="w-full text-center py-3 rounded-xl text-sm font-bold bg-white text-black hover:bg-zinc-200 transition-colors"
                     >
                         Criar orcamento gratis
-                    </Link>
+                    </CampaignRegisterLink>
                 </div>
             )}
         </header>

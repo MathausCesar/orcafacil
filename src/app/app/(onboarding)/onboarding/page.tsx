@@ -22,11 +22,17 @@ export default async function OnboardingPage({
         .eq('id', user.id)
         .single();
 
-    if (profile?.onboarded_at) {
+    const query = await searchParams
+
+    // The wizard's own completion step marks the URL with ?step=success once
+    // it applies the onboarding kit. That action revalidates shared routes,
+    // which can cause this Server Component to re-run while the user is still
+    // looking at the success screen — skip the redirect in that case instead
+    // of bouncing them away from their own completion CTA.
+    if (profile?.onboarded_at && query.step !== 'success') {
         redirect('/');
     }
 
-    const query = await searchParams
     const queryIntent = getActivationIntentFromSearchParams({
         get: (key) => {
             const value = query[key]

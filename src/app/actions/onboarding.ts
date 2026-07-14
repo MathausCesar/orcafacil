@@ -350,7 +350,12 @@ export async function applyOnboardingKit(
 
         revalidatePath('/', 'layout')
         revalidatePath('/dashboard')
-        revalidatePath('/onboarding')
+        // Deliberately not revalidating '/onboarding': the user is still on that
+        // route looking at the client-side success screen when this runs, and
+        // the page's own "already onboarded" guard would immediately redirect
+        // them away before they can see it or use its CTA. The route is
+        // rendered dynamically per-request anyway, so a fresh visit later
+        // always re-checks onboarded_at without needing this call.
 
         return { success: true }
 

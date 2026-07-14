@@ -16,7 +16,7 @@ export function PricingSection() {
                         viewport={{ once: true, margin: "-100px" }}
                         className="text-4xl md:text-6xl font-black uppercase text-white mb-6"
                     >
-                        Comece sem risco e assine quando perceber o valor.
+                        Comece de graça. Assine quando ver que vale a pena.
                     </motion.h2>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
@@ -25,7 +25,7 @@ export function PricingSection() {
                         transition={{ delay: 0.1 }}
                         className="text-lg md:text-xl text-zinc-300 font-light leading-relaxed"
                     >
-                        Teste com clientes reais: 5 propostas simples nos primeiros 14 dias e 1 Deguste Pro. Quando quiser sua marca em todas as propostas, comece pelo mensal.
+                        Teste com clientes de verdade: 5 orçamentos grátis nos primeiros 14 dias. Quando quiser sua logo e seu nome em todos os orçamentos, é só assinar.
                     </motion.p>
                 </div>
 
@@ -47,23 +47,23 @@ export function PricingSection() {
                         <ul className="space-y-4 mb-8 flex-1">
                             <li className="flex items-start gap-3">
                                 <Check className="h-5 w-5 text-emerald-500 shrink-0" />
-                                <span className="text-zinc-300 text-sm">5 propostas simples nos primeiros 14 dias</span>
+                                <span className="text-zinc-300 text-sm">5 orçamentos grátis nos primeiros 14 dias</span>
                             </li>
                             <li className="flex items-start gap-3">
                                 <Check className="h-5 w-5 text-emerald-500 shrink-0" />
-                                <span className="text-zinc-300 text-sm">Depois, 1 proposta simples por mes</span>
+                                <span className="text-zinc-300 text-sm">Depois, 1 orçamento grátis por mês</span>
                             </li>
                             <li className="flex items-start gap-3">
                                 <Check className="h-5 w-5 text-emerald-500 shrink-0" />
-                                <span className="text-zinc-300 text-sm">1 Deguste Pro para comparar o visual premium</span>
+                                <span className="text-zinc-300 text-sm">1 orçamento com visual Pro de brinde, pra comparar</span>
                             </li>
                             <li className="flex items-start gap-3">
                                 <Check className="h-5 w-5 text-emerald-500 shrink-0" />
-                                <span className="text-zinc-300 text-sm">Envio por WhatsApp com link</span>
+                                <span className="text-zinc-300 text-sm">Envio pelo WhatsApp com link de aprovação</span>
                             </li>
                             <li className="flex items-start gap-3 opacity-55">
                                 <X className="h-5 w-5 text-zinc-500 shrink-0" />
-                                <span className="text-zinc-500 text-sm">Proposta simples mantem marca Zacly</span>
+                                <span className="text-zinc-500 text-sm">Orçamento grátis sai com a marca Zacly</span>
                             </li>
                         </ul>
                         <CampaignRegisterLink
@@ -105,10 +105,10 @@ export function PricingSection() {
 
                         <ul className="space-y-4 mb-8 flex-1">
                             {[
-                                "Orçamentos ilimitados",
-                                "Sua marca no PDF, sem marca Zacly",
-                                "Acompanhamento de abertura e aprovação",
-                                "Exportação, modelos e painel Pro",
+                                "Orçamentos sem limite",
+                                "Sua logo e seu nome em todos os orçamentos",
+                                "Você vê quando o cliente abre e aprova",
+                                "Modelos visuais e painel completo",
                             ].map((feature) => (
                                 <li key={feature} className="flex items-start gap-3">
                                     <Check className="h-5 w-5 text-emerald-500 shrink-0" />
@@ -139,7 +139,7 @@ export function PricingSection() {
 
                         <div className="mb-6 pt-2 text-center">
                             <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-wide">Pro Mensal</h3>
-                            <p className="text-emerald-400 text-sm font-medium">Sua marca em toda proposta, sem compromisso anual.</p>
+                            <p className="text-emerald-400 text-sm font-medium">Sua logo em todos os orçamentos, sem compromisso.</p>
                         </div>
 
                         <div className="mb-8 flex flex-col items-center">
@@ -155,9 +155,9 @@ export function PricingSection() {
 
                         <ul className="space-y-4 mb-8 flex-1">
                             {[
-                                "Orçamentos ilimitados",
-                                "Sua marca no PDF",
-                                "Acompanhamento em tempo real",
+                                "Orçamentos sem limite",
+                                "Sua logo e seu nome em todos os orçamentos",
+                                "Aviso quando o cliente abre e aprova",
                             ].map((feature) => (
                                 <li key={feature} className="flex items-start gap-3">
                                     <Check className="h-5 w-5 text-emerald-500 shrink-0" />

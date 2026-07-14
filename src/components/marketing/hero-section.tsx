@@ -20,7 +20,7 @@ function HeroPreview() {
                         <div>
                             <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
                                 <FileText className="h-3.5 w-3.5" />
-                                Proposta comercial
+                                Orçamento
                             </div>
                             <h3 className="mt-4 text-2xl font-black tracking-tight">Reparo elétrico residencial</h3>
                             <p className="mt-1 text-sm text-zinc-500">Validade: 7 dias • Prazo: 2 dias úteis</p>
@@ -70,7 +70,7 @@ function HeroPreview() {
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-zinc-900 p-5 text-left">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">Pipeline</p>
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">Controle</p>
                     <h3 className="mt-2 text-xl font-black text-white">Acompanhe até fechar</h3>
                     <div className="mt-6 space-y-3">
                         {[
@@ -91,7 +91,7 @@ function HeroPreview() {
                         ))}
                     </div>
                     <p className="mt-6 text-sm leading-relaxed text-zinc-300">
-                        Menos orçamento perdido no WhatsApp. Mais clareza sobre quem precisa de retorno.
+                        Você vê quem abriu, quem aprovou e quem precisa de um retorno pra fechar.
                     </p>
                 </div>
             </div>
@@ -106,11 +106,11 @@ export function HeroSection() {
 
             <div className="container relative z-10 px-4 md:px-6 max-w-[1200px] mx-auto text-center flex flex-col items-center">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900/80 border border-white/10 text-zinc-200 text-xs font-bold mb-7 uppercase tracking-[0.16em] backdrop-blur-sm">
-                    Feito para quem hoje faz orçamento no papel, WhatsApp ou planilha
+                    Para quem faz orçamento no papel, no caderno ou no WhatsApp
                 </div>
 
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.04] text-white mb-7 max-w-5xl">
-                    Transforme preço solto no WhatsApp em uma aprovação profissional.
+                    Orçamento com cara de empresa grande, feito no seu celular em 2 minutos.
                 </h1>
 
                 <p className="text-lg md:text-2xl text-zinc-300 max-w-3xl font-light leading-relaxed mb-7">
@@ -134,7 +134,7 @@ export function HeroSection() {
                         nextPath="/onboarding"
                         className="group h-14 px-8 rounded-full bg-white text-black font-bold text-base md:text-lg flex items-center justify-center gap-3 transition-transform hover:scale-[1.03] active:scale-95 w-full sm:w-auto"
                     >
-                        <span>Criar proposta teste da minha oficina</span>
+                        <span>Fazer meu orçamento grátis</span>
                         <span className="bg-black/10 rounded-full p-1.5 transition-transform group-hover:translate-x-1">
                             <ArrowRight className="h-5 w-5" />
                         </span>
@@ -143,7 +143,7 @@ export function HeroSection() {
                         href={MARKETING_LINKS.exampleQuote}
                         className="text-sm text-zinc-400 font-medium hover:text-white underline underline-offset-4 transition-colors"
                     >
-                        Ver exemplo de proposta
+                        Ver como fica um orçamento pronto
                     </Link>
                 </div>
 

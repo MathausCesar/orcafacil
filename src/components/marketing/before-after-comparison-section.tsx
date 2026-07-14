@@ -21,10 +21,10 @@ export function BeforeAfterComparisonSection({
                         Antes e depois
                     </p>
                     <h2 className="mt-4 text-3xl font-black tracking-tight text-white sm:text-5xl">
-                        Troque o preco solto no WhatsApp por uma proposta que ajuda o cliente a dizer sim.
+                        Troque o preço solto no WhatsApp por um orçamento que ajuda o cliente a dizer sim.
                     </h2>
                     <p className="mt-5 text-base leading-7 text-zinc-400 sm:text-lg">
-                        O cliente nao compara apenas valor. Ele compara clareza, prazo, seguranca e profissionalismo antes de aprovar.
+                        Cliente não escolhe só pelo preço. Ele escolhe quem passa mais confiança.
                     </p>
                 </div>
 

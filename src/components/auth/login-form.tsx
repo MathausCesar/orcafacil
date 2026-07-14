@@ -212,8 +212,8 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                             </span>
                         </h1>
                         <p className="text-lg text-zinc-400 font-light leading-relaxed max-w-xl">
-                            Transforme preço solto no WhatsApp em uma proposta clara, profissional e com aceite registrado.
-                            Sem virar um ERP complicado para sua rotina.
+                            Monte orçamentos bonitos no celular, mande pelo WhatsApp e receba a aprovação do cliente com um toque.
+                            Sem papel, sem planilha, sem complicação.
                         </p>
                     </div>
 

@@ -43,9 +43,9 @@ export const YEARLY_SAVINGS = (PRICING.monthly * 12) - PRICING.yearly
 export const YEARLY_DISCOUNT_PCT = Math.round((YEARLY_SAVINGS / (PRICING.monthly * 12)) * 100)
 
 export const MARKETING_COPY = {
-    corePromise: 'Transforme preço solto no WhatsApp em uma aprovação profissional, clara e registrada. Crie, envie e acompanhe cada proposta sem virar um ERP.',
-    signupHint: `Sem cartão. 5 propostas simples nos primeiros 14 dias e 1 Deguste Pro para sentir a diferença.`,
-    freePlan: `Plano gratuito com 5 propostas simples nos primeiros 14 dias, depois 1 por mês, e 1 proposta Deguste Pro.`,
+    corePromise: 'Você escolhe os serviços, o Zacly monta o orçamento bonito com seu nome, e o cliente aprova com um toque no WhatsApp. Sem papel, sem planilha, sem complicação.',
+    signupHint: `Grátis pra testar: 5 orçamentos nos primeiros 14 dias. Sem cartão, sem pegadinha.`,
+    freePlan: `Grátis pra começar: 5 orçamentos nos primeiros 14 dias, depois 1 por mês. Você ainda ganha 1 orçamento com visual Pro de brinde pra ver a diferença.`,
     proPlan: `Plano Pro a partir de ${formatCurrencyBR(YEARLY_MONTHLY_EQUIV)} por mês no plano anual.`,
 } as const
 

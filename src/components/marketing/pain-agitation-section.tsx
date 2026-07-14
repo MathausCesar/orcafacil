@@ -6,23 +6,23 @@ import { AlertTriangle, Clock, TrendingDown, ReceiptText } from "lucide-react";
 const pains = [
     {
         icon: Clock,
-        title: "Tempo perdido depois do serviço",
-        desc: "Você chega cansado, ainda precisa lembrar valores, montar texto, conferir material e responder cliente no WhatsApp.",
+        title: "Você trabalha o dia todo e ainda tem que montar orçamento",
+        desc: "Chega cansado do serviço e ainda precisa sentar pra lembrar preço, escrever tudo e responder o cliente à noite.",
     },
     {
         icon: ReceiptText,
         title: "Orçamento com cara de improviso",
-        desc: "Texto solto, foto de caderno ou planilha reaproveitada faz o cliente comparar só preço, não o valor do seu trabalho.",
+        desc: "Foto do caderno ou texto corrido no WhatsApp faz o cliente olhar só o preço — e escolher o mais barato.",
     },
     {
         icon: TrendingDown,
-        title: "Desconto antes de entender o serviço",
-        desc: "Quando escopo, prazo, garantia e material ficam confusos, o cliente ganha motivo para pedir desconto ou sumir.",
+        title: "Cliente pede desconto ou some",
+        desc: "Quando o cliente não entende direito o que está pagando, ele pede desconto, enrola ou para de responder.",
     },
     {
         icon: AlertTriangle,
-        title: "Acompanhamento na memória",
-        desc: "Fica difícil saber quem recebeu, quem abriu, quem aprovou e quem precisa de retorno para fechar.",
+        title: "Serviço perdido por falta de retorno",
+        desc: "Sem controle, você esquece quem ficou de responder — e o serviço vai pra outro que cobrou antes.",
     },
 ];
 
@@ -60,7 +60,7 @@ export function PainAgitationSection() {
                             transition={{ duration: 0.6, delay: 0.2 }}
                             className="text-xl md:text-2xl text-zinc-300 font-light leading-relaxed"
                         >
-                            Se o orçamento chega como mensagem solta, print ou arquivo desorganizado, o cliente sente insegurança. O Zacly transforma esse momento em uma proposta clara, bonita e fácil de aprovar.
+                            Orçamento mandado de qualquer jeito faz o cliente desconfiar, pedir desconto ou sumir. Com o Zacly, ele recebe tudo organizado, entende o que está pagando e aprova mais rápido.
                         </motion.p>
                     </div>
 

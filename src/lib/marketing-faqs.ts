@@ -4,51 +4,51 @@ export const marketingFaqs = [
     {
         question: "O que é o Zacly?",
         answer:
-            "Zacly é um app para autônomos e pequenos prestadores criarem orçamentos profissionais em PDF, enviarem pelo WhatsApp e acompanharem a aprovação do cliente.",
+            "É um app que monta orçamento bonito pra você. Você escolhe os serviços e os preços, ele gera o orçamento com seu nome, e você manda pelo WhatsApp. O cliente aprova clicando num botão.",
     },
     {
         question: "Preciso ter CNPJ para usar?",
         answer:
-            "Não. O Zacly funciona para autônomos, MEIs e pequenos negócios. Você pode começar com seus dados básicos e melhorar sua identidade visual depois.",
+            "Não. Funciona pra quem trabalha por conta própria, com ou sem CNPJ. Você começa só com seu nome e já sai fazendo orçamento.",
     },
     {
         question: "O Zacly é gratuito?",
         answer:
-            `Sim. ${MARKETING_COPY.freePlan} Para orçamentos ilimitados e propostas sem marca Zacly, o ${MARKETING_COPY.proPlan}`,
+            `Sim. ${MARKETING_COPY.freePlan} Se quiser orçamentos sem limite e com a sua logo, o ${MARKETING_COPY.proPlan}`,
     },
     {
         question: "Meu cliente precisa instalar aplicativo?",
         answer:
-            "Não. O cliente abre um link, visualiza a proposta e pode aprovar direto pelo navegador do celular.",
+            "Não. Ele recebe um link no WhatsApp, abre no navegador do celular e aprova o orçamento com um toque. Sem baixar nada, sem criar conta.",
     },
     {
-        question: "Como a logo entra na proposta?",
+        question: "Como a minha logo entra no orçamento?",
         answer:
-            "Voce envia sua logo, o Zacly identifica uma cor principal e usa essa base para orientar a identidade visual da proposta. No plano Pro, os modelos ficam mais personalizados com a sua marca.",
+            "Você envia a foto da sua logo e o Zacly monta o orçamento já com ela, combinando as cores. Não precisa entender de design — fica pronto sozinho.",
     },
     {
         question: "Isso substitui meu orçamento no WhatsApp?",
         answer:
-            "Ele melhora o que você já faz no WhatsApp. Em vez de mandar preço solto, você envia uma proposta com descrição, itens, prazo, condições e link de aprovação.",
+            "Você continua usando o WhatsApp do mesmo jeito. A diferença é que, em vez de mandar o preço solto na conversa, você manda um orçamento organizado com um botão pro cliente aprovar.",
     },
     {
         question: "Sou ruim com tecnologia. Vou conseguir usar?",
         answer:
-            "Sim. O fluxo foi pensado para celular: cadastrar cliente, escolher serviços, gerar proposta e enviar pelo WhatsApp.",
+            "Vai. Se você sabe mandar mensagem no WhatsApp, sabe usar o Zacly. É escolher o serviço, colocar o preço e apertar enviar. Tudo pelo celular.",
     },
     {
         question: "Como funciona o pagamento dos planos?",
         answer:
-            "Os pagamentos são processados pela Stripe. A Zacly não armazena dados do seu cartão. O plano grátis não exige cartão para começar.",
+            "O pagamento é no cartão, por um sistema seguro (Stripe, o mesmo usado por empresas grandes). O Zacly não guarda os dados do seu cartão. E pra usar o plano grátis não precisa de cartão nenhum.",
     },
     {
-        question: "O que acontece quando minhas propostas grátis acabarem?",
+        question: "O que acontece quando meus orçamentos grátis acabarem?",
         answer:
-            "Nada some. Suas propostas e clientes continuam salvos. Você só passa a aguardar a próxima proposta simples liberada por mês, ou assina o Pro quando quiser orçamentos ilimitados e sua marca em todas as propostas.",
+            "Nada some. Seus orçamentos e clientes continuam salvos. Você ganha 1 orçamento grátis por mês, ou assina o Pro quando quiser fazer quantos precisar, com a sua logo.",
     },
     {
         question: "Como faço para cancelar minha assinatura?",
         answer:
-            "Quando quiser, direto no painel em Perfil > Assinatura, sem precisar falar com suporte. O cancelamento vale a partir da próxima renovação e você mantém o acesso Pro até lá.",
+            "Quando quiser, direto no app, sem precisar falar com ninguém. Você continua com o Pro até o fim do período que já pagou.",
     },
 ] as const;

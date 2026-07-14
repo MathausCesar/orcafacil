@@ -6,33 +6,33 @@ import { CreditCard, FileCheck2, Headphones, ShieldCheck, Undo2, UserCheck } fro
 const trustItems = [
     {
         icon: CreditCard,
-        title: "Pagamento pela Stripe",
-        desc: "A Zacly não armazena dados do seu cartão.",
+        title: "Pagamento seguro",
+        desc: "Processado pela Stripe, usada por empresas do mundo todo. Seus dados de cartão não ficam com a gente.",
     },
     {
         icon: Undo2,
-        title: "7 dias para reembolso",
-        desc: "Você pode solicitar reembolso dentro do prazo legal após comprar um plano pago.",
+        title: "7 dias pra pedir reembolso",
+        desc: "Assinou e não gostou? Devolvemos seu dinheiro dentro de 7 dias, sem burocracia.",
     },
     {
         icon: ShieldCheck,
-        title: "Dados protegidos",
-        desc: "Conexão segura, autenticação protegida e dados tratados conforme LGPD.",
+        title: "Seus dados protegidos",
+        desc: "Conexão segura e dados tratados conforme a lei (LGPD).",
     },
     {
         icon: UserCheck,
         title: "Cliente aprova sem cadastro",
-        desc: "Seu cliente abre o link, vê a proposta e aprova sem instalar nada.",
+        desc: "Seu cliente abre o link, vê o orçamento e aprova. Não precisa baixar nem cadastrar nada.",
     },
     {
         icon: FileCheck2,
-        title: "Sem cartão no plano grátis",
-        desc: "Teste com clientes reais antes de decidir assinar.",
+        title: "Grátis sem cartão",
+        desc: "Teste com clientes de verdade antes de decidir se vale assinar.",
     },
     {
         icon: Headphones,
         title: "Suporte direto",
-        desc: "Atendimento pelo e-mail suporte@zacly.com.br.",
+        desc: "Ficou com dúvida? É só mandar e-mail pra suporte@zacly.com.br.",
     },
 ];
 
@@ -57,7 +57,7 @@ export function TrustSection() {
                             transition={{ delay: 0.1 }}
                             className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight"
                         >
-                            Criar proposta é simples. Pagar e usar também precisa ser.
+                            Pode usar sem medo.
                         </motion.h2>
                         <motion.p
                             initial={{ opacity: 0, y: 16 }}
@@ -66,7 +66,7 @@ export function TrustSection() {
                             transition={{ delay: 0.2 }}
                             className="mt-5 text-base md:text-lg leading-relaxed text-zinc-300"
                         >
-                            A página agora deixa claros os pontos que reduzem medo no primeiro acesso: segurança, teste grátis, aprovação do cliente e suporte.
+                            Teste grátis sem cartão, pagamento seguro, 7 dias de reembolso e suporte direto. Sem letra miúda e sem surpresa na fatura.
                         </motion.p>
                     </div>
 

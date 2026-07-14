@@ -197,7 +197,7 @@ export default async function ProfessionLandingPage({ params }: PageProps) {
                             </div>
                             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
                                 <Workflow className="h-6 w-6 text-emerald-400" />
-                                <h3 className="mt-4 font-black text-white">Pipeline de orcamentos</h3>
+                                <h3 className="mt-4 font-black text-white">Controle de orcamentos</h3>
                                 <p className="mt-2 text-sm leading-6 text-zinc-400">Acompanhe enviados, aprovados, recusados e em andamento.</p>
                             </div>
                         </div>

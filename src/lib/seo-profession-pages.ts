@@ -123,7 +123,7 @@ export const SEO_PROFESSION_PAGES: SeoProfessionPage[] = [
         outcomes: [
             'Itens de peca e servico organizados na mesma proposta.',
             'Historico de aprovacao mais seguro para iniciar o reparo.',
-            'Pipeline para acompanhar orcamentos enviados e aprovados.',
+            'Tela simples para acompanhar orcamentos enviados e aprovados.',
         ],
         faq: [
             {
@@ -139,7 +139,7 @@ export const SEO_PROFESSION_PAGES: SeoProfessionPage[] = [
     {
         slug: 'prestadores-autonomos',
         title: 'App de orcamento para autonomos e prestadores | Zacly',
-        description: 'Saia do papel e crie orcamentos profissionais em PDF pelo WhatsApp, com aprovacao do cliente e controle do pipeline.',
+        description: 'Saia do papel e crie orcamentos profissionais em PDF pelo WhatsApp, com aprovacao do cliente e controle simples de tudo.',
         h1: 'O app de orcamentos para autonomos que ainda fazem tudo no papel.',
         eyebrow: 'Zacly para prestadores autonomos',
         intro: 'A Zacly foi criada para mecanicos, marceneiros, eletricistas, pintores, tecnicos e autonomos que precisam vender melhor sem complicar a rotina.',
@@ -153,12 +153,12 @@ export const SEO_PROFESSION_PAGES: SeoProfessionPage[] = [
         outcomes: [
             'Propostas em PDF e link de aprovacao sem precisar montar documento manualmente.',
             'Mensagem de envio pelo WhatsApp pronta para aumentar a chance de resposta.',
-            'Pipeline simples para acompanhar cada oportunidade.',
+            'Tela simples para acompanhar cada oportunidade.',
         ],
         faq: [
             {
                 question: 'O plano gratis precisa de cartao?',
-                answer: 'Nao. O plano gratis permite comecar sem cartao, com 1 proposta simples por mes e 1 deguste Pro para comparar o visual profissional.',
+                answer: 'Nao. O plano gratis permite comecar sem cartao, com 1 proposta simples por mes e 1 amostra Pro para comparar o visual profissional.',
             },
             {
                 question: 'Preciso entender de sistema para usar?',

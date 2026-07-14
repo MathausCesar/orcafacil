@@ -111,7 +111,7 @@ export const SEO_COMMERCIAL_PAGES: SeoCommercialPage[] = [
     {
         slug: 'app-de-orcamento',
         title: 'App de orcamento para prestadores de servico | Zacly',
-        description: 'Gere orcamentos profissionais com PDF, WhatsApp, aprovacao online e pipeline simples para prestadores autonomos.',
+        description: 'Gere orcamentos profissionais com PDF, WhatsApp, aprovacao online e controle simples para prestadores autonomos.',
         h1: 'App de orcamento para prestadores que querem sair do papel.',
         eyebrow: 'App de orcamento',
         intro: 'O Zacly ajuda autonomos e pequenos prestadores a criar propostas profissionais sem depender de Word, Excel, caderno ou mensagem solta.',
@@ -119,7 +119,7 @@ export const SEO_COMMERCIAL_PAGES: SeoCommercialPage[] = [
         benefits: [
             'Crie orcamento com cliente, itens, prazo e total em poucos minutos.',
             'Envie pelo WhatsApp com link de aprovacao.',
-            'Acompanhe cada proposta em um pipeline simples.',
+            'Acompanhe cada proposta em uma tela simples de controle.',
         ],
         sections: [
             {
@@ -134,7 +134,7 @@ export const SEO_COMMERCIAL_PAGES: SeoCommercialPage[] = [
         faq: [
             {
                 question: 'O Zacly e um app de orcamento gratis?',
-                answer: 'Sim. O plano gratis permite comecar sem cartao, com 1 proposta simples por mes e 1 deguste Pro para comparar o visual profissional.',
+                answer: 'Sim. O plano gratis permite comecar sem cartao, com 1 proposta simples por mes e 1 amostra Pro para comparar o visual profissional.',
             },
             {
                 question: 'Preciso instalar aplicativo?',
@@ -162,7 +162,7 @@ export const SEO_COMMERCIAL_PAGES: SeoCommercialPage[] = [
             },
             {
                 heading: 'Aprovacao no link',
-                body: 'O prestador nao aprova a propria proposta. O cliente decide pelo link e o status fica registrado no pipeline.',
+                body: 'O prestador nao aprova a propria proposta. O cliente decide pelo link e o status fica registrado automaticamente.',
             },
         ],
         faq: [
@@ -202,7 +202,7 @@ export const SEO_COMMERCIAL_PAGES: SeoCommercialPage[] = [
         faq: [
             {
                 question: 'O PDF do plano gratis tem marca Zacly?',
-                answer: 'Sim. A proposta simples gratis pode manter marca Zacly. O deguste Pro mostra uma proposta premium, e o plano Pro remove a marca e libera mais personalizacao.',
+                answer: 'Sim. A proposta simples gratis pode manter marca Zacly. A amostra Pro mostra uma proposta premium, e o plano Pro remove a marca e libera mais personalizacao.',
             },
             {
                 question: 'Posso baixar o PDF pelo celular?',
@@ -247,9 +247,9 @@ export const SEO_COMMERCIAL_PAGES: SeoCommercialPage[] = [
     {
         slug: 'controle-de-orcamentos',
         title: 'Controle de orcamentos para prestadores | Zacly',
-        description: 'Organize orcamentos enviados, aprovados, recusados e em andamento em um pipeline simples para autonomos.',
+        description: 'Organize orcamentos enviados, aprovados, recusados e em andamento em uma tela simples para autonomos.',
         h1: 'Controle de orcamentos simples para nao perder venda no WhatsApp.',
-        eyebrow: 'Pipeline de propostas',
+        eyebrow: 'Controle de orcamentos',
         intro: 'O Zacly mostra em que etapa cada proposta esta, para o autonomo nao depender de memoria, caderno ou rolagem infinita no WhatsApp.',
         keywords: ['controle de orcamentos', 'pipeline de orcamentos', 'gestao de propostas', 'organizar orcamentos'],
         benefits: [
@@ -274,7 +274,7 @@ export const SEO_COMMERCIAL_PAGES: SeoCommercialPage[] = [
             },
             {
                 question: 'Consigo ver orcamentos aprovados?',
-                answer: 'Sim. O pipeline mostra o andamento para acompanhar oportunidades aprovadas e em execucao.',
+                answer: 'Sim. A tela de controle mostra o andamento para acompanhar oportunidades aprovadas e em execucao.',
             },
         ],
     },

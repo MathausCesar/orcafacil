@@ -188,7 +188,7 @@ export function QuoteShareModal({
                                 </div>
                             </div>
                         </div>
-                        <p className="text-sm leading-6 text-muted-foreground">Marque como enviado apenas depois de concluir o envio. Isso deixa seu pipeline e os lembretes confiaveis.</p>
+                        <p className="text-sm leading-6 text-muted-foreground">Marque como enviado apenas depois de concluir o envio. Isso deixa seu controle e os lembretes confiaveis.</p>
                         <div className="grid gap-2 sm:grid-cols-2">
                             <Button variant="outline" onClick={() => setShowSentConfirmation(false)} disabled={confirmingSent}>Ainda nao</Button>
                             <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={confirmSent} disabled={confirmingSent}>

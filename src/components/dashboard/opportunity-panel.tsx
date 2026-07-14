@@ -66,7 +66,7 @@ export function OpportunityPanel({ opportunities }: OpportunityPanelProps) {
             </div>
             <div className="border-t border-amber-200 bg-white/70 px-5 py-3">
                 <Button asChild variant="ghost" size="sm" className="h-8 px-0 text-amber-800 hover:bg-transparent hover:text-amber-950">
-                    <Link href="/quotes?view=pipeline">Ver pipeline completo <ArrowUpRight className="ml-1 h-4 w-4" /></Link>
+                    <Link href="/quotes?view=pipeline">Ver tudo por etapa <ArrowUpRight className="ml-1 h-4 w-4" /></Link>
                 </Button>
             </div>
         </section>

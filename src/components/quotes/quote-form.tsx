@@ -338,7 +338,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                 reason: !brandPreview?.logoUrl ? 'pro_sample_missing_logo' : 'pro_sample_missing_client_phone',
                 quick_mode: quickMode,
             })
-            toast.error('Para usar o Deguste Pro, envie sua logo e informe o WhatsApp do cliente.')
+            toast.error('Para usar a Amostra Pro, envie sua logo e informe o WhatsApp do cliente.')
             return
         }
 
@@ -437,7 +437,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                 posthog.capture('pro_sample_requirements_missing', quoteAnalyticsPayload)
                 toast.error('message' in result && typeof result.message === 'string'
                     ? result.message
-                    : 'Complete os dados da proposta para usar o Deguste Pro.')
+                    : 'Complete os dados da proposta para usar a Amostra Pro.')
             } else if (result?.error) {
                 posthog.capture(initialData?.id ? 'quote_update_failed' : 'quote_create_failed', {
                     ...quoteAnalyticsPayload,
@@ -619,9 +619,9 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                         >
                             <span className="flex items-start justify-between gap-3">
                                 <span>
-                                    <span className="block text-sm font-black text-foreground">Deguste Pro</span>
+                                    <span className="block text-sm font-black text-foreground">Amostra Pro</span>
                                     <span className="mt-1 block text-xs leading-5">
-                                        Uma proposta com logo, cores, modelos visuais e sem marca Zacly.
+                                        Um orçamento com sua logo, suas cores, modelos visuais e sem marca Zacly.
                                     </span>
                                     {!canUseProSample && (
                                         <span className="mt-2 inline-flex rounded-full bg-muted px-2 py-1 text-[10px] font-bold uppercase tracking-wide">
@@ -974,7 +974,7 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
                                                 <div className="flex items-start gap-2">
                                                     <Lock className="mt-0.5 h-4 w-4 shrink-0" />
                                                     <p>
-                                                        A proposta simples gratis usa o modelo Profissional. Use o deguste Pro para testar os outros modelos uma vez.
+                                                        A proposta simples gratis usa o modelo Profissional. Use a Amostra Pro para testar os outros modelos uma vez.
                                                     </p>
                                                 </div>
                                             </div>

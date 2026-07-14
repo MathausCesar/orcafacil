@@ -25,7 +25,7 @@ import { BeforeAfterComparisonSection } from "@/components/marketing/before-afte
 const CAMPAIGN = "sniper_mecanicos"
 const BASE_URL = "https://www.zacly.com.br/c/mecanicos"
 const PAGE_DESCRIPTION =
-    "Crie orcamentos profissionais para oficina mecanica, envie pelo WhatsApp e acompanhe a aprovacao do cliente sem virar um ERP complexo."
+    "Crie orcamentos profissionais para oficina mecanica, envie pelo WhatsApp e acompanhe a aprovacao do cliente, sem sistema complicado."
 
 const ctaClass =
     "inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-emerald-400 px-7 text-sm font-black text-zinc-950 shadow-[0_16px_40px_rgba(52,211,153,0.25)] transition hover:bg-emerald-300 sm:w-auto"
@@ -82,16 +82,16 @@ const goodFit = [
 ]
 
 const badFit = [
-    "Quem procura emissor de nota fiscal",
-    "Quem precisa de ERP completo para compras e financeiro avancado",
-    "Oficina grande que ja opera com sistema robusto de OS",
-    "Quem quer controle complexo de estoque e integracao com fornecedores",
+    "Quem precisa emitir nota fiscal",
+    "Quem precisa de um sistema completo de compras e financeiro",
+    "Oficina grande que ja tem sistema proprio de ordem de servico",
+    "Quem quer controle avancado de estoque com varios fornecedores",
 ]
 
 const faq = [
     {
-        question: "O Zacly substitui um ERP de oficina?",
-        answer: "Nao. A proposta desta campanha e ajudar oficinas pequenas a criar orcamentos profissionais, enviar pelo WhatsApp e registrar a aprovacao do cliente. Nota fiscal, compras complexas e ERP completo ficam fora do foco.",
+        question: "O Zacly substitui o sistema completo da minha oficina?",
+        answer: "Nao. O Zacly ajuda oficinas pequenas a criar orcamentos profissionais, enviar pelo WhatsApp e registrar a aprovacao do cliente. Nota fiscal, compras complexas e controle financeiro avancado ficam fora do foco.",
     },
     {
         question: "Consigo separar peca e mao de obra?",
@@ -247,7 +247,7 @@ export default function MechanicLandingPage() {
                             </span>
                             <span className="inline-flex items-center gap-2">
                                 <CheckCircle2 className="h-4 w-4 text-emerald-300" />
-                                5 propostas em 14 dias + 1 Deguste Pro
+                                5 orçamentos em 14 dias + 1 Amostra Pro
                             </span>
                             <span className="inline-flex items-center gap-2">
                                 <CheckCircle2 className="h-4 w-4 text-emerald-300" />
@@ -270,11 +270,11 @@ export default function MechanicLandingPage() {
                             <p className="mt-1 text-zinc-400">Mensagem com link de aprovacao.</p>
                         </div>
                         <div className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
-                            <p className="font-black text-white">Pipeline simples</p>
+                            <p className="font-black text-white">Controle simples</p>
                             <p className="mt-1 text-zinc-400">Rascunho, enviado, aprovado e concluido.</p>
                         </div>
                         <div className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
-                            <p className="font-black text-white">Sem promessa de ERP</p>
+                            <p className="font-black text-white">Sem sistema complicado</p>
                             <p className="mt-1 text-zinc-400">Foco em vender melhor o servico.</p>
                         </div>
                     </div>

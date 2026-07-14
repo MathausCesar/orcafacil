@@ -461,7 +461,7 @@ export function ProposalCanvas({
                     <section className="mb-5 flex flex-col gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-4 print:hidden sm:flex-row sm:items-center sm:justify-between sm:p-5">
                         <div>
                             <p className="text-sm font-black text-slate-950">Veja sua proxima proposta com a identidade da oficina.</p>
-                            <p className="mt-1 text-xs leading-5 text-slate-600">Envie sua logo. O Zacly sugere cores e libera seu Deguste Pro quando a proposta estiver pronta.</p>
+                            <p className="mt-1 text-xs leading-5 text-slate-600">Envie sua logo. O Zacly sugere cores e libera sua Amostra Pro quando a proposta estiver pronta.</p>
                         </div>
                         <Button asChild variant="outline" className="shrink-0">
                             <Link href="/profile?source=quote_logo_upgrade">Enviar minha logo</Link>

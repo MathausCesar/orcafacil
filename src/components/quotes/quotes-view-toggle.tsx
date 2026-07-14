@@ -27,7 +27,7 @@ export function QuotesViewToggle() {
             </Link>
             <Link href={buildHref('pipeline')} className={`${baseClass} ${view === 'pipeline' ? activeClass : inactiveClass}`}>
                 <KanbanSquare className="h-4 w-4" />
-                Pipeline
+                Por etapa
             </Link>
         </div>
     )

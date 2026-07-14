@@ -447,7 +447,7 @@ export function QuotesView({ quotes: initialQuotes, totalCount, initialView = 'l
                             }`}
                     >
                         <KanbanSquare className="h-4 w-4" />
-                        Pipeline
+                        Por etapa
                     </button>
                 </div>
             </div>

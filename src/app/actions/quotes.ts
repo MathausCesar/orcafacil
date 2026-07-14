@@ -287,7 +287,7 @@ export async function createQuote(formData: FormData) {
     ) {
         return {
             error: 'PRO_SAMPLE_REQUIREMENTS',
-            message: 'Para usar o Deguste Pro, informe cliente e WhatsApp, adicione um item e envie sua logo.',
+            message: 'Para usar a Amostra Pro, informe cliente e WhatsApp, adicione um item e envie sua logo.',
         }
     }
 
@@ -313,10 +313,10 @@ export async function createQuote(formData: FormData) {
 
         if (quotaError || !reservationId) {
             const limitMessage = requestedExperienceMode === 'pro_sample'
-                ? 'Seu deguste Pro ja foi usado. Assine o Pro para criar propostas profissionais sem limite.'
+                ? 'Sua Amostra Pro ja foi usada. Assine o Pro para criar propostas profissionais sem limite.'
                 : allowance.period === 'activation'
-                    ? 'Voce ja usou as 5 propostas simples do periodo inicial. Use o Deguste Pro ou assine para criar sem limite.'
-                    : 'Voce ja criou sua proposta simples gratis deste mes. Use o Deguste Pro ou assine para criar sem limite.'
+                    ? 'Voce ja usou as 5 propostas simples do periodo inicial. Use sua Amostra Pro ou assine para criar sem limite.'
+                    : 'Voce ja criou sua proposta simples gratis deste mes. Use sua Amostra Pro ou assine para criar sem limite.'
             return { error: 'LIMIT_REACHED', message: limitMessage }
         }
 

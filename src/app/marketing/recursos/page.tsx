@@ -27,7 +27,7 @@ const features = [
     },
     {
         icon: Workflow,
-        title: 'Pipeline de orcamentos',
+        title: 'Controle de orcamentos',
         body: 'Acompanhe propostas em rascunho, enviadas, aprovadas, recusadas e em andamento.',
     },
     {
@@ -47,12 +47,12 @@ export default function RecursosPage() {
         <SeoPageLayout
             eyebrow="Recursos Zacly"
             title="Tudo que um autonomo precisa para sair do orcamento improvisado."
-            description="O Zacly une proposta, WhatsApp, aprovacao, pipeline e cadastro simples em uma rotina feita para prestadores que vendem servicos todos os dias."
+            description="O Zacly une orcamento, WhatsApp, aprovacao do cliente e controle simples em uma rotina feita para prestadores que vendem servicos todos os dias."
         >
             <SectionBlock
                 eyebrow="Produto"
                 title="Recursos pensados para quem hoje usa papel, bloco de notas ou mensagem solta."
-                description="A ideia nao e virar um ERP. E deixar o processo de vender servico mais profissional sem complicar a rotina."
+                description="A ideia nao e virar um sistema complicado. E deixar o processo de vender servico mais profissional sem enrolar sua rotina."
             >
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {features.map((feature) => {

@@ -42,7 +42,7 @@ export const metadata: Metadata = {
 const facts = [
     'Zacly e uma plataforma ativa para criar orcamentos profissionais online.',
     'O app foi pensado para autonomos, MEIs e pequenos prestadores de servico.',
-    'A rotina principal une cliente, itens, PDF, WhatsApp, link de aprovacao e pipeline.',
+    'A rotina principal une cliente, itens, PDF, WhatsApp, link de aprovacao e controle simples.',
 ]
 
 const differentiators = [

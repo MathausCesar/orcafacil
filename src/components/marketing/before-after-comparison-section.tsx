@@ -137,6 +137,40 @@ export function BeforeAfterComparisonSection({
                         </div>
                     </article>
                 </div>
+
+                <div className="mt-14 grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-6">
+                        <p className="text-4xl font-black text-emerald-300">+23%</p>
+                        <p className="mt-2 text-sm leading-6 text-zinc-300">
+                            de chance de fechar quando a proposta tem visual profissional, e não só texto solto.
+                        </p>
+                        <a
+                            href="https://www.proposify.com/blog/why-proposal-design-images-matter"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-3 inline-block text-xs text-zinc-500 underline hover:text-zinc-300"
+                        >
+                            Fonte: Proposify, análise de 2,6 milhões de propostas
+                        </a>
+                    </div>
+                    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-6">
+                        <p className="text-4xl font-black text-emerald-300">até 25%</p>
+                        <p className="mt-2 text-sm leading-6 text-zinc-300">
+                            mais chance de aprovação quando o orçamento é enviado no mesmo dia, sem enrolar.
+                        </p>
+                        <a
+                            href="https://betterproposals.io/blog/how-to-increase-your-proposal-conversion-rate-by-25/"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-3 inline-block text-xs text-zinc-500 underline hover:text-zinc-300"
+                        >
+                            Fonte: Better Proposals
+                        </a>
+                    </div>
+                </div>
+                <p className="mt-4 text-xs leading-5 text-zinc-600">
+                    Dados de pesquisas do setor sobre propostas comerciais em geral — ainda não são números do Zacly, que é uma plataforma nova.
+                </p>
             </div>
         </section>
     )

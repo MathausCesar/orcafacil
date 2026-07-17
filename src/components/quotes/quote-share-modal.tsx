@@ -14,7 +14,7 @@ import { Share2, Mail, Copy, Download, Check, MessageCircle, Send } from 'lucide
 import { toast } from 'sonner'
 import { confirmQuoteSent } from '@/app/actions/quotes'
 import { usePostHog } from 'posthog-js/react'
-import { captureActivationStage, captureConversion, captureException } from '@/lib/analytics'
+import { captureActivationStage, captureConversion, captureEvent, captureException } from '@/lib/analytics'
 import { useRouter } from 'next/navigation'
 
 interface QuoteShareModalProps {
@@ -57,7 +57,7 @@ export function QuoteShareModal({
     const shouldMarkAsSent = ['draft', 'pending'].includes(quoteStatus || '')
 
     const trackShare = (method: ShareMethod) => {
-        captureConversion('quote_share_clicked', {
+        captureEvent('quote_share_clicked', {
             quote_id: quoteId,
             method,
             previous_status: quoteStatus || 'unknown',
@@ -76,17 +76,16 @@ export function QuoteShareModal({
         setConfirmingSent(true)
         try {
             const result = await confirmQuoteSent(quoteId, sentChannel)
-            posthog.capture('quote_sent_confirmed', {
+            const sentPayload = {
                 quote_id: quoteId,
                 previous_status: quoteStatus || 'unknown',
                 channel: sentChannel,
                 source: 'share_modal_confirmation',
-            })
+                transaction_id: `quote_${quoteId}`,
+            }
+            captureConversion('quote_sent_confirmed', sentPayload)
             captureActivationStage('quote_sent_no_subscription', {
-                quote_id: quoteId,
-                previous_status: quoteStatus || 'unknown',
-                source: 'share_modal_confirmation',
-                channel: sentChannel,
+                ...sentPayload,
             })
             toast.success(result.trialStarted
                 ? 'Proposta enviada. Seu teste Pro de 7 dias foi liberado.'

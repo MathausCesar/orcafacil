@@ -46,7 +46,12 @@ const GOOGLE_ADS_CONVERSION_LABELS = {
     signup_completed: process.env.NEXT_PUBLIC_GOOGLE_ADS_SIGNUP_LABEL,
     onboarding_completed: process.env.NEXT_PUBLIC_GOOGLE_ADS_ONBOARDING_LABEL,
     quote_created: process.env.NEXT_PUBLIC_GOOGLE_ADS_QUOTE_CREATED_LABEL,
-    quote_share_clicked: process.env.NEXT_PUBLIC_GOOGLE_ADS_QUOTE_SHARE_LABEL,
+    // Keep the former key as a temporary fallback while production moves to the
+    // explicit "sent" name. A share click is not evidence that the proposal
+    // actually reached the client.
+    quote_sent_confirmed:
+        process.env.NEXT_PUBLIC_GOOGLE_ADS_QUOTE_SENT_LABEL ||
+        process.env.NEXT_PUBLIC_GOOGLE_ADS_QUOTE_SHARE_LABEL,
     checkout_started: process.env.NEXT_PUBLIC_GOOGLE_ADS_CHECKOUT_STARTED_LABEL,
     subscription_started: process.env.NEXT_PUBLIC_GOOGLE_ADS_SUBSCRIPTION_LABEL,
 } as const

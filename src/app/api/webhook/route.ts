@@ -237,6 +237,27 @@ export async function POST(req: Request) {
                 break;
             }
 
+            case "checkout.session.expired": {
+                const session = event.data.object as Stripe.Checkout.Session;
+                const userId = session.client_reference_id || session.metadata?.userId;
+
+                if (userId) {
+                    const checkoutPayload = {
+                        plan: session.metadata?.plan_type || "unknown",
+                        billing_interval: session.metadata?.billing_interval || "unknown",
+                        source: "stripe_webhook",
+                        stripe_event_id: event.id,
+                        stripe_checkout_id: session.id,
+                        value: getMoneyValue(session.amount_total),
+                        currency: session.currency?.toUpperCase() || "BRL",
+                    };
+
+                    await captureServerEvent("checkout_expired", userId, checkoutPayload);
+                    await captureServerActivationStage(userId, "checkout_abandoned", checkoutPayload);
+                }
+                break;
+            }
+
             case "invoice.payment_succeeded": {
                 const invoice = event.data.object as Stripe.Invoice;
                 const invoiceCustomerId = getStringId(invoice.customer);

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
 import { getAppBaseUrl } from "@/lib/app-url";
+import { captureServerEvent } from "@/lib/server-analytics";
 import type Stripe from "stripe";
 
 type CheckoutPlan = "monthly" | "yearly";
@@ -216,6 +217,15 @@ export async function POST(req: NextRequest) {
         const stripeSession = await stripe.checkout.sessions.create(sessionPayload);
 
         if (stripeSession.url) {
+            await captureServerEvent("checkout_session_created", user.id, {
+                plan: planConfig.internalPlan,
+                billing_interval: planConfig.interval,
+                source: "stripe_checkout_api",
+                stripe_checkout_id: stripeSession.id,
+                value: typeof stripeSession.amount_total === "number" ? stripeSession.amount_total / 100 : undefined,
+                currency: stripeSession.currency?.toUpperCase() || "BRL",
+            });
+
             // Retorna JSON com a URL — o cliente faz o redirecionamento
             // (fetch não consegue seguir redirects cross-origin para o Stripe)
             return NextResponse.json({ url: stripeSession.url });

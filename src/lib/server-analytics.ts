@@ -4,6 +4,7 @@ export type ServerActivationStage =
     | 'onboarded_no_quote'
     | 'quote_created_not_sent'
     | 'quote_sent_no_subscription'
+    | 'checkout_abandoned'
     | 'client_opened_free'
     | 'client_approved_free'
     | 'subscribed'

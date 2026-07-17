@@ -27,7 +27,9 @@ interface LogoDemoPlaygroundProps {
     title?: string
     subtitle?: string
     compact?: boolean
+    campaign?: string
     campaignContent?: string
+    queryString?: string
 }
 
 type PreparedState = {
@@ -43,13 +45,22 @@ const sampleItems = [
     ['Mao de obra', 'R$ 280'],
 ]
 
-function getRegisterUrl(campaignContent?: string, queryString = '') {
+function getRegisterUrl({
+    campaign,
+    campaignContent,
+    queryString = '',
+}: {
+    campaign: string
+    campaignContent?: string
+    queryString?: string
+}) {
     const url = new URL(MARKETING_LINKS.register)
     const source = new URLSearchParams(queryString)
     ;['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'gclid', 'fbclid', 'msclkid', 'zacly_campaign'].forEach((key) => {
         const value = source.get(key)
         if (value) url.searchParams.set(key, value)
     })
+    url.searchParams.set('zacly_campaign', campaign)
     if (campaignContent) url.searchParams.set('zacly_content', campaignContent)
     return url.toString()
 }
@@ -59,7 +70,9 @@ export function LogoDemoPlayground({
     title = 'Teste sua logo antes de criar conta.',
     subtitle = 'Envie uma imagem e veja como o Zacly transforma a marca em paleta, modelo visual e proposta mais confiavel.',
     compact = false,
+    campaign = 'organic_home',
     campaignContent = 'logo_demo',
+    queryString,
 }: LogoDemoPlaygroundProps) {
     const inputRef = useRef<HTMLInputElement>(null)
     const [prepared, setPrepared] = useState<PreparedState | null>(null)
@@ -264,9 +277,20 @@ export function LogoDemoPlayground({
                     </div>
 
                     <Link
-                        href={getRegisterUrl(campaignContent)}
+                        href={getRegisterUrl({ campaign, campaignContent, queryString })}
                         onClick={(event: MouseEvent<HTMLAnchorElement>) => {
-                            event.currentTarget.href = getRegisterUrl(campaignContent, window.location.search)
+                            const currentQueryString = window.location.search || queryString
+                            event.currentTarget.href = getRegisterUrl({
+                                campaign,
+                                campaignContent,
+                                queryString: currentQueryString,
+                            })
+                            captureEvent('marketing_cta_clicked', {
+                                landing_path: window.location.pathname,
+                                zacly_campaign: campaign,
+                                zacly_content: campaignContent,
+                                next_path: '/onboarding',
+                            })
                         }}
                         className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-zinc-950 px-5 text-sm font-black text-white transition hover:bg-zinc-800"
                     >

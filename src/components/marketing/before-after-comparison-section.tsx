@@ -6,12 +6,14 @@ type BeforeAfterComparisonSectionProps = {
     campaign?: string
     content?: string
     industryLabel?: string
+    queryString?: string
 }
 
 export function BeforeAfterComparisonSection({
     campaign = "organic_home",
     content = "before_after_comparison",
     industryLabel = "seu servico",
+    queryString,
 }: BeforeAfterComparisonSectionProps) {
     return (
         <section className="border-t border-white/5 bg-zinc-950 px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
@@ -126,6 +128,7 @@ export function BeforeAfterComparisonSection({
                             <CampaignRegisterLink
                                 campaign={campaign}
                                 content={content}
+                                queryString={queryString}
                                 className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-emerald-400 px-6 text-sm font-black text-zinc-950 transition hover:bg-emerald-300"
                             >
                                 Criar proposta gratis

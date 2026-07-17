@@ -2,6 +2,8 @@
 
 import type { MouseEvent, ReactNode } from "react"
 
+import { captureEvent } from "@/lib/analytics"
+
 const APP_REGISTER_URL = "https://app.zacly.com.br/register"
 const TRACKING_KEYS = [
     "utm_source",
@@ -20,6 +22,7 @@ interface CampaignRegisterLinkProps {
     campaign: string
     content?: string
     nextPath?: string
+    queryString?: string
     onClick?: (event: MouseEvent<HTMLAnchorElement>) => void
 }
 
@@ -55,17 +58,30 @@ export function CampaignRegisterLink({
     campaign,
     content,
     nextPath = "/onboarding",
+    queryString,
     onClick,
 }: CampaignRegisterLinkProps) {
-    const href = buildRegisterHref({ campaign, content, nextPath })
+    const href = buildRegisterHref({ campaign, content, nextPath, queryString })
 
     const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
+        const currentQueryString = typeof window === "undefined"
+            ? queryString
+            : window.location.search || queryString
+
         event.currentTarget.href = buildRegisterHref({
             campaign,
             content,
             nextPath,
-            queryString: window.location.search,
+            queryString: currentQueryString,
         })
+
+        captureEvent("marketing_cta_clicked", {
+            landing_path: typeof window === "undefined" ? "" : window.location.pathname,
+            zacly_campaign: campaign,
+            zacly_content: content || "",
+            next_path: nextPath,
+        })
+
         onClick?.(event)
     }
 

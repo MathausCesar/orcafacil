@@ -196,7 +196,10 @@ export async function POST(req: Request) {
 
                 let updatePayload: ProfileUpdate = {
                     stripe_customer_id: customerId,
-                    subscription_status: "active",
+                    // A completed Checkout session can still have an incomplete
+                    // subscription while Stripe confirms payment. Entitlement is
+                    // granted only from the subscription state retrieved below.
+                    subscription_status: "incomplete",
                     plan: planType ?? "pro_monthly",
                     cancel_at_period_end: false,
                 };
@@ -217,6 +220,14 @@ export async function POST(req: Request) {
 
                 if (userId) {
                     await updateProfileOrThrow(supabaseAdmin, { id: userId }, updatePayload);
+
+                    const isActiveSubscription = ["active", "trialing"].includes(
+                        updatePayload.subscription_status || ""
+                    );
+
+                    if (!isActiveSubscription) {
+                        break;
+                    }
 
                     const subscriptionPayload = {
                         plan: updatePayload.plan,

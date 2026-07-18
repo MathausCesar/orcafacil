@@ -352,7 +352,7 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
                                 <Button
                                     type="submit"
                                     variant="outline"
-                                    className="w-full h-12 bg-white text-black hover:bg-zinc-200 border-0 font-medium transition-all"
+                                    className="w-full h-12 !bg-white !text-black hover:!bg-zinc-200 dark:!bg-white dark:!text-black dark:hover:!bg-zinc-200 border-0 font-medium transition-all"
                                     disabled={loading}
                                 >
                                     <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">

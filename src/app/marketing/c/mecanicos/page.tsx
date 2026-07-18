@@ -334,6 +334,7 @@ export default function MechanicLandingPage() {
                         industryLabel="oficina mecanica"
                         title="Veja sua oficina em uma proposta."
                         subtitle="Teste a logo da oficina e veja a proposta nascer com paleta, modelo e mensagem pronta para WhatsApp."
+                        campaign={CAMPAIGN}
                         campaignContent="logo_demo_mecanicos"
                     />
                 </div>

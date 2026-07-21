@@ -333,6 +333,12 @@ export function QuoteForm({ initialData, quickMode = false, starterMode = false,
             return
         }
 
+        if (quickMode && clientPhone.replace(/\D/g, '').length < 10) {
+            captureEvent('quote_validation_failed', { reason: 'missing_client_phone_for_first_quote', quick_mode: quickMode })
+            toast.error('Informe o WhatsApp do cliente para criar uma proposta pronta para enviar.')
+            return
+        }
+
         if (experienceMode === 'pro_sample' && (!brandPreview?.logoUrl || !clientPhone.trim())) {
             captureEvent('quote_validation_failed', {
                 reason: !brandPreview?.logoUrl ? 'pro_sample_missing_logo' : 'pro_sample_missing_client_phone',

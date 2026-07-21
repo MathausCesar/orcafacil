@@ -72,6 +72,11 @@ function stageCopy(stage: LifecycleStage, profile: LifecycleProfile, quote?: Lif
     }
 }
 
+function getDispatchDedupeKey(profile: LifecycleProfile, stage: LifecycleStage, quote?: LifecycleQuote) {
+    const day = new Date().toISOString().slice(0, 10)
+    return [profile.id, stage, quote?.id || 'account', day].join(':')
+}
+
 async function dispatchLifecycleEmail(
     // The lifecycle table is introduced in the same deployment migration and is not in generated types yet.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,14 +97,28 @@ async function dispatchLifecycleEmail(
 
     if (recent?.length) return 'skipped_recent'
 
-    const { data: dispatch, error: insertError } = await db
+    const { data: dispatch, error: claimError } = await db
         .from('lifecycle_email_dispatches')
-        .insert({ user_id: profile.id, quote_id: quote?.id || null, stage, status: 'pending' })
+        .upsert(
+            {
+                user_id: profile.id,
+                quote_id: quote?.id || null,
+                stage,
+                status: 'pending',
+                dedupe_key: getDispatchDedupeKey(profile, stage, quote),
+            },
+            { onConflict: 'dedupe_key', ignoreDuplicates: true },
+        )
         .select('id')
-        .single()
+        .maybeSingle()
 
-    if (insertError || !dispatch) {
-        return insertError?.code === '23505' ? 'skipped_duplicate' : 'failed_claim'
+    if (claimError) {
+        console.error('Lifecycle email claim failed:', claimError)
+        return 'failed_claim'
+    }
+
+    if (!dispatch) {
+        return 'skipped_duplicate'
     }
 
     const copy = stageCopy(stage, profile, quote)

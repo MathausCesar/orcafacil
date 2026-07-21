@@ -23,6 +23,7 @@ interface ClientAutocompleteProps {
 export function ClientAutocomplete({ onSelect, defaultValue, defaultPhone }: ClientAutocompleteProps) {
     const [query, setQuery] = useState(defaultValue || '')
     const [phone, setPhone] = useState(defaultPhone || '')
+    const [selectedClientId, setSelectedClientId] = useState<string | undefined>()
     const [allClients, setAllClients] = useState<ClientOption[]>([])
     const [showSuggestions, setShowSuggestions] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -56,6 +57,7 @@ export function ClientAutocomplete({ onSelect, defaultValue, defaultPhone }: Cli
     const handleSelect = (client: ClientOption) => {
         setQuery(client.name)
         setPhone(client.phone || '')
+        setSelectedClientId(client.id)
         setShowSuggestions(false)
         onSelect(client)
     }
@@ -82,8 +84,10 @@ export function ClientAutocomplete({ onSelect, defaultValue, defaultPhone }: Cli
                             name="clientName"
                             value={query}
                             onChange={(e) => {
-                                setQuery(e.target.value)
-                                onSelect({ name: e.target.value, phone })
+                                const nextName = e.target.value
+                                setQuery(nextName)
+                                setSelectedClientId(undefined)
+                                onSelect({ name: nextName, phone })
                             }}
                             onFocus={handleFocus}
                             onBlur={handleBlur}
@@ -143,14 +147,22 @@ export function ClientAutocomplete({ onSelect, defaultValue, defaultPhone }: Cli
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="clientPhone">Telefone (Opcional)</Label>
+                <Label htmlFor="clientPhone">WhatsApp do cliente</Label>
                 <Input
                     id="clientPhone"
                     name="clientPhone"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => {
+                        const nextPhone = e.target.value
+                        setPhone(nextPhone)
+                        onSelect({ id: selectedClientId, name: query, phone: nextPhone })
+                    }}
                     placeholder="(11) 99999-9999"
                 />
+                <p className="text-xs text-muted-foreground">Informe agora para abrir o WhatsApp com a proposta pronta para enviar.</p>
             </div>
         </div>
     )

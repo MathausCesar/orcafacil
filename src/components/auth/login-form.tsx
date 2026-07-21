@@ -21,7 +21,12 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { usePostHog } from 'posthog-js/react'
 import { addExceptionStep, captureException } from '@/lib/analytics'
-import { buildOnboardingIntentPath, getActivationIntentFromSearchParams, normalizeIntendedPlan } from '@/lib/activation-intent'
+import {
+    buildOnboardingIntentPath,
+    getActivationIntentFromPath,
+    getActivationIntentFromSearchParams,
+    mergeActivationIntents,
+} from '@/lib/activation-intent'
 
 type AuthActionResult = {
     error?: string
@@ -49,18 +54,10 @@ export function LoginForm({ defaultMode = 'login' }: { defaultMode?: 'login' | '
     const searchParams = useSearchParams()
     const posthog = usePostHog()
     const nextPath = getSafeNextPath(searchParams)
-    const nextPathPlan = (() => {
-        try {
-            return new URL(nextPath || '/', 'https://app.zacly.com.br').searchParams.get('plan')
-        } catch {
-            return null
-        }
-    })()
-    const initialIntent = getActivationIntentFromSearchParams(searchParams)
-    const activationIntent = {
-        ...initialIntent,
-        intendedPlan: initialIntent.intendedPlan || normalizeIntendedPlan(nextPathPlan),
-    }
+    const activationIntent = mergeActivationIntents(
+        getActivationIntentFromPath(nextPath),
+        getActivationIntentFromSearchParams(searchParams),
+    )
     const signupNextPath = buildOnboardingIntentPath(nextPath || '/onboarding', activationIntent)
     const activationIntentValue = JSON.stringify(activationIntent)
     const [loading, setLoading] = useState(false)

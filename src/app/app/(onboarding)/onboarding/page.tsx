@@ -2,7 +2,10 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { OnboardingProvider } from "@/components/onboarding/onboarding-context";
 import { WizardContentClient } from "@/components/onboarding/wizard-content-client";
-import { getActivationIntentFromSearchParams, normalizeActivationIntent } from "@/lib/activation-intent";
+import {
+    getActivationIntentFromSearchParams,
+    mergeActivationIntents,
+} from "@/lib/activation-intent";
 
 export default async function OnboardingPage({
     searchParams,
@@ -39,14 +42,10 @@ export default async function OnboardingPage({
             return typeof value === 'string' ? value : null
         },
     })
-    const metadataIntent = normalizeActivationIntent(user.user_metadata?.signup_intent)
-    const initialIntent = {
-        intendedPlan: queryIntent.intendedPlan || metadataIntent.intendedPlan,
-        attribution: {
-            ...metadataIntent.attribution,
-            ...queryIntent.attribution,
-        },
-    }
+    const initialIntent = mergeActivationIntents(
+        user.user_metadata?.signup_intent,
+        queryIntent,
+    )
 
     return (
         <OnboardingProvider initialData={initialIntent}>

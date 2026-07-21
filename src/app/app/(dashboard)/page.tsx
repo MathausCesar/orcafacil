@@ -14,6 +14,7 @@ import { getActiveOrganizationId } from '@/lib/get-active-organization'
 import { OpportunityPanel } from '@/components/dashboard/opportunity-panel'
 import { CommercialScoreboard } from '@/components/dashboard/commercial-scoreboard'
 import { ClientReturnQueue, type ClientReturnQueueItem } from '@/components/dashboard/client-return-queue'
+import { DraftProposalRecovery } from '@/components/dashboard/draft-proposal-recovery'
 import { getQuoteReminder } from '@/lib/quote-reminders'
 
 export default async function Dashboard() {
@@ -31,7 +32,7 @@ export default async function Dashboard() {
 
   // Parallel fetch: profile, recent quotes and guided first-run progress
   const today = new Date().toISOString().slice(0, 10)
-  const [profileResult, quotesResult, quotesCountResult, sentCountResult, openedCountResult, opportunitiesResult, commercialQuotesResult, dueReturnsResult] = await Promise.all([
+  const [profileResult, quotesResult, quotesCountResult, sentCountResult, openedCountResult, draftRecoveryResult, opportunitiesResult, commercialQuotesResult, dueReturnsResult] = await Promise.all([
     supabase
       .from('profiles')
       .select('business_name, logo_url, onboarded_at')
@@ -63,6 +64,16 @@ export default async function Dashboard() {
         .eq('organization_id', orgId)
         .not('first_public_opened_at', 'is', null)
       : Promise.resolve(emptyCountResult),
+    orgId
+      ? supabase
+        .from('quotes')
+        .select('id, client_name, total, created_at, updated_at', { count: 'exact' })
+        .eq('organization_id', orgId)
+        .eq('status', 'draft')
+        .order('updated_at', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false, nullsFirst: false })
+        .limit(1)
+      : Promise.resolve({ count: 0, data: [], error: null }),
     orgId
       ? supabase
         .from('quotes')
@@ -100,6 +111,7 @@ export default async function Dashboard() {
   }
 
   const recentQuotes = quotesResult.data
+  const latestDraft = draftRecoveryResult.data?.[0]
   const reminderPriority: Record<string, number> = {
     expired: 0,
     expires_today: 1,
@@ -167,6 +179,15 @@ export default async function Dashboard() {
         openedCount={openedCountResult.count || 0}
         latestQuoteId={recentQuotes?.[0]?.id}
         hasLogo={Boolean(profile.logo_url)}
+      />
+
+      <DraftProposalRecovery
+        count={draftRecoveryResult.count || 0}
+        latestDraft={latestDraft ? {
+          id: latestDraft.id,
+          clientName: latestDraft.client_name,
+          total: Number(latestDraft.total || 0),
+        } : null}
       />
 
       {/* Main activation action */}
